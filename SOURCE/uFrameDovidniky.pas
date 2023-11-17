@@ -21,6 +21,7 @@ type
     BitBtn1: TBitBtn;
     procedure btnImportClick(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
+    procedure sGradientPanel1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -37,17 +38,24 @@ procedure TfrmDovidniky.BitBtn1Click(Sender: TObject);
 begin
   inherited;
   CleanOutTable('ZvitSnow');
-  DM.tZvitSnow.RefreshRecord;
+ // DM.tZvitSnow.RefreshRecord;
+ DBGridEh1.DataSource:= nil;
+ DM.tZvitSnow.Active := false;
+ DM.tZvitSnow.Active := true;
+ DBGridEh1.DataSource := DM.dsZvit;
 end;
 
 procedure TfrmDovidniky.btnImportClick(Sender: TObject);
 var
-  m, n, col, z: integer;
+  m, n, col, z, i: integer;
   CollectionNameTable: TDictionary<string, integer>;
   pole: String;
   poleDate: TDateTime;
+  buttonSelected : Integer;
+  temp:Word;
 begin
   try
+  DBGridEh1.DataSource:= nil;
 
     if uMyExcel.RunExcel(false, false) = true then
       // проверка на инсталл и запуск Excel
@@ -164,14 +172,78 @@ begin
           else
           begin
 
-            MyExcel.Application.DisplayAlerts := false;
-            StopExcel;
-            CollectionNameTable.Clear;
-            CollectionNameTable.Free;
-            ShowMessage('Такі данні вже є в базі');
-            myForm.ProgressBar.Visible := false;
-            DM.tZvitSnow.RefreshRecord;
-            Exit;
+           // MyExcel.Application.DisplayAlerts := false;
+           // StopExcel;
+           // CollectionNameTable.Clear;
+           // CollectionNameTable.Free;
+            ShowMessage('Номер '+ pole +' вже є в базі');
+
+
+
+          {  with CreateMessageDialog('Номер '+ pole +' вже є в базі', mtConfirmation,
+                              [mbYes,mbAll,mbCancel]) do
+            begin
+              try
+               for i := 0 to componentcount - 1 do
+               begin
+                if components[i].classname = 'TButton' then
+                  begin
+                  if (components[i] as TButton).modalResult = mrYes then (components[i] as TButton).caption := 'OldYes';
+                  if (components[i] as TButton).modalResult = mrCancel then (components[i] as TButton).caption := 'OldmrCancel';
+                  if (components[i] as TButton).modalResult = mrAll then (components[i] as TButton).caption := 'OldmrAll';
+                 end;
+               end;
+                    Caption := 'Вибір варіанта';
+                     ShowModal;
+
+
+
+              finally
+               Release;
+              end;
+            end;
+                                          if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
+                                                      if buttonSelected = mrCancel
+                                        then ShowMessage('Была нажата Cancel');
+                                        if buttonSelected = mrAll then
+                                        ShowMessage('Была нажата All'); }
+
+                                        { temp:=MessageBox(handle, PChar('Номер '+ pole +' вже є в базі'), PChar('Обдумайте прежде!'), MB_YESNO+MB_ICONQUESTION);
+                                        case temp of
+                                        idyes: ShowMessage('Была нажата OK');
+                                        idno: ShowMessage('Была нажата No');
+                                        end;}
+
+//          with MessageDlg('Номер '+ pole +' вже є в базі',mtCustom,
+//                              [mbYes,mbAll,mbCancel], 0) do
+//            begin
+//
+//              try
+//               for i := 0 to componentcount - 1 do
+//               begin
+//                if components[i].classname = 'TButton' then
+//                if (components[i] as TButton).modalResult = mrYes then (components[i] as TButton).caption := 'OldYes';
+//                if (components[i] as TButton).modalResult = mrCancel then (components[i] as TButton).caption := 'OldmrCancel';
+//                if (components[i] as TButton).modalResult = mrAll then (components[i] as TButton).caption := 'OldmrAll';
+//               end;
+//              finally
+//               Release;
+//              end;
+//            end;
+//            buttonSelected := MessageDlg('Номер '+ pole +' вже є в базі',mtCustom,
+//                              [mbYes,mbAll,mbCancel], 0);
+//            if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
+//            if buttonSelected = mrCancel then ShowMessage('Была нажата Cancel');
+//            if buttonSelected = mrAll then ShowMessage('Была нажата All');
+
+//            if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
+//            if buttonSelected = mrCancel then ShowMessage('Была нажата Cancel');
+//            if buttonSelected = mrAll then ShowMessage('Была нажата All');
+
+           // myForm.ProgressBar.Visible := false;
+          //  DM.tZvitSnow.RefreshRecord;
+           // Exit;
+            Inc(m);
           end;
 
         end;
@@ -187,6 +259,7 @@ begin
     // DM.tZvitSnow.Active := false;
     myForm.ProgressBar.Visible := false;
     DM.tZvitSnow.RefreshRecord;
+    DBGridEh1.DataSource := DM.dsZvit;
   except
     on E: EListError do
     begin
@@ -195,10 +268,17 @@ begin
       DM.tZvitSnow.Active := false;
       ShowMessage('Не вірний формат файлу, нема необхідних полів');
       StopExcel;
+      DBGridEh1.DataSource := DM.dsZvit;
     end;
 
   end;
 
+end;
+
+procedure TfrmDovidniky.sGradientPanel1Click(Sender: TObject);
+begin
+  inherited;
+BitBtn1.Enabled:= true;
 end;
 
 end.

@@ -8,7 +8,8 @@ interface
 uses
   SysUtils, system.Hash, Classes,
   mimemess, mimepart, smtpsend,
-  JvStringGrid;
+  JvStringGrid,
+  System.Variants, VCL.Grids, ComObj;
 
 function MD5Hash(const Data: WideString): WideString;
 // отправка файлов в письме
@@ -16,6 +17,8 @@ function SendEmailAndAttach(pHost, pSubject, pTo, pFrom, pTextBody, pHTMLBody,
   pLogin, pPassword, pFilePath: string): boolean;
 
   procedure AutoStringGridWidth(StringGrid: TJvStringGrid);
+
+  procedure SaveStringGridToExcel(StringGrid: TStringGrid; const FileName: string);
 
 implementation
 
@@ -103,6 +106,32 @@ begin
         ColWidths[X] := MaxWidth + 5;
       end;
     end;
+end;
+
+procedure SaveStringGridToExcel(StringGrid: TStringGrid; const FileName: string);
+var
+  ExcelApp: OleVariant;
+  ExcelWorkbook: OleVariant;
+  ExcelWorksheet: OleVariant;
+  i, j: Integer;
+begin
+  try
+    ExcelApp := CreateOleObject('Excel.Application');
+    ExcelApp.Visible := False; // Установите True, если хотите, чтобы Excel был видимым
+
+    ExcelWorkbook := ExcelApp.Workbooks.Add;
+    ExcelWorksheet := ExcelWorkbook.Worksheets[1];
+
+    for i := 0 to StringGrid.RowCount - 1 do
+      for j := 0 to StringGrid.ColCount - 1 do
+        ExcelWorksheet.Cells[i + 1, j + 1] := StringGrid.Cells[j, i];
+
+    ExcelWorkbook.SaveAs(FileName);
+  finally
+    ExcelWorkbook.Close;
+    ExcelApp.Quit;
+    ExcelApp := Unassigned;
+  end;
 end;
 
 

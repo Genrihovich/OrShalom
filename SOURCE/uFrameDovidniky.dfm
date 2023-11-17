@@ -12,6 +12,7 @@ inherited frmDovidniky: TfrmDovidniky
     Caption = 'sGradientPanel1'
     ShowCaption = False
     TabOrder = 0
+    OnClick = sGradientPanel1Click
     object btnImport: TBitBtn
       Left = 16
       Top = 6
@@ -27,6 +28,7 @@ inherited frmDovidniky: TfrmDovidniky
       Width = 121
       Height = 25
       Caption = #1054#1095#1080#1089#1090#1080#1090#1080' '#1090#1072#1073#1083#1080#1094#1102
+      Enabled = False
       TabOrder = 1
       OnClick = BitBtn1Click
     end

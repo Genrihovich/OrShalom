@@ -5,11 +5,12 @@ inherited frmStatistic: TfrmStatistic
   ExplicitHeight = 505
   object Splitter1: TSplitter [0]
     Left = 0
-    Top = 225
+    Top = 185
     Width = 1087
     Height = 3
     Cursor = crVSplit
     Align = alTop
+    ExplicitTop = 225
     ExplicitWidth = 280
   end
   object sPanel1: TsPanel [1]
@@ -19,6 +20,9 @@ inherited frmStatistic: TfrmStatistic
     Height = 33
     Align = alTop
     TabOrder = 0
+    DesignSize = (
+      1087
+      33)
     object sLabelFX1: TsLabelFX
       Left = 3
       Top = 7
@@ -38,13 +42,6 @@ inherited frmStatistic: TfrmStatistic
       Angle = 0
       Shadow.OffsetKeeper.LeftTop = -1
       Shadow.OffsetKeeper.RightBottom = 3
-    end
-    object Label1: TLabel
-      Left = 736
-      Top = 8
-      Width = 31
-      Height = 13
-      Caption = 'Label1'
     end
     object sDateEdit3: TsDateEdit
       Left = 22
@@ -68,42 +65,43 @@ inherited frmStatistic: TfrmStatistic
       Text = '  .  .    '
       OnChange = sDateEdit4Change
     end
+    object btnSave: TBitBtn
+      Left = 944
+      Top = 3
+      Width = 131
+      Height = 25
+      Action = acSaveExcel
+      Anchors = [akTop, akRight]
+      Caption = #1047#1073#1077#1088#1077#1075#1090#1080' '#1074' Excel'
+      TabOrder = 2
+    end
     object btnCalck: TBitBtn
       Left = 311
       Top = 3
-      Width = 75
+      Width = 89
       Height = 25
       Action = acCalck
       Caption = #1056#1086#1079#1088#1072#1093#1091#1074#1072#1090#1080
-      Enabled = False
-      TabOrder = 2
-    end
-    object BitBtn1: TBitBtn
-      Left = 984
-      Top = 3
-      Width = 75
-      Height = 25
-      Caption = 'BitBtn1'
       TabOrder = 3
-      OnClick = BitBtn1Click
     end
   end
   object sPanel2: TsPanel [2]
     Left = 0
     Top = 33
     Width = 1087
-    Height = 192
+    Height = 152
     Align = alTop
     TabOrder = 1
-    object DBGridEh1: TDBGridEh
+    object DBGridEh11: TDBGridEh
       Left = 1
       Top = 1
       Width = 1085
-      Height = 190
+      Height = 150
       Align = alClient
       DataSource = DM.dsCountQuery
       DynProps = <>
       TabOrder = 0
+      TitleParams.MultiTitle = True
       Columns = <
         item
           CellButtons = <>
@@ -189,18 +187,21 @@ inherited frmStatistic: TfrmStatistic
   end
   object sPanel3: TsPanel [3]
     Left = 0
-    Top = 228
+    Top = 188
     Width = 1087
-    Height = 277
+    Height = 317
     Align = alClient
     TabOrder = 2
+    ExplicitTop = 228
+    ExplicitHeight = 277
     object StringGrid: TJvStringGrid
       Left = 1
       Top = 1
       Width = 1085
-      Height = 275
+      Height = 315
       Align = alClient
       ColCount = 4
+      DefaultDrawing = False
       FixedCols = 0
       RowCount = 2
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSizing]
@@ -212,19 +213,26 @@ inherited frmStatistic: TfrmStatistic
       FixedFont.Height = -11
       FixedFont.Name = 'Tahoma'
       FixedFont.Style = []
+      ExplicitTop = 2
+      ExplicitHeight = 274
     end
   end
   inherited sFrameAdapter1: TsFrameAdapter
-    Left = 656
-    Top = 0
+    Left = 664
+    Top = 64
   end
   object ActionList1: TActionList
-    Left = 864
-    Top = 128
+    Left = 736
+    Top = 72
     object acCalck: TAction
       Caption = #1056#1086#1079#1088#1072#1093#1091#1074#1072#1090#1080
       OnExecute = btnCalckClick
       OnUpdate = acCalckUpdate
+    end
+    object acSaveExcel: TAction
+      Caption = #1047#1073#1077#1088#1077#1075#1090#1080' '#1074' Excel'
+      OnExecute = btnSaveClick
+      OnUpdate = acSaveExcelUpdate
     end
   end
 end

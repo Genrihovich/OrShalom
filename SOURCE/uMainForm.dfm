@@ -76,10 +76,11 @@ object myForm: TmyForm
         Width = 50
       end>
     object ProgressBar: TsProgressBar
-      Left = 820
-      Top = 2
-      Width = 150
-      Height = 17
+      Left = 504
+      Top = 0
+      Width = 482
+      Height = 19
+      Align = alRight
       TabOrder = 0
       Visible = False
     end

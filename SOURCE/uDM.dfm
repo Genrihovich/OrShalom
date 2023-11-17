@@ -168,10 +168,23 @@ object DM: TDM
   object qCountItems: TUniQuery
     Connection = UniConnection
     SQL.Strings = (
-      'select Ispolnitel From ZvitSnow Group by Ispolnitel')
+      
+        'select Ispolnitel From ZvitSnow WHERE DateKontakta Between :ot a' +
+        'nd :do  Group by Ispolnitel')
     MasterSource = dsCountQuery
     Left = 24
     Top = 232
+    ParamData = <
+      item
+        DataType = ftDateTime
+        Name = 'ot'
+        Value = 45139d
+      end
+      item
+        DataType = ftDateTime
+        Name = 'do'
+        Value = 45169d
+      end>
   end
   object UniDataSource1: TUniDataSource
     DataSet = qCountItems
