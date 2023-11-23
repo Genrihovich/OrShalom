@@ -21,6 +21,7 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TDM, DM);
+  Application.CreateForm(TfAutorize, fAutorize);
   Application.CreateForm(TmyForm, myForm);
   Application.Run;
 end.

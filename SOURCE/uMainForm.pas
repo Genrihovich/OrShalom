@@ -67,6 +67,7 @@ var
   // обрабатывается после каждого переключения в режим со скинами или без скинов.
   MyName, MyRegion: String;
   Nachalo, Konec: TDateTime; //начало и конец периодов для выборки
+  IspolnitelCount: Integer; //кол-во исполнителей для отчета в ексель
 
 implementation
 

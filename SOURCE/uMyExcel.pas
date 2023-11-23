@@ -34,11 +34,11 @@ uses ComObj, ActiveX, Variants, Windows, Messages, SysUtils, Classes, Vcl.Dialog
 const
 ExcelApp = 'Excel.Application';
 xlContinuous=1;
-xlThin=2;
+xlThin = 2;
 xlTop = -4160;
 xlCenter = -4108;
 xlDouble = -4119; //Двойная сплошная линия.
-
+xlMedium = -4138;
 
 function CheckExcelInstall:boolean;
 function CheckExcelRun: boolean;

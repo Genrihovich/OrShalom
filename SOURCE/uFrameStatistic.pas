@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
-  System.Classes,
+  System.Classes, Winapi.ShellAPI,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, uFrameCustom,
   sFrameAdapter, DBGridEhImpExp,
   Vcl.StdCtrls, sLabel, DBGridEhGrouping, ToolCtrlsEh, DBGridEhToolCtrls,
@@ -50,9 +50,11 @@ implementation
 
 {$R *.dfm}
 
-uses uDM, myBDUtils, myUtils, WinProcs, DateUtils, uMainForm;
+uses uDM, myBDUtils, myUtils, WinProcs, DateUtils, uMainForm, uMyExcel;
 
 procedure TfrmStatistic.sDateEdit3Change(Sender: TObject);
+var
+  i: Integer;
 begin
   inherited;
 
@@ -66,6 +68,12 @@ begin
   DM.qCountQuery.Params.ParamByName('ot').Value := sDateEdit3.Date;
   DM.qCountQuery.Params.ParamByName('do').Value := sDateEdit4.Date;
   DM.qCountQuery.Active := True;
+
+  // Очистить StringGrid
+  for i := 0 to StringGrid.RowCount do
+    StringGrid.Rows[i].Clear;
+  StringGrid.RowCount := 0;
+  StringGrid.ColCount := 0;
 end;
 
 procedure TfrmStatistic.sDateEdit4Change(Sender: TObject);
@@ -179,12 +187,13 @@ begin
   // ------------------- список Исполнителей -------------------------
   Ispolnitel := TStringList.Create;
   Ispolnitel.CommaText := SpisokPoley('ZvitSnow', 'Ispolnitel');
+  IspolnitelCount := Ispolnitel.Count;
   // --------------- список вида услуг -----------------------
   VidPosluga := TStringList.Create;
   VidPosluga.CommaText := SpisokPoley('ZvitSnow', 'Tema');
   // --------------- список типа контактов -----------------------
   TypeContact := TStringList.Create;
-  TypeContact.CommaText := SpisokPoley('ZvitSnow', 'TypeKontakta');
+  // TypeContact.CommaText := SpisokPoley('ZvitSnow', 'TypeKontakta');
 
   StringGrid.RowHeights[0] := StringGrid.DefaultRowHeight * 2;
 
@@ -196,6 +205,7 @@ begin
   StringGrid.Cells[2, 0] := 'Всего контактов';
   StringGrid.Cells[3, 0] := 'Всего клиентов';
   col := 4;
+  Application.ProcessMessages;
 
   for i := 0 to Ispolnitel.Count - 1 do
   begin
@@ -203,6 +213,7 @@ begin
     StringGrid.ColCount := StringGrid.ColCount + 1; // добавить колонку
     StringGrid.Cells[col, 1] := 'контакт';
     inc(col);
+    Application.ProcessMessages;
     StringGrid.Cells[col, 0] := Ispolnitel[i]; // ФИО Исполнителя
     StringGrid.ColCount := StringGrid.ColCount + 1; // добавить колонку
     StringGrid.Cells[col, 1] := 'клиент';
@@ -216,10 +227,12 @@ begin
   begin
     StringGrid.RowCount := row + 1; // добавляем строку
     StringGrid.Cells[0, row] := VidPosluga[i];
+    Application.ProcessMessages;
 
     // загружаем список типов контактов для данной услуги
     TypeContact.CommaText := SpisokPoleyWhere('ZvitSnow', 'TypeKontakta',
       VidPosluga[i]);
+    Application.ProcessMessages;
 
     for j := 0 to TypeContact.Count - 1 do
     begin
@@ -229,6 +242,7 @@ begin
       inc(row);
     end;
     inc(row);
+    Application.ProcessMessages;
   end;
 
   // --------- Считаем количества ---------------
@@ -287,15 +301,330 @@ begin
 end;
 
 procedure TfrmStatistic.btnSaveClick(Sender: TObject);
+var
+  Sheets, ExcelApp: Variant;
+  i, j, endColumn, colum, rowStart, rowEnd, Rows: Integer;
+  DirectoryNow, FileNameS: String;
+  StrEndColumnSylka, RangeSylka, FIO, Formula, Formula2: string;
+  NewBlock: Boolean;
 begin
-  inherited;
-  // StringGrid.Save(ExtractFilePath(Application.ExeName) +'1111.xlsx');
-  // StringGrid.SaveToFile(ExtractFilePath(Application.ExeName) +'1111.xlsx');
-  // SaveStringGridToExcel(StringGrid, ExtractFilePath(Application.ExeName) +'1111.xlsx');
+  try
+    myForm.ProgressBar.Visible := True;
+    myForm.ProgressBar.Min := 0;
+    myForm.ProgressBar.Max := StringGrid.RowCount;
+    myForm.ProgressBar.Position := 1;
 
-  // SaveDBGridEhToExportFile(TDBGridEhExportAsXLS, DBGridEh, 'd:\1111.xls', False);
-  // SaveDBGridEhToExportFile(TDBGridEhExportAsOLEXLS, OtherZvit,'c:\temp\file1.xlsx',true);
-  // SaveDBGridEhToExportFile(TDBGridEhExportAsOLEXLS, DBGridEh,'c:\temp\file1.xlsx',true);
+    if uMyExcel.RunExcel(False, False) = True then
+      MyExcel.Workbooks.Add; // добавляем новую книгу
+    // MyExcel.ReferenceStyle := -4150; // Устанавливаем формат ссылок на R1C1 для этой книги
+
+    Sheets := MyExcel.Worksheets.Add;
+    Sheets.name := 'TravmaCentr';
+    ParametryStr; // Парметры страницы
+    Sheets.PageSetup.PrintTitleRows := '$2:$2';
+
+    // Параметры таблицы ( цифра номер столбца ) ширины столбцов
+    ExcelApp := MyExcel.ActiveWorkBook.Worksheets[1].columns;
+
+    ExcelApp.columns[1].columnwidth := 16.43;
+    ExcelApp.columns[2].columnwidth := 19.71;
+    ExcelApp.columns[3].columnwidth := 4.29;
+    ExcelApp.columns[4].columnwidth := 4.57;
+    ExcelApp.columns[5].columnwidth := 3.29;
+    ExcelApp.columns[6].columnwidth := 3.29;
+
+    // IspolnitelCount
+    for i := 1 to IspolnitelCount * 2 do
+      ExcelApp.columns[6 + i].columnwidth := 7;
+
+    endColumn := 6 + (IspolnitelCount * 2);
+
+    // ............ буква последнего столбца .........
+    StrEndColumnSylka := CellsCharFind(endColumn);
+
+    // ============= Выделяем и обьединяем ==================
+
+    // ------------ 1-я строка ------------------------
+    MyExcel.ActiveWorkBook.Worksheets[1].Range
+      ['A1:' + StrEndColumnSylka + '1'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range
+      ['A1:' + StrEndColumnSylka + '1'].Merge;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.Font.name := 'Calibri';
+    MyExcel.Selection.Font.Size := 14;
+    MyExcel.Selection.Font.Bold := True;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[1, 1] :=
+      'Сводный отчет центра травмы с ' + DateTimeToStr(Nachalo) + ' по ' +
+      DateTimeToStr(Konec);
+
+    // ----------------- Шапка таблицы --------------------------------------
+    ExcelApp := MyExcel.ActiveWorkBook.Worksheets[1].Rows;
+
+    ExcelApp.Rows[3].RowHeight := 15.75;
+    ExcelApp.Rows[4].RowHeight := 40.50;
+    ExcelApp.Rows[5].RowHeight := 15.00;
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['A3:A5'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['A3:A5'].Merge;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[3, 1] := 'Вид услуги';
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['B3:B5'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['B3:B5'].Merge;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[3, 2] := 'Тип контакта';
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['C3:D3'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['C3:D3'].Merge;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[3, 3] := 'Всего';
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['D4:D5'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['D4:D5'].Merge;
+    MyExcel.Selection.Orientation := 90;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[4, 4] := 'клиентов';
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['C4:C5'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['C4:C5'].Merge;
+    MyExcel.Selection.Orientation := 90;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[4, 3] := 'контактов';
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['E3:E5'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['E3:E5'].Merge;
+    MyExcel.Selection.Orientation := 90;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[3, 5] := 'контакт';
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['F3:F5'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['F3:F5'].Merge;
+    MyExcel.Selection.Orientation := 90;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[3, 6] := 'клиент';
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range
+      ['G3:' + StrEndColumnSylka + '3'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range
+      ['G3:' + StrEndColumnSylka + '3'].Merge;
+
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    // MyExcel.Selection.Interior.ColorIndex := 24;
+    MyExcel.Selection.Interior.Color := RGB(221, 235, 247);
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[3, 7] := 'Исполнители';
+
+    colum := 7; // с какой колонки начинаються исполнители
+    FIO := '';
+    for i := 4 to StringGrid.ColCount do
+    begin
+      if FIO <> StringGrid.Cells[i, 0] then
+      begin
+        MyExcel.ActiveWorkBook.Worksheets[1].Cells[4, colum] :=
+          StringGrid.Cells[i, 0];
+        MyExcel.Selection.Font.Bold := True;
+
+      end;
+
+      MyExcel.ActiveWorkBook.Worksheets[1].Cells[5, colum] :=
+        StringGrid.Cells[i, 1];
+
+      if StringGrid.Cells[i, 1] = 'клиент' then
+      begin
+        // обединим ФИО в одно
+        RangeSylka := CellsCharFind(colum - 1) + '4:' +
+          CellsCharFind(colum) + '4';
+
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Merge;
+        MyExcel.Selection.HorizontalAlignment := xlCenter;
+        MyExcel.Selection.VerticalAlignment := xlCenter;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].WrapText := True;
+        MyExcel.Selection.Font.Bold := True;
+
+        // разукраска ячейки
+        MyExcel.ActiveWorkBook.Worksheets[1].Cells[5, colum].Select;
+        MyExcel.Selection.Interior.Color := RGB(252, 228, 214);
+      end;
+      inc(colum);
+      FIO := StringGrid.Cells[i, 0];
+    end;
+
+    // Границы
+    RangeSylka := 'A3:' + StrEndColumnSylka + '5';
+
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+    MyExcel.Selection.Borders.LineStyle := xlContinuous; // границы
+    MyExcel.Selection.Borders.Weight := xlThin; // создать сетку
+    // вокруг жирная рамка
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].BorderAround
+      (xlContinuous, xlMedium, EmptyParam, EmptyParam);
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['G3:' + StrEndColumnSylka + '3']
+      .BorderAround(xlContinuous, xlMedium, EmptyParam, EmptyParam);
+
+    MyExcel.Selection.Borders[9].LineStyle := 9; // двойная линия внизу шапки
+
+    // ------------------------- Заполняем данными ----------------------------
+    rowStart := 6; // запоминаем стартовую строку
+    rowEnd := 0;
+    Rows := 0;
+    for i := 1 to StringGrid.RowCount - 1 do // строки
+    begin
+      inc(Rows);
+      NewBlock := False;
+      for j := 0 to StringGrid.ColCount - 1 do // столбцы
+      begin
+        if j > 0 then // делаем пустую строку для подбивки данных
+        begin
+          if j > 1 then // смещаем на два столбца
+          begin
+            MyExcel.Cells[i + 6, j + 3] := StringGrid.Cells[j, i + 1];
+            MyExcel.Cells[i + 6, j + 3].Select;
+            MyExcel.Selection.HorizontalAlignment := xlCenter;
+            MyExcel.Selection.VerticalAlignment := xlCenter;
+
+            FIO := MyExcel.Cells[5, j + 3];
+
+            if FIO = 'клиент' then
+              MyExcel.Selection.Interior.Color := RGB(252, 228, 214);
+          end
+          else
+          begin
+            if StringGrid.Cells[j, i + 1] = '' then
+            begin
+              NewBlock := True;
+              Break;
+            end
+            else
+              // контакт
+              MyExcel.Cells[i + 6, j + 1] := StringGrid.Cells[j, i + 1];
+          end;
+
+        end
+        else
+        begin // услуга
+          MyExcel.Cells[i + 5, j + 1] := StringGrid.Cells[j, i + 1];
+          MyExcel.Cells[i + 5, j + 1].WrapText := True;
+        end;
+      end;
+
+      if NewBlock = True then
+      begin // обрамляем блок услуг
+        rowEnd := rowStart + Rows - 1;
+
+        // Обьединяем ячейки Услуги
+        RangeSylka := 'A' + rowStart.ToString + ':' + 'A' + rowEnd.ToString;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Merge;
+        MyExcel.Selection.HorizontalAlignment := xlCenter;
+        MyExcel.Selection.VerticalAlignment := xlCenter;
+        // Всего
+        if Rows = 2 then
+        begin
+          Formula := '=SUM(E' + (rowStart + 1).ToString + ')';
+          Formula2 := '=SUM(F' + (rowStart + 1).ToString + ')';
+        end
+        else
+        begin
+          Formula := '=SUM(E' + (rowStart + 1).ToString + ':E' +
+            rowEnd.ToString + ')';
+          Formula2 := '=SUM(F' + (rowStart + 1).ToString + ':F' +
+            rowEnd.ToString + ')';
+        end;
+        MyExcel.Cells[rowStart, 3].Formula := Formula;
+        MyExcel.Cells[rowStart, 3].Select;
+        MyExcel.Selection.HorizontalAlignment := xlCenter;
+        MyExcel.Selection.Font.Bold := True;
+
+        MyExcel.Cells[rowStart, 4].Formula := Formula2;
+        MyExcel.Cells[rowStart, 4].Select;
+        MyExcel.Selection.HorizontalAlignment := xlCenter;
+        MyExcel.Selection.Font.Bold := True;
+
+        ExcelApp.Rows[rowStart].RowHeight := 15.75;
+
+        // границы
+        RangeSylka := 'A' + rowStart.ToString + ':' + StrEndColumnSylka +
+          rowEnd.ToString;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+        MyExcel.Selection.Borders.LineStyle := xlContinuous; // границы
+        MyExcel.Selection.Borders.Weight := xlThin; // создать сетку
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].BorderAround
+          (xlContinuous, xlMedium, EmptyParam, EmptyParam);
+
+        rowStart := rowEnd + 1;
+        rowEnd := 0;
+        NewBlock := False;
+        Rows := 0;
+      end;
+      myForm.ProgressBar.Position := i;
+    end;
+
+    // проставляем формулы
+    rowEnd := MyExcel.ActiveCell.SpecialCells($000000B).row;
+    // последняя заполненная строка
+    for i := 3 to endColumn do
+    begin
+      if (i < 5) or (i > 6) then
+      begin
+        Formula := '=SUM(' + CellsCharFind(i) + '6:' + CellsCharFind(i) +
+          rowEnd.ToString + ')';
+
+        MyExcel.Cells[rowEnd + 1, i].Formula := Formula;
+        MyExcel.Cells[rowEnd + 1, i].Select;
+        MyExcel.Selection.HorizontalAlignment := xlCenter;
+        MyExcel.Selection.Font.Bold := True;
+      end;
+    end;
+
+    // обводим рамки жирным по исполнителям
+    for i := 7 to endColumn do
+    begin
+      if (i mod 2) <> 0 then
+      begin
+        RangeSylka := CellsCharFind(i) + '4:' + CellsCharFind(i + 1) +
+          rowEnd.ToString;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].BorderAround
+          (xlContinuous, xlMedium, EmptyParam, EmptyParam);
+      end;
+    end;
+
+    DirectoryNow := ExtractFilePath(ParamStr(0)) + 'Отчеты\';
+
+    if not DirectoryExists('DirectoryNow') then
+      ForceDirectories(DirectoryNow);
+
+    FileNameS := DirectoryNow + 'ТЦ_' + DateTimeToStr(Nachalo) + '-' +
+      DateTimeToStr(Konec) + '_' + FormatDateTime('dd.mm.yyyy hh_mm_ss', Now)
+      + '.xlsx';
+
+    if uMyExcel.SaveWorkBook(FileNameS, 1) = True then
+    begin
+      ShowMessage('Все ОК');
+      myForm.ProgressBar.Visible := False;
+    end;
+    Sheets := unassigned;
+    ExcelApp := unassigned;
+    uMyExcel.StopExcel;
+    ShellExecute(Handle, 'open', PWideChar(DirectoryNow), nil, nil,
+      SW_SHOWNORMAL);
+
+  except
+    on E: Exception do
+    begin
+      Sheets := unassigned;
+      ExcelApp := unassigned;
+      uMyExcel.StopExcel;
+      myForm.ProgressBar.Visible := False;
+    end;
+  end;
+
 end;
 
 end.

@@ -25,6 +25,7 @@ procedure CleanOutTableAndIndex(tabl: String; pole: String);
 procedure CleanOutTableAndIndex0(tabl, pole, startNumber: String);
 // ¬ыт€нуть список уникальных значений из пол€ таблицы
 function SpisokPoley(tabl, pole: String): String;
+// ¬ыт€нуть список уникальных значений из пол€ таблицы с условием
 function SpisokPoleyWhere(tabl, pole, pWhere: String): String;
 // ѕодсчитать кол-во позиций в выборке
 function CountRecordData(start, konec, ispolnitel, mTema, mType: String;

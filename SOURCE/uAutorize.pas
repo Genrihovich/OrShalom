@@ -75,6 +75,7 @@ type
     procedure btnDostupClick(Sender: TObject);
     procedure btnEditUserDataClick(Sender: TObject);
     procedure acEditUserDataUpdate(Sender: TObject);
+    procedure dbLComboUserChange(Sender: TObject);
   private
     { Private declarations }
     function isConnectedBD: String;
@@ -283,6 +284,12 @@ begin
   sStoreUtils.WriteIniStr('Autorize', 'Region',
     dbLComboRegion.KeyValue, IniName);
 end;
+procedure TfAutorize.dbLComboUserChange(Sender: TObject);
+begin
+// Фокус на поле пароля перевести
+edPsw.SetFocus;
+end;
+
 // *********************************************************************
 
 // =============== Видимость пароля =======================

@@ -9,21 +9,24 @@ uses
   SysUtils, system.Hash, Classes,
   mimemess, mimepart, smtpsend,
   JvStringGrid,
-  System.Variants, VCL.Grids, ComObj;
+  system.Variants, VCL.Grids, ComObj,
+  Generics.Collections;
 
 function MD5Hash(const Data: WideString): WideString;
 // отправка файлов в письме
 function SendEmailAndAttach(pHost, pSubject, pTo, pFrom, pTextBody, pHTMLBody,
   pLogin, pPassword, pFilePath: string): boolean;
 
-  procedure AutoStringGridWidth(StringGrid: TJvStringGrid);
-
-  procedure SaveStringGridToExcel(StringGrid: TStringGrid; const FileName: string);
+procedure AutoStringGridWidth(StringGrid: TJvStringGrid);
+procedure SaveStringGridToExcel(StringGrid: TStringGrid;
+  const FileName: string);
+// поиск по номеру столбца в екселе его буквенное значение
+function CellsCharFind(index: Integer): String;
 
 implementation
 
-//uses
-//system.Hash;
+// uses
+// system.Hash;
 
 {
   =================== Создание хеша для пароля ===================
@@ -32,7 +35,6 @@ function MD5Hash(const Data: WideString): WideString;
 begin
   result := THashMD5.GetHashString(Data);
 end;
-
 
 // отправка письма со вложением
 function SendEmailAndAttach(pHost, pSubject, pTo, pFrom, pTextBody, pHTMLBody,
@@ -44,7 +46,7 @@ var
 begin
   tmpMsg := TMimeMess.Create;
   tmpStringList := TStringList.Create;
-  Result := False;
+  result := False;
   try
     // Headers  Добавляем заголовки
     tmpMsg.Header.Subject := pSubject; // тема сообщения
@@ -67,13 +69,13 @@ begin
 
     // присоединяем файл
     if pFilePath <> '' then
-    tmpMsg.AddPartBinaryFromFile(pFilePath, tmpMIMEPart);
+      tmpMsg.AddPartBinaryFromFile(pFilePath, tmpMIMEPart);
 
     // кодируем и отправляем
     tmpMsg.EncodeMessage;
     if smtpsend.SendToRaw(pFrom, pTo, pHost, tmpMsg.Lines, pLogin, pPassword)
     then
-      Result := True;
+      result := True;
 
   finally
     tmpMsg.Free;
@@ -108,7 +110,9 @@ begin
     end;
 end;
 
-procedure SaveStringGridToExcel(StringGrid: TStringGrid; const FileName: string);
+// SaveStringGridToExcel(StringGrid, ExtractFilePath(Application.ExeName) +'1111.xlsx');
+procedure SaveStringGridToExcel(StringGrid: TStringGrid;
+  const FileName: string);
 var
   ExcelApp: OleVariant;
   ExcelWorkbook: OleVariant;
@@ -117,7 +121,8 @@ var
 begin
   try
     ExcelApp := CreateOleObject('Excel.Application');
-    ExcelApp.Visible := False; // Установите True, если хотите, чтобы Excel был видимым
+    ExcelApp.Visible := False;
+    // Установите True, если хотите, чтобы Excel был видимым
 
     ExcelWorkbook := ExcelApp.Workbooks.Add;
     ExcelWorksheet := ExcelWorkbook.Worksheets[1];
@@ -134,5 +139,51 @@ begin
   end;
 end;
 
+// поиск по номеру столбца в екселе его буквенное значение
+function CellsCharFind(index: Integer): String;
+var
+  collection: TDictionary<Integer, string>;
+begin
+  collection := TDictionary<Integer, string>.Create();
+  try
+    collection.Add(1, 'A');
+    collection.Add(2, 'B');
+    collection.Add(3, 'C');
+    collection.Add(4, 'D');
+    collection.Add(5, 'E');
+    collection.Add(6, 'F');
+    collection.Add(7, 'G');
+    collection.Add(8, 'H');
+    collection.Add(9, 'I');
+    collection.Add(10, 'J');
+    collection.Add(11, 'K');
+    collection.Add(12, 'L');
+    collection.Add(13, 'M');
+    collection.Add(14, 'N');
+    collection.Add(15, 'O');
+    collection.Add(16, 'P');
+    collection.Add(17, 'Q');
+    collection.Add(18, 'R');
+    collection.Add(19, 'S');
+    collection.Add(20, 'T');
+    collection.Add(21, 'U');
+    collection.Add(22, 'V');
+    collection.Add(23, 'W');
+    collection.Add(24, 'X');
+    collection.Add(25, 'Y');
+    collection.Add(26, 'Z');
+    collection.Add(27, 'AA');
+    collection.Add(28, 'AB');
+    collection.Add(29, 'AC');
+    collection.Add(30, 'AD');
+
+    if collection.ContainsKey(index) then
+      result := collection[index]
+    else
+      result := 'Ключ не найден';
+  finally
+    collection.Free;
+  end;
+end;
 
 end.
