@@ -5,7 +5,7 @@ object fAutorize: TfAutorize
   BorderIcons = []
   Caption = #1040#1074#1090#1086#1088#1080#1079#1072#1094#1110#1103
   ClientHeight = 579
-  ClientWidth = 320
+  ClientWidth = 281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,10 +20,11 @@ object fAutorize: TfAutorize
   object panAutorize: TsPanel
     Left = 0
     Top = 69
-    Width = 320
+    Width = 281
     Height = 122
     Align = alTop
     TabOrder = 0
+    ExplicitWidth = 320
     object wlabRegister: TsWebLabel
       Left = 167
       Top = 70
@@ -73,8 +74,8 @@ object fAutorize: TfAutorize
     object chPsw: TsCheckBox
       Left = 246
       Top = 47
-      Width = 17
-      Height = 15
+      Width = 18
+      Height = 16
       TabOrder = 3
       OnClick = chPswClick
     end
@@ -117,11 +118,12 @@ object fAutorize: TfAutorize
   object panRegister: TsPanel
     Left = 0
     Top = 191
-    Width = 320
+    Width = 281
     Height = 156
     Align = alTop
     TabOrder = 1
     Visible = False
+    ExplicitWidth = 320
     object btnSave: TButton
       Left = 96
       Top = 128
@@ -166,8 +168,8 @@ object fAutorize: TfAutorize
     object chPswReg: TsCheckBox
       Left = 246
       Top = 103
-      Width = 17
-      Height = 15
+      Width = 18
+      Height = 16
       Checked = True
       State = cbChecked
       TabOrder = 4
@@ -215,10 +217,11 @@ object fAutorize: TfAutorize
   object panBotton: TsPanel
     Left = 0
     Top = 0
-    Width = 320
+    Width = 281
     Height = 69
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 320
     object Label1: TLabel
       Left = 16
       Top = 8
@@ -321,11 +324,12 @@ object fAutorize: TfAutorize
   object panEditUserData: TsPanel
     Left = 0
     Top = 410
-    Width = 320
+    Width = 281
     Height = 169
     Align = alClient
     TabOrder = 4
     Visible = False
+    ExplicitWidth = 320
     object dbLEditPIB: TDBEditEh
       Left = 24
       Top = 26
@@ -418,10 +422,12 @@ object fAutorize: TfAutorize
   object panKodDostupa: TsPanel
     Left = 0
     Top = 347
-    Width = 320
+    Width = 281
     Height = 63
     Align = alTop
     TabOrder = 6
+    Visible = False
+    ExplicitWidth = 320
     object sLabel1: TsLabel
       Left = 31
       Top = 6

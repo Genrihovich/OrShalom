@@ -228,27 +228,36 @@ end;
 procedure TfAutorize.acVisibleComponentUpdate(Sender: TObject);
 begin
   // видимость полей выбора юзера от выбора региона
-  if dbLComboRegion.Text = '' then
+  if dbLComboRegion.Text = '' then   // Первый выбор
   begin
     chPsw.Enabled := False;
     panAutorize.Visible := False;
     BitBtn1.Enabled := False;
     fAutorize.ClientHeight := 74;
+
   end
   else
-  begin
+  begin   // Регион выбирался
     chPsw.Enabled := true;
 
     BitBtn1.Enabled := true;
-    if fAutorize.Tag = 1 then
+
+
+    if fAutorize.Tag = 1 then // Авторизация
     begin
       fAutorize.ClientHeight := 193;
       panAutorize.Visible := true;
     end;
-    if fAutorize.Tag = 0 then
+
+    if fAutorize.Tag = 0 then //Регистрация
       fAutorize.ClientHeight := 230;
-    if fAutorize.Tag = 2 then
-      fAutorize.ClientHeight := 430;
+
+    if fAutorize.Tag = 2 then  //код доступа
+      fAutorize.ClientHeight := 138;
+
+        if fAutorize.Tag = 3 then //редактировать данные
+      fAutorize.ClientHeight := 240;
+
   end;
 end;
 
@@ -388,7 +397,7 @@ begin
     oldName := dbLComboUser.Text;
     oldEmail := edEmailEdit.Text;
     oldPosada := dbLEditPosada.Text;
-
+    fAutorize.Tag := 3;
   end
   else
   begin
@@ -430,15 +439,15 @@ begin
 
   panKodDostupa.Visible := true;
   panAutorize.Visible := False;
-  fAutorize.Tag := 2;
+  fAutorize.Tag := 2;   // Код доступа
 end;
 
 // --------- экшн кнопки Сохранить РЕДАКТИРУЕМЫЕ данные -----------------
 procedure TfAutorize.acEditUserDataUpdate(Sender: TObject);
 begin
   if (dbLEditPIB.Text <> oldName) or (dbLEditPosada.Text <> oldPosada) or
-    ((edEmailEdit.Text <> oldEmail) and (edEmailEdit.IsValid)) { or
-    (edPSWEdit.Text <> '') } then
+    ((edEmailEdit.Text <> oldEmail) and (edEmailEdit.IsValid))  or
+    (edPSWEdit.Text <> '')  then
     btnEditUserData.Enabled := true
   else
     btnEditUserData.Enabled := False;
