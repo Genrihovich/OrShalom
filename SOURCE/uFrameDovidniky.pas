@@ -10,7 +10,8 @@ uses
   uFrameCustom, Vcl.ComCtrls, sPanel, Vcl.ExtCtrls, sFrameAdapter,
   System.Generics.Collections, Vcl.StdCtrls, Vcl.Buttons, DBGridEhGrouping,
   ToolCtrlsEh, DBGridEhToolCtrls, DynVarsEh, EhLibVCL, GridsEh, DBAxisGridsEh,
-  DBGridEh, JvFormPlacement, JvAppStorage, JvComponentBase, JvAppIniStorage;
+  DBGridEh, JvFormPlacement, JvAppStorage, JvComponentBase, JvAppIniStorage,
+  sBitBtn;
 
 type
   TfrmDovidniky = class(TCustomInfoFrame)
@@ -19,9 +20,13 @@ type
     btnImport: TBitBtn;
     DBGridEh1: TDBGridEh;
     BitBtn1: TBitBtn;
+    dbGridTraining: TDBGridEh;
+    Splitter1: TSplitter;
+    btnTraining: TsBitBtn;
     procedure btnImportClick(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure sGradientPanel1Click(Sender: TObject);
+    procedure btnTrainingClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -38,11 +43,11 @@ procedure TfrmDovidniky.BitBtn1Click(Sender: TObject);
 begin
   inherited;
   CleanOutTable('ZvitSnow');
- // DM.tZvitSnow.RefreshRecord;
- DBGridEh1.DataSource:= nil;
- DM.tZvitSnow.Active := false;
- DM.tZvitSnow.Active := true;
- DBGridEh1.DataSource := DM.dsZvit;
+  // DM.tZvitSnow.RefreshRecord;
+  DBGridEh1.DataSource := nil;
+  DM.tZvitSnow.Active := false;
+  DM.tZvitSnow.Active := true;
+  DBGridEh1.DataSource := DM.dsZvit;
 end;
 
 procedure TfrmDovidniky.btnImportClick(Sender: TObject);
@@ -51,11 +56,11 @@ var
   CollectionNameTable: TDictionary<string, integer>;
   pole: String;
   poleDate: TDateTime;
-  buttonSelected : Integer;
-  temp:Word;
+  buttonSelected: integer;
+  temp: Word;
 begin
-  try
-  DBGridEh1.DataSource:= nil;
+  try // Імпорт контактів травма центру
+    DBGridEh1.DataSource := nil;
 
     if uMyExcel.RunExcel(false, false) = true then
       // проверка на инсталл и запуск Excel
@@ -172,77 +177,75 @@ begin
           else
           begin
 
-           // MyExcel.Application.DisplayAlerts := false;
-           // StopExcel;
-           // CollectionNameTable.Clear;
-           // CollectionNameTable.Free;
-            ShowMessage('Номер '+ pole +' вже є в базі');
+            // MyExcel.Application.DisplayAlerts := false;
+            // StopExcel;
+            // CollectionNameTable.Clear;
+            // CollectionNameTable.Free;
+            ShowMessage('Номер ' + pole + ' вже є в базі');
 
-
-
-          {  with CreateMessageDialog('Номер '+ pole +' вже є в базі', mtConfirmation,
-                              [mbYes,mbAll,mbCancel]) do
-            begin
+            { with CreateMessageDialog('Номер '+ pole +' вже є в базі', mtConfirmation,
+              [mbYes,mbAll,mbCancel]) do
+              begin
               try
-               for i := 0 to componentcount - 1 do
-               begin
-                if components[i].classname = 'TButton' then
-                  begin
-                  if (components[i] as TButton).modalResult = mrYes then (components[i] as TButton).caption := 'OldYes';
-                  if (components[i] as TButton).modalResult = mrCancel then (components[i] as TButton).caption := 'OldmrCancel';
-                  if (components[i] as TButton).modalResult = mrAll then (components[i] as TButton).caption := 'OldmrAll';
-                 end;
-               end;
-                    Caption := 'Вибір варіанта';
-                     ShowModal;
+              for i := 0 to componentcount - 1 do
+              begin
+              if components[i].classname = 'TButton' then
+              begin
+              if (components[i] as TButton).modalResult = mrYes then (components[i] as TButton).caption := 'OldYes';
+              if (components[i] as TButton).modalResult = mrCancel then (components[i] as TButton).caption := 'OldmrCancel';
+              if (components[i] as TButton).modalResult = mrAll then (components[i] as TButton).caption := 'OldmrAll';
+              end;
+              end;
+              Caption := 'Вибір варіанта';
+              ShowModal;
 
 
 
               finally
-               Release;
+              Release;
               end;
-            end;
-                                          if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
-                                                      if buttonSelected = mrCancel
-                                        then ShowMessage('Была нажата Cancel');
-                                        if buttonSelected = mrAll then
-                                        ShowMessage('Была нажата All'); }
+              end;
+              if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
+              if buttonSelected = mrCancel
+              then ShowMessage('Была нажата Cancel');
+              if buttonSelected = mrAll then
+              ShowMessage('Была нажата All'); }
 
-                                        { temp:=MessageBox(handle, PChar('Номер '+ pole +' вже є в базі'), PChar('Обдумайте прежде!'), MB_YESNO+MB_ICONQUESTION);
-                                        case temp of
-                                        idyes: ShowMessage('Была нажата OK');
-                                        idno: ShowMessage('Была нажата No');
-                                        end;}
+            { temp:=MessageBox(handle, PChar('Номер '+ pole +' вже є в базі'), PChar('Обдумайте прежде!'), MB_YESNO+MB_ICONQUESTION);
+              case temp of
+              idyes: ShowMessage('Была нажата OK');
+              idno: ShowMessage('Была нажата No');
+              end; }
 
-//          with MessageDlg('Номер '+ pole +' вже є в базі',mtCustom,
-//                              [mbYes,mbAll,mbCancel], 0) do
-//            begin
-//
-//              try
-//               for i := 0 to componentcount - 1 do
-//               begin
-//                if components[i].classname = 'TButton' then
-//                if (components[i] as TButton).modalResult = mrYes then (components[i] as TButton).caption := 'OldYes';
-//                if (components[i] as TButton).modalResult = mrCancel then (components[i] as TButton).caption := 'OldmrCancel';
-//                if (components[i] as TButton).modalResult = mrAll then (components[i] as TButton).caption := 'OldmrAll';
-//               end;
-//              finally
-//               Release;
-//              end;
-//            end;
-//            buttonSelected := MessageDlg('Номер '+ pole +' вже є в базі',mtCustom,
-//                              [mbYes,mbAll,mbCancel], 0);
-//            if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
-//            if buttonSelected = mrCancel then ShowMessage('Была нажата Cancel');
-//            if buttonSelected = mrAll then ShowMessage('Была нажата All');
+            // with MessageDlg('Номер '+ pole +' вже є в базі',mtCustom,
+            // [mbYes,mbAll,mbCancel], 0) do
+            // begin
+            //
+            // try
+            // for i := 0 to componentcount - 1 do
+            // begin
+            // if components[i].classname = 'TButton' then
+            // if (components[i] as TButton).modalResult = mrYes then (components[i] as TButton).caption := 'OldYes';
+            // if (components[i] as TButton).modalResult = mrCancel then (components[i] as TButton).caption := 'OldmrCancel';
+            // if (components[i] as TButton).modalResult = mrAll then (components[i] as TButton).caption := 'OldmrAll';
+            // end;
+            // finally
+            // Release;
+            // end;
+            // end;
+            // buttonSelected := MessageDlg('Номер '+ pole +' вже є в базі',mtCustom,
+            // [mbYes,mbAll,mbCancel], 0);
+            // if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
+            // if buttonSelected = mrCancel then ShowMessage('Была нажата Cancel');
+            // if buttonSelected = mrAll then ShowMessage('Была нажата All');
 
-//            if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
-//            if buttonSelected = mrCancel then ShowMessage('Была нажата Cancel');
-//            if buttonSelected = mrAll then ShowMessage('Была нажата All');
+            // if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
+            // if buttonSelected = mrCancel then ShowMessage('Была нажата Cancel');
+            // if buttonSelected = mrAll then ShowMessage('Была нажата All');
 
-           // myForm.ProgressBar.Visible := false;
-          //  DM.tZvitSnow.RefreshRecord;
-           // Exit;
+            // myForm.ProgressBar.Visible := false;
+            // DM.tZvitSnow.RefreshRecord;
+            // Exit;
             Inc(m);
           end;
 
@@ -275,10 +278,177 @@ begin
 
 end;
 
+procedure TfrmDovidniky.btnTrainingClick(Sender: TObject);
+var
+  m, n, col, z, i: integer;
+  CollectionNameTable: TDictionary<string, integer>;
+  poleDate: TDate;
+  pole: String;
+  pdate, pMentor, pCount, pOrg, pOrganiz, pNote: String;
+begin
+  inherited; // Імпорт тренінгів
+  try
+    begin
+      dbGridTraining.DataSource := nil;
+
+      if uMyExcel.RunExcel(false, false) = true then
+        // проверка на инсталл и запуск Excel
+        DM.OpenDialog.Filter := 'Файлы MS Excel|*.xls;*.xlsx|';
+      if not DM.OpenDialog.Execute then
+        Exit;
+      // открываем книгу Excel
+      if uMyExcel.OpenWorkBook(DM.OpenDialog.FileName, false) then
+
+      begin
+
+        myForm.ProgressBar.Visible := true;
+        MyExcel.ActiveWorkBook.Sheets[1];
+
+        // последняя заполненная колонка
+        col := MyExcel.ActiveCell.SpecialCells($000000B).Column;
+
+        // ------------ пробежимся расставим индексы названий столбцов -------------
+
+        CollectionNameTable := TDictionary<string, integer>.Create();
+        for z := 1 to col do
+        begin
+          if not CollectionNameTable.ContainsKey(MyExcel.Cells[1, z].value) then
+            CollectionNameTable.Add(MyExcel.Cells[1, z].value, z)
+          else
+            CollectionNameTable.Add(MyExcel.Cells[1, z].value + z.ToString, z);
+        end;
+
+        m := 2; // начинаем считывание со 2-й строки, оставляя заголовок колонки
+        n := MyExcel.ActiveCell.SpecialCells($000000B).Row;
+        // последняя заполненная строка
+        n := n + 1;
+        with DM, myForm do
+        begin
+
+          tTraining.open;
+          // CleanOutTable('ZvitSnow'); // обнуляем таблицу
+          tTraining.Last;
+
+          ProgressBar.Min := 0;
+          ProgressBar.Max := n;
+          ProgressBar.Position := 1;
+
+          while m <> n do // цикл внешний по записям EXCEL
+          begin
+            pole := MyExcel.Cells
+              [m, StrToInt(CollectionNameTable.Items['Основная организация']
+              .ToString)].value;
+
+            if pole = 'Хесед Бешт - Хмельницкий' then
+            begin
+
+              pdate := MyExcel.Cells
+                [m, StrToInt(CollectionNameTable.Items['Дата'].ToString)].value;
+              pMentor := MyExcel.Cells
+                [m, StrToInt(CollectionNameTable.Items['Кто проводил обучение']
+                .ToString)].value;
+              pCount := MyExcel.Cells
+                [m, StrToInt(CollectionNameTable.Items['Количество обученных']
+                .ToString)].value;
+              pOrg := MyExcel.Cells
+                [m, StrToInt(CollectionNameTable.Items['Тип организации']
+                .ToString)].value;
+              pOrganiz := MyExcel.Cells
+                [m, StrToInt(CollectionNameTable.Items['Основная организация']
+                .ToString)].value;
+              pNote := MyExcel.Cells
+                [m, StrToInt(CollectionNameTable.Items['Примечание']
+                .ToString)].value;
+
+              if isAssetValues('Training', pdate, pMentor, pCount, pOrg,
+                pOrganiz, pNote) <> true then
+              begin
+
+                tTraining.Insert;
+
+                poleDate := MyExcel.Cells
+                  [m, StrToInt(CollectionNameTable.Items['Дата']
+                  .ToString)].value;
+
+                tTraining.FieldByName('date_training').AsString :=
+                  DatetoStr(poleDate);
+
+                tTraining.FieldByName('Mentor').AsString :=
+                  MyExcel.Cells
+                  [m, StrToInt(CollectionNameTable.Items
+                  ['Кто проводил обучение'].ToString)].value;
+
+                tTraining.FieldByName('Count_trained').AsInteger :=
+                  MyExcel.Cells
+                  [m, StrToInt(CollectionNameTable.Items['Количество обученных']
+                  .ToString)].value;
+
+                tTraining.FieldByName('Note_Tema').AsString :=
+                  MyExcel.Cells
+                  [m, StrToInt(CollectionNameTable.Items['Примечание']
+                  .ToString)].value;
+
+                tTraining.FieldByName('Organization').AsString :=
+                  MyExcel.Cells
+                  [m, StrToInt(CollectionNameTable.Items['Основная организация']
+                  .ToString)].value;
+
+                tTraining.FieldByName('type_org').AsString :=
+                  MyExcel.Cells
+                  [m, StrToInt(CollectionNameTable.Items['Тип организации']
+                  .ToString)].value;
+
+                tTraining.Post;
+                Inc(m);
+                // Application.ProcessMessages;
+                Sleep(25);
+                ProgressBar.Position := m;
+              end
+              else
+              begin
+              ShowMessage('Данні вже є в базі');
+              Inc(m);
+              ProgressBar.Position := m;
+              end;
+
+            end;
+
+          end;
+
+        end;
+
+      end;
+
+    end;
+    ShowMessage('Завантаження даних УСПІШНО!!!');
+
+    MyExcel.Application.DisplayAlerts := false;
+    StopExcel;
+    CollectionNameTable.Clear;
+    CollectionNameTable.Free;
+    // DM.tZvitSnow.Active := false;
+    myForm.ProgressBar.Visible := false;
+    DM.tTraining.RefreshRecord;
+    dbGridTraining.DataSource := DM.dsTraining;
+
+  except
+    on E: Exception do
+    begin
+      CollectionNameTable.Free;
+      // CleanOutTable('ZvitSnow'); // обнуляем таблицу
+      DM.tTraining.Active := false;
+      ShowMessage('Не вірний формат файлу, нема необхідних полів');
+      StopExcel;
+      dbGridTraining.DataSource := DM.dsTraining;
+    end;
+  end;
+
+end;
+
 procedure TfrmDovidniky.sGradientPanel1Click(Sender: TObject);
 begin
   inherited;
-BitBtn1.Enabled:= true;
+  BitBtn1.Enabled := true;
 end;
 
 end.

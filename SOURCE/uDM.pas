@@ -38,6 +38,9 @@ type
     tZvitSnowYearDate: TStringField;
     qChart: TUniQuery;
     dsChart: TUniDataSource;
+    tTraining: TUniTable;
+    dsTraining: TUniDataSource;
+    qTraining: TUniQuery;
   private
     { Private declarations }
   public

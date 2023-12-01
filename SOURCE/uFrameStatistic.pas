@@ -30,6 +30,8 @@ type
     btnSave: TBitBtn;
     acSaveExcel: TAction;
     btnCalck: TBitBtn;
+    strGridTraining: TStringGrid;
+    Splitter2: TSplitter;
     procedure sDateEdit3Change(Sender: TObject);
     procedure sDateEdit4Change(Sender: TObject);
     procedure acCalckUpdate(Sender: TObject);
@@ -38,6 +40,8 @@ type
     procedure btnSaveClick(Sender: TObject);
     procedure acSaveExcelUpdate(Sender: TObject);
     procedure btnCalckClick(Sender: TObject);
+    procedure strGridTrainingDrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
 
   private
     { Private declarations }
@@ -69,11 +73,17 @@ begin
   DM.qCountQuery.Params.ParamByName('do').Value := sDateEdit4.Date;
   DM.qCountQuery.Active := True;
 
-  // Очистить StringGrid
+  // Очистить StringGrid и strGridTraining
   for i := 0 to StringGrid.RowCount do
     StringGrid.Rows[i].Clear;
   StringGrid.RowCount := 0;
   StringGrid.ColCount := 0;
+
+  for i := 0 to StringGrid.RowCount do
+    strGridTraining.Rows[i].Clear;
+  strGridTraining.RowCount := 0;
+  strGridTraining.ColCount := 0;
+
 end;
 
 procedure TfrmStatistic.sDateEdit4Change(Sender: TObject);
@@ -84,6 +94,36 @@ begin
   DM.qCountQuery.Active := True;
 
   Konec := sDateEdit4.Date;
+end;
+
+procedure TfrmStatistic.strGridTrainingDrawCell(Sender: TObject;
+  ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+var
+  text: string;
+  Format: Word;
+begin
+  inherited;
+  with Sender as TStringGrid do
+  begin
+    Canvas.FillRect(Rect);
+    if (ARow = 0) then // d 1-ой строке перенос текста и по центру
+      DrawText(Canvas.Handle, PChar(Cells[ACol, ARow]),
+        Length(Cells[ACol, ARow]), Rect, DT_VCENTER or DT_WORDBREAK or
+        DT_EXPANDTABS or DT_CENTER or DT_BOTTOM)
+    else
+      DrawText(Canvas.Handle, PChar(Cells[ACol, ARow]),
+        Length(Cells[ACol, ARow]), Rect, DT_CENTER or DT_VCENTER or
+        DT_SINGLELINE);
+
+    if (ARow > 0) then // 2-ой строке просто по центру текст
+    begin
+      text := strGridTraining.Cells[ACol, ARow];
+      Format := DT_CENTER or DT_VCENTER or DT_SINGLELINE;
+      DrawText(strGridTraining.Canvas.Handle, PChar(text), Length(text),
+        Rect, Format);
+    end;
+
+  end;
 end;
 
 procedure TfrmStatistic.StringGridDrawCell(Sender: TObject; ACol, ARow: Integer;
@@ -182,16 +222,17 @@ var
   fCount, vidPoslOld, vidPosl, ispolnit, typeCont, ContClient: String;
 begin
   inherited;
+  // ======================== StringGrid ================================
   StringGrid.ColCount := 4;
   StringGrid.RowCount := 2;
-  // ------------------- список Исполнителей -------------------------
+  // --- список Исполнителей ---
   Ispolnitel := TStringList.Create;
-  Ispolnitel.CommaText := SpisokPoley('ZvitSnow', 'Ispolnitel');
+  Ispolnitel.CommaText := SpisokPoley('ZvitSnow', 'Ispolnitel', 'DateKontakta');
   IspolnitelCount := Ispolnitel.Count;
-  // --------------- список вида услуг -----------------------
+  // --- список вида услуг ---
   VidPosluga := TStringList.Create;
-  VidPosluga.CommaText := SpisokPoley('ZvitSnow', 'Tema');
-  // --------------- список типа контактов -----------------------
+  VidPosluga.CommaText := SpisokPoley('ZvitSnow', 'Tema', 'DateKontakta');
+  // --- список типа контактов ---
   TypeContact := TStringList.Create;
   // TypeContact.CommaText := SpisokPoley('ZvitSnow', 'TypeKontakta');
 
@@ -295,6 +336,87 @@ begin
     end;
   end;
 
+  // ======================= strGridTraining ===============================
+  strGridTraining.ColCount := 1;
+  strGridTraining.RowCount := 2;
+
+  // --- список Кто проводил обучение ---
+  Ispolnitel.CommaText := SpisokPoley('Training', 'Mentor', 'date_training');
+  mentorCount := Ispolnitel.Count;
+  // --- список Тип организации ---
+  VidPosluga.CommaText := SpisokPoley('Training', 'type_org', 'date_training');
+
+  strGridTraining.RowHeights[0] := strGridTraining.DefaultRowHeight * 2;
+  // Тайтл таблицы
+  strGridTraining.Cells[0, 0] := 'Тип организации';
+  strGridTraining.ColWidths[0] := 140;
+
+  col := 1;
+  Application.ProcessMessages;
+  // Запoлняем шапку с менторами
+  for i := 0 to mentorCount - 1 do
+  begin
+    strGridTraining.Cells[col, 0] := Ispolnitel[i]; // ФИО Исполнителя
+    strGridTraining.ColCount := strGridTraining.ColCount + 1;
+    // добавить колонку
+    strGridTraining.Cells[col, 1] := 'встреч';
+    inc(col);
+    Application.ProcessMessages;
+    strGridTraining.Cells[col, 0] := Ispolnitel[i]; // ФИО Исполнителя
+    strGridTraining.ColCount := strGridTraining.ColCount + 1;
+    // добавить колонку
+    strGridTraining.Cells[col, 1] := 'людей';
+    inc(col);
+    Application.ProcessMessages;
+  end;
+
+  // -------------- заполняем типы организаций -----------------
+  row := strGridTraining.RowCount;
+  for i := 0 to VidPosluga.Count - 1 do
+  begin
+    strGridTraining.RowCount := row + 1; // добавляем строку
+    strGridTraining.Cells[0, row] := VidPosluga[i];
+    inc(row);
+    Application.ProcessMessages;
+  end;
+
+  // --------- Считаем количества ---------------
+  col := strGridTraining.ColCount;
+  row := strGridTraining.RowCount;
+
+  // i колонка   j строка
+  for j := 2 to row - 1 do // -- строка -- (2 - потому что 0-шапка 1-контакты)
+  begin
+    sumContact := 0; // встреч
+    sumClient := 0; // людей
+    for i := 1 to col - 1 do // --столбец --- (1 - начало Исполнителей)
+    begin
+      vidPosl := strGridTraining.Cells[0, j]; // Другие организации или Хесед
+
+      // typeCont := strGridTraining.Cells[1, j];
+      ispolnit := strGridTraining.Cells[i, 0]; // ФИО
+      ContClient := strGridTraining.Cells[i, 1]; // встреч людей
+
+      if (vidPosl <> '') and (ispolnit <> '') then
+      begin
+        if ContClient = 'встреч' then
+        begin
+          sumContact := PodschetZapros('Training', 'date_training', ispolnit,
+            vidPosl, 'Count_trained').vstrech;
+          strGridTraining.Cells[i, j] := sumContact.ToString;
+        end;
+        if ContClient = 'людей' then
+        begin
+          sumClient := PodschetZapros('Training', 'date_training', ispolnit,
+            vidPosl, 'Count_trained').people;
+          strGridTraining.Cells[i, j] := sumClient.ToString;
+        end;
+        Application.ProcessMessages;
+      end;
+
+    end;
+  end;
+
   VidPosluga.Free;
   Ispolnitel.Free;
   TypeContact.Free;
@@ -307,14 +429,15 @@ var
   DirectoryNow, FileNameS: String;
   StrEndColumnSylka, RangeSylka, FIO, Formula, Formula2: string;
   NewBlock: Boolean;
+  s: string;
 begin
   try
     myForm.ProgressBar.Visible := True;
     myForm.ProgressBar.Min := 0;
-    myForm.ProgressBar.Max := StringGrid.RowCount;
+    myForm.ProgressBar.Max := StringGrid.RowCount + strGridTraining.RowCount;
     myForm.ProgressBar.Position := 1;
 
-    if uMyExcel.RunExcel(False, False) = True then
+    if uMyExcel.RunExcel(False, false) = True then
       MyExcel.Workbooks.Add; // добавляем новую книгу
     // MyExcel.ReferenceStyle := -4150; // Устанавливаем формат ссылок на R1C1 для этой книги
 
@@ -428,7 +551,6 @@ begin
         MyExcel.ActiveWorkBook.Worksheets[1].Cells[4, colum] :=
           StringGrid.Cells[i, 0];
         MyExcel.Selection.Font.Bold := True;
-
       end;
 
       MyExcel.ActiveWorkBook.Worksheets[1].Cells[5, colum] :=
@@ -595,6 +717,163 @@ begin
       end;
     end;
 
+    // .................. 2-ой отчет ...............................
+    { // нужные данные
+      endColumn - число последней колонки
+      rowEnd := MyExcel.ActiveCell.SpecialCells($000000B).row;
+    }
+    rowEnd := MyExcel.ActiveCell.SpecialCells($000000B).row + 2;
+    // ------------ 1-я строка ------------------------
+    MyExcel.ActiveWorkBook.Worksheets[1].Range
+      ['A' + rowEnd.ToString + ':' + StrEndColumnSylka +
+      rowEnd.ToString].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range
+      ['A' + rowEnd.ToString + ':' + StrEndColumnSylka + rowEnd.ToString].Merge;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.Font.name := 'Calibri';
+    MyExcel.Selection.Font.Size := 14;
+    MyExcel.Selection.Font.Bold := True;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[rowEnd, 1] := 'Тренинги';
+
+    rowStart := rowEnd + 1;
+    RangeSylka := 'B' + rowStart.ToString + ':F' + (rowStart + 2).ToString;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Merge;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[rowStart, 2] :=
+      'Тип организации';
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].BorderAround
+      (xlContinuous, xlMedium, EmptyParam, EmptyParam);
+
+    ExcelApp.Rows[rowStart + 1].RowHeight := 44.25;
+
+    endColumn := 6 + (mentorCount * 2);
+
+    StrEndColumnSylka := CellsCharFind(endColumn);
+    RangeSylka := 'G' + rowStart.ToString + ':' + StrEndColumnSylka +
+      rowStart.ToString;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Merge;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[rowStart, 7] :=
+      'Кто проводил обучение';
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].BorderAround
+      (xlContinuous, xlMedium, EmptyParam, EmptyParam);
+
+    colum := 7; // с какой колонки начинаються исполнители
+    FIO := '';
+    // Пробегаем по 0-ой строке strGridTraining и заполняем шапку Фио и встреч/людей
+
+    for i := 1 to strGridTraining.ColCount do
+    begin
+      s := strGridTraining.Cells[i, 0];
+      rowEnd := rowStart + 1;
+
+      if FIO <> strGridTraining.Cells[i, 0] then
+      begin
+        MyExcel.ActiveWorkBook.Worksheets[1].Cells[rowEnd, colum] :=
+          strGridTraining.Cells[i, 0]; // ФИО записываем в ексель ячейку
+        MyExcel.Selection.Font.Bold := True;
+      end;
+
+      MyExcel.ActiveWorkBook.Worksheets[1].Cells[rowEnd + 1, colum] :=
+        strGridTraining.Cells[i, 1]; // строка 1-я
+
+      if strGridTraining.Cells[i, 1] = 'людей' then
+      begin
+        // обединим ФИО в одно
+        RangeSylka := CellsCharFind(colum - 1) + rowEnd.ToString + ':' +
+          CellsCharFind(colum) + rowEnd.ToString;
+        Application.ProcessMessages;
+
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Merge;
+        MyExcel.Selection.HorizontalAlignment := xlCenter;
+        MyExcel.Selection.VerticalAlignment := xlCenter;
+        MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].WrapText := True;
+        MyExcel.Selection.Font.Bold := True;
+      end;
+      inc(colum);
+      FIO := strGridTraining.Cells[i, 0];
+      Application.ProcessMessages;
+    end;
+
+    RangeSylka := 'G' + (rowStart + 1).ToString + ':' + StrEndColumnSylka +
+      (rowEnd + 1).ToString;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+    MyExcel.Selection.Borders.LineStyle := xlContinuous; // границы
+
+    RangeSylka := 'B' + rowStart.ToString + ':' + StrEndColumnSylka +
+      (rowEnd + 1).ToString;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].BorderAround
+      (xlContinuous, xlMedium, EmptyParam, EmptyParam);
+    MyExcel.Selection.Borders[9].LineStyle := 9; // двойная линия внизу шапки
+
+    rowStart := rowStart + 3;
+    rowEnd := MyExcel.ActiveCell.SpecialCells($000000B).row;
+
+    for j := 2 to strGridTraining.RowCount - 1 do // строка
+    begin
+      for i := 0 to strGridTraining.ColCount - 1 do // столбцы
+      begin
+        s := strGridTraining.Cells[i, j];
+        if i = 0 then // если первый столбец
+        begin
+          RangeSylka := 'B' + (rowStart + j - 2).ToString + ':F' +
+            (rowEnd).ToString;
+          MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+          MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Merge;
+          MyExcel.ActiveWorkBook.Worksheets[1].Cells[j + rowStart - 2, 2] :=
+            strGridTraining.Cells[0, j];
+        end
+        else
+        begin
+          if strGridTraining.Cells[i, j] <> '0' then
+          begin
+
+            MyExcel.ActiveWorkBook.Worksheets[1].Cells[j + rowStart - 2, i + 6]
+              := strGridTraining.Cells[i, j];
+            MyExcel.ActiveWorkBook.Worksheets[1].Cells[j + rowStart - 2,
+              i + 6].Select;
+            // MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+            MyExcel.Selection.HorizontalAlignment := xlCenter;
+            MyExcel.Selection.VerticalAlignment := xlCenter;
+          end;
+
+        end;
+
+      end;
+      RangeSylka := 'B' + (rowStart).ToString + ':' + StrEndColumnSylka +
+        (rowEnd).ToString;
+      MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+      MyExcel.Selection.Borders.LineStyle := xlContinuous; // границы
+
+      inc(rowEnd);
+    end;
+
+    RangeSylka := 'B' + (rowStart).ToString + ':' + StrEndColumnSylka +
+      (rowEnd - 1).ToString;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range[RangeSylka].BorderAround
+      (xlContinuous, xlMedium, EmptyParam, EmptyParam);
+
+    // проставляем формулы
+    rowEnd := MyExcel.ActiveCell.SpecialCells($000000B).row;
+    // последняя заполненная строка
+    for i := 7 to endColumn do
+    begin
+      Formula := '=SUM(' + CellsCharFind(i) + rowStart.ToString + ':' +
+        CellsCharFind(i) + rowEnd.ToString + ')';
+
+      MyExcel.Cells[rowEnd + 1, i].Formula := Formula;
+      MyExcel.Cells[rowEnd + 1, i].Select;
+      MyExcel.Selection.HorizontalAlignment := xlCenter;
+      MyExcel.Selection.Font.Bold := True;
+    end;
+
     DirectoryNow := ExtractFilePath(ParamStr(0)) + 'Отчеты\';
 
     if not DirectoryExists('DirectoryNow') then
@@ -609,6 +888,7 @@ begin
       ShowMessage('Все ОК');
       myForm.ProgressBar.Visible := False;
     end;
+
     Sheets := unassigned;
     ExcelApp := unassigned;
     uMyExcel.StopExcel;

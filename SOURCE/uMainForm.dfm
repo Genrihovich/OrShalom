@@ -18890,7 +18890,8 @@ object myForm: TmyForm
     AppStoragePath = '%FORM_NAME%\'
     StoredProps.Strings = (
       'sSkinSelector1.Text'
-      'sSkinManager1.SkinName')
+      'sSkinManager1.SkinName'
+      'sPanel1.Height')
     StoredValues = <>
     Left = 903
     Top = 213

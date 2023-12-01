@@ -1,7 +1,7 @@
 object DM: TDM
   OldCreateOrder = False
   Height = 349
-  Width = 272
+  Width = 406
   object UniConnection: TUniConnection
     ProviderName = 'MySQL'
     Port = 3306
@@ -140,8 +140,8 @@ object DM: TDM
   end
   object dsCountQuery: TUniDataSource
     DataSet = qCountQuery
-    Left = 200
-    Top = 232
+    Left = 144
+    Top = 272
   end
   object qCountQuery: TUniQuery
     SQLRecCount.Strings = (
@@ -151,8 +151,8 @@ object DM: TDM
     Connection = UniConnection
     SQL.Strings = (
       'SELECT * FROM ZvitSnow WHERE DateKontakta Between :ot and :do')
-    Left = 200
-    Top = 176
+    Left = 144
+    Top = 224
     ParamData = <
       item
         DataType = ftDateTime
@@ -172,8 +172,8 @@ object DM: TDM
         'select Ispolnitel From ZvitSnow WHERE DateKontakta Between :ot a' +
         'nd :do  Group by Ispolnitel')
     MasterSource = dsCountQuery
-    Left = 24
-    Top = 232
+    Left = 64
+    Top = 224
     ParamData = <
       item
         DataType = ftDateTime
@@ -188,7 +188,7 @@ object DM: TDM
   end
   object UniDataSource1: TUniDataSource
     DataSet = qCountItems
-    Left = 24
+    Left = 64
     Top = 272
   end
   object qChart: TUniQuery
@@ -200,12 +200,45 @@ object DM: TDM
       'Group By monthDate, Ispolnitel'
       'Order By monthDate')
     Active = True
-    Left = 104
-    Top = 224
+    Left = 160
+    Top = 120
   end
   object dsChart: TUniDataSource
     DataSet = qChart
-    Left = 104
-    Top = 280
+    Left = 160
+    Top = 176
+  end
+  object tTraining: TUniTable
+    TableName = 'Training'
+    Connection = UniConnection
+    Left = 272
+    Top = 72
+  end
+  object dsTraining: TUniDataSource
+    DataSet = tTraining
+    Left = 272
+    Top = 128
+  end
+  object qTraining: TUniQuery
+    SQLRecCount.Strings = (
+      
+        'SELECT COUNT(*) FROM ZvitSnow WHERE DateKontakta Between :ot and' +
+        ' :do')
+    Connection = UniConnection
+    SQL.Strings = (
+      'SELECT * FROM ZvitSnow WHERE DateKontakta Between :ot and :do')
+    Left = 272
+    Top = 176
+    ParamData = <
+      item
+        DataType = ftDateTime
+        Name = 'ot'
+        Value = 45078d
+      end
+      item
+        DataType = ftDateTime
+        Name = 'do'
+        Value = 45107d
+      end>
   end
 end

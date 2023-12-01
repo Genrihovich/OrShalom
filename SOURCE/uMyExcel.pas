@@ -24,6 +24,8 @@
    [+] OpenWorkBook - открывает файл рабочей книги FileName; Visible - определяет
                   будет ли окно Excel показано пользователю
 
+// MyExcel.ReferenceStyle := -4150; // Устанавливаем формат ссылок на R1C1 для этой книги
+
  }
 unit uMyExcel;
 

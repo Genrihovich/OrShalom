@@ -11,8 +11,17 @@ uses
   // , Winapi.Messages
     , System.SysUtils, System.Classes;
 
-// есть ли запрашиваемые данные в таблице
+type
+  TMyResult = record
+    vstrech: Integer;
+    people: Integer;
+  end;
+
+  // есть ли запрашиваемые данные в таблице
 function isAssetValue(table, pole, val: String): Boolean;
+// ecть ли такая строка - полное совпадение - в таблице
+function isAssetValues(table, pdate, pMentor, pCount, pOrg, pOrganiz,
+  pNote: String): Boolean;
 // вынуть значение из таблицы по данному полю
 function PoleInSearchStr(table, pole, val, PoleSearch: string): String;
 // добавить запись в таблицу
@@ -24,12 +33,15 @@ procedure CleanOutTableAndIndex(tabl: String; pole: String);
 // Очистка таблицы и обнуление индекса и установка с какой цыфры начинать счетчик
 procedure CleanOutTableAndIndex0(tabl, pole, startNumber: String);
 // Вытянуть список уникальных значений из поля таблицы
-function SpisokPoley(tabl, pole: String): String;
+function SpisokPoley(tabl, pole, poleDate: String): String;
 // Вытянуть список уникальных значений из поля таблицы с условием
 function SpisokPoleyWhere(tabl, pole, pWhere: String): String;
 // Подсчитать кол-во позиций в выборке
 function CountRecordData(start, konec, ispolnitel, mTema, mType: String;
   groups: Boolean): String;
+
+function PodschetZapros(table, pdate, pMentor, pTypeOrg, pCount: String)
+  : TMyResult;
 
 implementation
 
@@ -50,6 +62,37 @@ begin
       val + '''';
     qInsert.Active := true;
     if qInsert.RecordCount > 0 then
+      Result := true
+    else
+      Result := False;
+  end;
+end;
+
+// ecть ли такая строка - полное совпадение - в таблице
+function isAssetValues(table, pdate, pMentor, pCount, pOrg, pOrganiz,
+  pNote: String): Boolean;
+var
+  s: string;
+begin
+  with DM.qInsert do
+  begin
+    Active := False;
+    SQL.Clear;
+    SQL.Text := 'SELECT * FROM `' + table +
+      '` WHERE `date_training`=:date and `Mentor`=:mentor and `Count_trained`=:countTr and `type_org` =:tOrg and`Organization`=:org and `Note_Tema`=:note';
+    Prepare;
+    Params.ParamByName('date').AsDate := StrToDate(pdate);
+    Params.ParamByName('mentor').AsString := pMentor;
+    Params.ParamByName('countTr').AsInteger := pCount.toInteger;
+    Params.ParamByName('tOrg').AsString := pOrg;
+    Params.ParamByName('org').AsString := pOrganiz;
+    Params.ParamByName('tOrg').AsString := pOrg;
+    Params.ParamByName('note').AsString := pNote;
+
+    s := SQL.Text;
+    ExecSQL;
+
+    if RecordCount > 0 then
       Result := true
     else
       Result := False;
@@ -154,18 +197,19 @@ begin
 end;
 
 // Вытянуть список уникальных значений из поля таблицы
-function SpisokPoley(tabl, pole: String): String;
+function SpisokPoley(tabl, pole, poleDate: String): String;
 var
-  i, r: integer;
+  i, r: Integer;
   spisok: TStringList;
   s: string;
 begin
   with DM.qCountItems do
   begin
     SQL.Clear;
-    SQL.Text := 'select ' + pole + ' From ZvitSnow WHERE DateKontakta Between :ot and :do Group by ' + pole + ' ;';
+    SQL.Text := 'select ' + pole + ' From ' + tabl + ' WHERE ' + poleDate +
+      ' Between :ot and :do Group by ' + pole + ' ;';
     Prepare;
-    Params.ParamByName('do').AsDateTime := Konec;
+    Params.ParamByName('do').AsDateTime := konec;
     Params.ParamByName('ot').AsDateTime := Nachalo;
 
     s := SQL.Text;
@@ -197,18 +241,20 @@ end;
 // Вытянуть список уникальных значений из поля таблицы с условием
 function SpisokPoleyWhere(tabl, pole, pWhere: String): String;
 var
-  i, r: integer;
+  i, r: Integer;
   spisok: TStringList;
   s: string;
 begin
   with DM.qCountItems do
   begin
-      SQL.Clear;
+    SQL.Clear;
 
-    SQL.Text := 'SELECT `'+pole+'` FROM `'+tabl+'` WHERE (`DateKontakta` BETWEEN :ot and :do) and `Tema`= :vidPoslugy Group By `'+pole+'`;';
+    SQL.Text := 'SELECT `' + pole + '` FROM `' + tabl +
+      '` WHERE (`DateKontakta` BETWEEN :ot and :do) and `Tema`= :vidPoslugy Group By `'
+      + pole + '`;';
     Prepare;
     Params.ParamByName('ot').AsDateTime := Nachalo;
-    Params.ParamByName('do').AsDateTime := Konec;
+    Params.ParamByName('do').AsDateTime := konec;
     Params.ParamByName('vidPoslugy').AsString := pWhere;
 
     s := SQL.Text;
@@ -239,12 +285,12 @@ end;
 
 // Подсчитать кол-во позиций в выборке
 {
- start - старт периода запроса
- konec - конец периода запроса
- ispolnitel - по ком запрос
- mTema - вид услуги
- mType - тип контакта
- groups: Boolean - группировать по контакту или нет
+  start - старт периода запроса
+  konec - конец периода запроса
+  ispolnitel - по ком запрос
+  mTema - вид услуги
+  mType - тип контакта
+  groups: Boolean - группировать по контакту или нет
 }
 function CountRecordData(start, konec, ispolnitel, mTema, mType: String;
   groups: Boolean): String;
@@ -271,6 +317,37 @@ begin
     ParamByName('pType').AsString := mType;
     Active := true;
     Result := IntToStr(RecordCount);
+  end;
+end;
+
+function PodschetZapros(table, pdate, pMentor, pTypeOrg, pCount: String)
+  : TMyResult;
+var
+  i: Integer;
+begin
+  with DM.qTraining do
+  begin
+    Active := False;
+    SQL.Clear;
+    SQL.Text := 'SELECT * FROM `' + table + '` WHERE (`' + pdate +
+      '` Between :pOt and :pDo) and (`Mentor`=:mentor) and (`type_org` =:tOrg)';
+
+    Prepare;
+    ParamByName('pOt').AsString := FormatDateTime('YYYY-MM-DD', Nachalo);
+    ParamByName('pDo').AsString := FormatDateTime('YYYY-MM-DD', konec);
+    ParamByName('mentor').AsString := pMentor;
+    ParamByName('tOrg').AsString := pTypeOrg;
+    Active := true;
+
+    Result.vstrech := RecordCount;
+    Result.people := 0;
+
+    for i := 0 to RecordCount - 1 do
+    begin
+      Result.people := Result.people + FieldByName(pCount).AsInteger;
+      next;
+    end;
+
   end;
 end;
 

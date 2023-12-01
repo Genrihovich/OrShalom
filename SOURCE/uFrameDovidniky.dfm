@@ -18,7 +18,7 @@ inherited frmDovidniky: TfrmDovidniky
       Top = 6
       Width = 137
       Height = 25
-      Caption = #1030#1084#1087#1086#1088#1090' '#1092#1072#1081#1083#1091' '#1079' SNOW'
+      Caption = #1030#1084#1087#1086#1088#1090' '#1082#1086#1085#1090#1072#1082#1090#1110#1074' '#1079' SNOW'
       TabOrder = 0
       OnClick = btnImportClick
     end
@@ -32,6 +32,15 @@ inherited frmDovidniky: TfrmDovidniky
       TabOrder = 1
       OnClick = BitBtn1Click
     end
+    object btnTraining: TsBitBtn
+      Left = 480
+      Top = 8
+      Width = 129
+      Height = 25
+      Caption = #1030#1084#1087#1086#1088#1090' '#1090#1088#1077#1085#1110#1085#1075#1110#1074
+      TabOrder = 2
+      OnClick = btnTrainingClick
+    end
   end
   object sPanel1: TsPanel [1]
     Left = 0
@@ -41,12 +50,22 @@ inherited frmDovidniky: TfrmDovidniky
     Align = alClient
     Caption = #1044#1086#1074#1110#1076#1085#1080#1082#1080
     TabOrder = 1
+    object Splitter1: TSplitter
+      Left = 1
+      Top = 441
+      Width = 1061
+      Height = 3
+      Cursor = crVSplit
+      Align = alTop
+      ExplicitTop = 329
+      ExplicitWidth = 334
+    end
     object DBGridEh1: TDBGridEh
       Left = 1
       Top = 1
       Width = 1061
-      Height = 662
-      Align = alClient
+      Height = 440
+      Align = alTop
       AutoFitColWidths = True
       DataSource = DM.dsZvit
       DynProps = <>
@@ -146,6 +165,66 @@ inherited frmDovidniky: TfrmDovidniky
           FieldName = 'YearDate'
           Footers = <>
           Width = 50
+        end>
+      object RowDetailData: TRowDetailPanelControlEh
+      end
+    end
+    object dbGridTraining: TDBGridEh
+      Left = 1
+      Top = 444
+      Width = 1061
+      Height = 219
+      Align = alClient
+      DataSource = DM.dsTraining
+      DynProps = <>
+      TabOrder = 1
+      Columns = <
+        item
+          CellButtons = <>
+          DynProps = <>
+          EditButtons = <>
+          FieldName = 'date_training'
+          Footers = <>
+        end
+        item
+          CellButtons = <>
+          DynProps = <>
+          EditButtons = <>
+          FieldName = 'Mentor'
+          Footers = <>
+          Width = 200
+        end
+        item
+          CellButtons = <>
+          DynProps = <>
+          EditButtons = <>
+          FieldName = 'type_org'
+          Footers = <>
+          Width = 80
+        end
+        item
+          CellButtons = <>
+          DynProps = <>
+          EditButtons = <>
+          FieldName = 'Count_trained'
+          Footers = <>
+          Width = 30
+        end
+        item
+          CellButtons = <>
+          DynProps = <>
+          EditButtons = <>
+          FieldName = 'Note_Tema'
+          Footers = <>
+          Width = 800
+        end
+        item
+          CellButtons = <>
+          DynProps = <>
+          EditButtons = <>
+          FieldName = 'Organization'
+          Footers = <>
+          Width = 100
         end>
       object RowDetailData: TRowDetailPanelControlEh
       end

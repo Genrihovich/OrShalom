@@ -5,7 +5,7 @@ inherited frmStatistic: TfrmStatistic
   ExplicitHeight = 505
   object Splitter1: TSplitter [0]
     Left = 0
-    Top = 185
+    Top = 145
     Width = 1087
     Height = 3
     Cursor = crVSplit
@@ -89,14 +89,14 @@ inherited frmStatistic: TfrmStatistic
     Left = 0
     Top = 33
     Width = 1087
-    Height = 152
+    Height = 112
     Align = alTop
     TabOrder = 1
     object DBGridEh11: TDBGridEh
       Left = 1
       Top = 1
       Width = 1085
-      Height = 150
+      Height = 110
       Align = alClient
       DataSource = DM.dsCountQuery
       DynProps = <>
@@ -187,18 +187,28 @@ inherited frmStatistic: TfrmStatistic
   end
   object sPanel3: TsPanel [3]
     Left = 0
-    Top = 188
+    Top = 148
     Width = 1087
-    Height = 317
+    Height = 357
     Align = alClient
     TabOrder = 2
-    ExplicitTop = 228
-    ExplicitHeight = 277
+    ExplicitTop = 188
+    ExplicitHeight = 317
+    object Splitter2: TSplitter
+      Left = 1
+      Top = 205
+      Width = 1085
+      Height = 3
+      Cursor = crVSplit
+      Align = alBottom
+      ExplicitTop = 177
+      ExplicitWidth = 139
+    end
     object StringGrid: TJvStringGrid
       Left = 1
       Top = 1
       Width = 1085
-      Height = 315
+      Height = 204
       Align = alClient
       ColCount = 4
       DefaultDrawing = False
@@ -213,8 +223,23 @@ inherited frmStatistic: TfrmStatistic
       FixedFont.Height = -11
       FixedFont.Name = 'Tahoma'
       FixedFont.Style = []
-      ExplicitTop = 2
-      ExplicitHeight = 274
+      ExplicitLeft = -10
+      ExplicitTop = 65
+      ExplicitHeight = 216
+    end
+    object strGridTraining: TStringGrid
+      Left = 1
+      Top = 208
+      Width = 1085
+      Height = 148
+      Align = alBottom
+      ColCount = 1
+      DefaultDrawing = False
+      FixedCols = 0
+      RowCount = 1
+      FixedRows = 0
+      TabOrder = 1
+      OnDrawCell = strGridTrainingDrawCell
     end
   end
   inherited sFrameAdapter1: TsFrameAdapter
