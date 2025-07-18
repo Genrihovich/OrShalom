@@ -1,4 +1,4 @@
-unit uFrameDovidniky;
+п»їunit uFrameDovidniky;
 
 interface
 
@@ -59,24 +59,24 @@ var
   buttonSelected: integer;
   temp: Word;
 begin
-  try // Імпорт контактів травма центру
+  try // Р†РјРїРѕСЂС‚ РєРѕРЅС‚Р°РєС‚С–РІ С‚СЂР°РІРјР° С†РµРЅС‚СЂСѓ
     DBGridEh1.DataSource := nil;
 
     if uMyExcel.RunExcel(false, false) = true then
-      // проверка на инсталл и запуск Excel
-      DM.OpenDialog.Filter := 'Файлы MS Excel|*.xls;*.xlsx|';
+      // РїСЂРѕРІРµСЂРєР° РЅР° РёРЅСЃС‚Р°Р»Р» Рё Р·Р°РїСѓСЃРє Excel
+      DM.OpenDialog.Filter := 'Р¤Р°Р№Р»С‹ MS Excel|*.xls;*.xlsx|';
     if not DM.OpenDialog.Execute then
       Exit;
 
     if uMyExcel.OpenWorkBook(DM.OpenDialog.FileName, false) then
-    // открываем книгу Excel
+    // Г®ГІГЄГ°Г»ГўГ ГҐГ¬ ГЄГ­ГЁГЈГі Excel
     begin
       myForm.ProgressBar.Visible := true;
       MyExcel.ActiveWorkBook.Sheets[1];
 
       col := MyExcel.ActiveCell.SpecialCells($000000B).Column;
-      // последняя заполненная колонка
-      // ------------ пробежимся расставим индексы названий столбцов -------------
+      // РїРѕСЃР»РµРґРЅСЏСЏ Р·Р°РїРѕР»РЅРµРЅРЅР°СЏ РєРѕР»РѕРЅРєР°
+      // ------------ РїСЂРѕР±РµР¶РёРјСЃСЏ СЂР°СЃСЃС‚Р°РІРёРј РёРЅРґРµРєСЃС‹ РЅР°Р·РІР°РЅРёР№ СЃС‚РѕР»Р±С†РѕРІ -------------
 
       CollectionNameTable := TDictionary<string, integer>.Create();
       for z := 1 to col do
@@ -86,27 +86,27 @@ begin
         else
           CollectionNameTable.Add(MyExcel.Cells[1, z].value + z.ToString, z);
       end;
-      // ------------------------ конец пробега для  СТОЛБЦОВ --------------------
+      // ------------------------ РєРѕРЅРµС† РїСЂРѕР±РµРіР° РґР»СЏ РЎРўРћР›Р‘Р¦РћР’ --------------------
 
-      m := 2; // начинаем считывание со 2-й строки, оставляя заголовок колонки
+      m := 2; // РЅР°С‡РёРЅР°РµРј СЃС‡РёС‚С‹РІР°РЅРёРµ СЃРѕ 2-Р№ СЃС‚СЂРѕРєРё, РѕСЃС‚Р°РІР»СЏСЏ Р·Р°РіРѕР»РѕРІРѕРє РєРѕР»РѕРЅРєРё
       n := MyExcel.ActiveCell.SpecialCells($000000B).Row;
-      // последняя заполненная строка
+      // РїРѕСЃР»РµРґРЅСЏСЏ Р·Р°РїРѕР»РЅРµРЅРЅР°СЏ СЃС‚СЂРѕРєР°
       n := n + 1;
       with DM, myForm do
       begin
         tZvitSnow.open;
-        // CleanOutTable('ZvitSnow'); // обнуляем таблицу
+        // CleanOutTable('ZvitSnow'); // РѕР±РЅСѓР»СЏРµРј С‚Р°Р±Р»РёС†Сѓ
         tZvitSnow.Last;
 
         ProgressBar.Min := 0;
         ProgressBar.Max := n;
         ProgressBar.Position := 1;
 
-        while m <> n do // цикл внешний по записям EXCEL
+        while m <> n do // С†РёРєР» РІРЅРµС€РЅРёР№ РїРѕ Р·Р°РїРёСЃСЏРј EXCEL
         begin
 
           pole := MyExcel.Cells
-            [m, StrToInt(CollectionNameTable.Items['Номер'].ToString)].value;
+            [m, StrToInt(CollectionNameTable.Items['РќРѕРјРµСЂ'].ToString)].value;
 
           if not isAssetValue('ZvitSnow', 'Number', pole) then
           begin
@@ -115,7 +115,7 @@ begin
 
             tZvitSnow.FieldByName('Number').AsString :=
               MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Номер'].ToString)].value;
+              [m, StrToInt(CollectionNameTable.Items['РќРѕРјРµСЂ'].ToString)].value;
 
             tZvitSnow.FieldByName('JDCID').AsString :=
               MyExcel.Cells
@@ -123,43 +123,43 @@ begin
 
             tZvitSnow.FieldByName('Kontakt').AsString :=
               MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Участник контакта']
+              [m, StrToInt(CollectionNameTable.Items['РЈС‡Р°СЃС‚РЅРёРє РєРѕРЅС‚Р°РєС‚Р°']
               .ToString)].value;
 
             poleDate := MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Дата контакта']
+              [m, StrToInt(CollectionNameTable.Items['Р”Р°С‚Р° РєРѕРЅС‚Р°РєС‚Р°']
               .ToString)].value;
 
             tZvitSnow.FieldByName('DateKontakta').AsDateTime := poleDate;
 
             tZvitSnow.FieldByName('Tema').AsString :=
               MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Тема контакта']
+              [m, StrToInt(CollectionNameTable.Items['РўРµРјР° РєРѕРЅС‚Р°РєС‚Р°']
               .ToString)].value;
 
             tZvitSnow.FieldByName('TypeKontakta').AsString :=
               MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Тип контакта']
+              [m, StrToInt(CollectionNameTable.Items['РўРёРї РєРѕРЅС‚Р°РєС‚Р°']
               .ToString)].value;
 
             tZvitSnow.FieldByName('Sostoyalsya').AsString :=
               MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Состояние']
+              [m, StrToInt(CollectionNameTable.Items['РЎРѕСЃС‚РѕСЏРЅРёРµ']
               .ToString)].value;
 
             tZvitSnow.FieldByName('Ispolnitel').AsString :=
               MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Исполнители']
+              [m, StrToInt(CollectionNameTable.Items['РСЃРїРѕР»РЅРёС‚РµР»Рё']
               .ToString)].value;
 
             tZvitSnow.FieldByName('Telephone').AsString :=
               MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Мобильный телефон']
+              [m, StrToInt(CollectionNameTable.Items['РњРѕР±РёР»СЊРЅС‹Р№ С‚РµР»РµС„РѕРЅ']
               .ToString)].value;
 
             tZvitSnow.FieldByName('Kurator').AsString :=
               MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Куратор']
+              [m, StrToInt(CollectionNameTable.Items['РљСѓСЂР°С‚РѕСЂ']
               .ToString)].value;
 
             tZvitSnow.FieldByName('monthDate').AsString :=
@@ -181,9 +181,9 @@ begin
             // StopExcel;
             // CollectionNameTable.Clear;
             // CollectionNameTable.Free;
-            ShowMessage('Номер ' + pole + ' вже є в базі');
+            ShowMessage('РќРѕРјРµСЂ ' + pole + ' РІР¶Рµ С” РІ Р±Р°Р·С–');
 
-            { with CreateMessageDialog('Номер '+ pole +' вже є в базі', mtConfirmation,
+            { with CreateMessageDialog('РќРѕРјРµСЂ '+ pole +' РІР¶Рµ С” РІ Р±Р°Р·С–', mtConfirmation,
               [mbYes,mbAll,mbCancel]) do
               begin
               try
@@ -196,7 +196,7 @@ begin
               if (components[i] as TButton).modalResult = mrAll then (components[i] as TButton).caption := 'OldmrAll';
               end;
               end;
-              Caption := 'Вибір варіанта';
+              Caption := 'Р’РёР±С–СЂ РІР°СЂС–Р°РЅС‚Р°';
               ShowModal;
 
 
@@ -205,19 +205,19 @@ begin
               Release;
               end;
               end;
-              if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
+              if buttonSelected = mrYes then ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° OK');
               if buttonSelected = mrCancel
-              then ShowMessage('Была нажата Cancel');
+              then ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° Cancel');
               if buttonSelected = mrAll then
-              ShowMessage('Была нажата All'); }
+              ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° All'); }
 
-            { temp:=MessageBox(handle, PChar('Номер '+ pole +' вже є в базі'), PChar('Обдумайте прежде!'), MB_YESNO+MB_ICONQUESTION);
+            { temp:=MessageBox(handle, PChar('РќРѕРјРµСЂ '+ pole +' РІР¶Рµ С” РІ Р±Р°Р·С–'), PChar('РћР±РґСѓРјР°Р№С‚Рµ РїСЂРµР¶РґРµ!'), MB_YESNO+MB_ICONQUESTION);
               case temp of
-              idyes: ShowMessage('Была нажата OK');
-              idno: ShowMessage('Была нажата No');
+              idyes: ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° OK');
+              idno: ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° No');
               end; }
 
-            // with MessageDlg('Номер '+ pole +' вже є в базі',mtCustom,
+            // with MessageDlg('РќРѕРјРµСЂ '+ pole +' РІР¶Рµ С” РІ Р±Р°Р·С–',mtCustom,
             // [mbYes,mbAll,mbCancel], 0) do
             // begin
             //
@@ -233,15 +233,15 @@ begin
             // Release;
             // end;
             // end;
-            // buttonSelected := MessageDlg('Номер '+ pole +' вже є в базі',mtCustom,
+            // buttonSelected := MessageDlg('РќРѕРјРµСЂ '+ pole +' РІР¶Рµ С” РІ Р±Р°Р·С–',mtCustom,
             // [mbYes,mbAll,mbCancel], 0);
-            // if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
-            // if buttonSelected = mrCancel then ShowMessage('Была нажата Cancel');
-            // if buttonSelected = mrAll then ShowMessage('Была нажата All');
+            // if buttonSelected = mrYes then ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° OK');
+            // if buttonSelected = mrCancel then ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° Cancel');
+            // if buttonSelected = mrAll then ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° All');
 
-            // if buttonSelected = mrYes  then  ShowMessage('Была нажата OK');
-            // if buttonSelected = mrCancel then ShowMessage('Была нажата Cancel');
-            // if buttonSelected = mrAll then ShowMessage('Была нажата All');
+            // if buttonSelected = mrYes then ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° OK');
+            // if buttonSelected = mrCancel then ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° Cancel');
+            // if buttonSelected = mrAll then ShowMessage('Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° All');
 
             // myForm.ProgressBar.Visible := false;
             // DM.tZvitSnow.RefreshRecord;
@@ -252,7 +252,7 @@ begin
         end;
       end;
 
-      ShowMessage('Завантаження даних УСПІШНО!!!');
+      ShowMessage('Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ РґР°РЅРёС… РЈРЎРџР†РЁРќРћ!!!');
     end;
 
     MyExcel.Application.DisplayAlerts := false;
@@ -267,9 +267,9 @@ begin
     on E: EListError do
     begin
       CollectionNameTable.Free;
-      // CleanOutTable('ZvitSnow'); // обнуляем таблицу
+      // CleanOutTable('ZvitSnow'); // РѕР±РЅСѓР»СЏРµРј С‚Р°Р±Р»РёС†Сѓ
       DM.tZvitSnow.Active := false;
-      ShowMessage('Не вірний формат файлу, нема необхідних полів');
+      ShowMessage('РќРµ РІС–СЂРЅРёР№ С„РѕСЂРјР°С‚ С„Р°Р№Р»Сѓ, РЅРµРјР° РЅРµРѕР±С…С–РґРЅРёС… РїРѕР»С–РІ');
       StopExcel;
       DBGridEh1.DataSource := DM.dsZvit;
     end;
@@ -286,17 +286,17 @@ var
   pole: String;
   pdate, pMentor, pCount, pOrg, pOrganiz, pNote: String;
 begin
-  inherited; // Імпорт тренінгів
+  inherited; // Р†РјРїРѕСЂС‚ С‚СЂРµРЅС–РЅРіС–РІ
   try
     begin
       dbGridTraining.DataSource := nil;
 
       if uMyExcel.RunExcel(false, false) = true then
-        // проверка на инсталл и запуск Excel
-        DM.OpenDialog.Filter := 'Файлы MS Excel|*.xls;*.xlsx|';
+        // РїСЂРѕРІРµСЂРєР° РЅР° РёРЅСЃС‚Р°Р»Р» Рё Р·Р°РїСѓСЃРє Excel
+        DM.OpenDialog.Filter := 'Р¤Р°Р№Р»С‹ MS Excel|*.xls;*.xlsx|';
       if not DM.OpenDialog.Execute then
         Exit;
-      // открываем книгу Excel
+      // РѕС‚РєСЂС‹РІР°РµРј РєРЅРёРіСѓ Excel
       if uMyExcel.OpenWorkBook(DM.OpenDialog.FileName, false) then
 
       begin
@@ -304,10 +304,10 @@ begin
         myForm.ProgressBar.Visible := true;
         MyExcel.ActiveWorkBook.Sheets[1];
 
-        // последняя заполненная колонка
+        // РїРѕСЃР»РµРґРЅСЏСЏ Р·Р°РїРѕР»РЅРµРЅРЅР°СЏ РєРѕР»РѕРЅРєР°
         col := MyExcel.ActiveCell.SpecialCells($000000B).Column;
 
-        // ------------ пробежимся расставим индексы названий столбцов -------------
+        // ------------ РїСЂРѕР±РµР¶РёРјСЃСЏ СЂР°СЃСЃС‚Р°РІРёРј РёРЅРґРµРєСЃС‹ РЅР°Р·РІР°РЅРёР№ СЃС‚РѕР»Р±С†РѕРІ -------------
 
         CollectionNameTable := TDictionary<string, integer>.Create();
         for z := 1 to col do
@@ -318,46 +318,46 @@ begin
             CollectionNameTable.Add(MyExcel.Cells[1, z].value + z.ToString, z);
         end;
 
-        m := 2; // начинаем считывание со 2-й строки, оставляя заголовок колонки
+        m := 2; // РЅР°С‡РёРЅР°РµРј СЃС‡РёС‚С‹РІР°РЅРёРµ СЃРѕ 2-Р№ СЃС‚СЂРѕРєРё, РѕСЃС‚Р°РІР»СЏСЏ Р·Р°РіРѕР»РѕРІРѕРє РєРѕР»РѕРЅРєРё
         n := MyExcel.ActiveCell.SpecialCells($000000B).Row;
-        // последняя заполненная строка
+        // РїРѕСЃР»РµРґРЅСЏСЏ Р·Р°РїРѕР»РЅРµРЅРЅР°СЏ СЃС‚СЂРѕРєР°
         n := n + 1;
         with DM, myForm do
         begin
 
           tTraining.open;
-          // CleanOutTable('ZvitSnow'); // обнуляем таблицу
+          // CleanOutTable('ZvitSnow'); // РѕР±РЅСѓР»СЏРµРј С‚Р°Р±Р»РёС†Сѓ
           tTraining.Last;
 
           ProgressBar.Min := 0;
           ProgressBar.Max := n;
           ProgressBar.Position := 1;
 
-          while m <> n do // цикл внешний по записям EXCEL
+          while m <> n do // С†РёРєР» РІРЅРµС€РЅРёР№ РїРѕ Р·Р°РїРёСЃСЏРј EXCEL
           begin
             pole := MyExcel.Cells
-              [m, StrToInt(CollectionNameTable.Items['Основная организация']
+              [m, StrToInt(CollectionNameTable.Items['РћСЃРЅРѕРІРЅР°СЏ РѕСЂРіР°РЅРёР·Р°С†РёСЏ']
               .ToString)].value;
 
-            if pole = 'Хесед Бешт - Хмельницкий' then
+            if pole = 'РҐРµСЃРµРґ Р‘РµС€С‚ - РҐРјРµР»СЊРЅРёС†РєРёР№' then
             begin
 
               pdate := MyExcel.Cells
-                [m, StrToInt(CollectionNameTable.Items['Дата'].ToString)].value;
+                [m, StrToInt(CollectionNameTable.Items['Р”Р°С‚Р°'].ToString)].value;
               pMentor := MyExcel.Cells
-                [m, StrToInt(CollectionNameTable.Items['Кто проводил обучение']
+                [m, StrToInt(CollectionNameTable.Items['РљС‚Рѕ РїСЂРѕРІРѕРґРёР» РѕР±СѓС‡РµРЅРёРµ']
                 .ToString)].value;
               pCount := MyExcel.Cells
-                [m, StrToInt(CollectionNameTable.Items['Количество обученных']
+                [m, StrToInt(CollectionNameTable.Items['РљРѕР»РёС‡РµСЃС‚РІРѕ РѕР±СѓС‡РµРЅРЅС‹С…']
                 .ToString)].value;
               pOrg := MyExcel.Cells
-                [m, StrToInt(CollectionNameTable.Items['Тип организации']
+                [m, StrToInt(CollectionNameTable.Items['РўРёРї РѕСЂРіР°РЅРёР·Р°С†РёРё']
                 .ToString)].value;
               pOrganiz := MyExcel.Cells
-                [m, StrToInt(CollectionNameTable.Items['Основная организация']
+                [m, StrToInt(CollectionNameTable.Items['РћСЃРЅРѕРІРЅР°СЏ РѕСЂРіР°РЅРёР·Р°С†РёСЏ']
                 .ToString)].value;
               pNote := MyExcel.Cells
-                [m, StrToInt(CollectionNameTable.Items['Примечание']
+                [m, StrToInt(CollectionNameTable.Items['РџСЂРёРјРµС‡Р°РЅРёРµ']
                 .ToString)].value;
 
               if isAssetValues('Training', pdate, pMentor, pCount, pOrg,
@@ -367,7 +367,7 @@ begin
                 tTraining.Insert;
 
                 poleDate := MyExcel.Cells
-                  [m, StrToInt(CollectionNameTable.Items['Дата']
+                  [m, StrToInt(CollectionNameTable.Items['Р”Р°С‚Р°']
                   .ToString)].value;
 
                 tTraining.FieldByName('date_training').AsString :=
@@ -376,26 +376,26 @@ begin
                 tTraining.FieldByName('Mentor').AsString :=
                   MyExcel.Cells
                   [m, StrToInt(CollectionNameTable.Items
-                  ['Кто проводил обучение'].ToString)].value;
+                  ['РљС‚Рѕ РїСЂРѕРІРѕРґРёР» РѕР±СѓС‡РµРЅРёРµ'].ToString)].value;
 
                 tTraining.FieldByName('Count_trained').AsInteger :=
                   MyExcel.Cells
-                  [m, StrToInt(CollectionNameTable.Items['Количество обученных']
+                  [m, StrToInt(CollectionNameTable.Items['РљРѕР»РёС‡РµСЃС‚РІРѕ РѕР±СѓС‡РµРЅРЅС‹С…']
                   .ToString)].value;
 
                 tTraining.FieldByName('Note_Tema').AsString :=
                   MyExcel.Cells
-                  [m, StrToInt(CollectionNameTable.Items['Примечание']
+                  [m, StrToInt(CollectionNameTable.Items['РџСЂРёРјРµС‡Р°РЅРёРµ']
                   .ToString)].value;
 
                 tTraining.FieldByName('Organization').AsString :=
                   MyExcel.Cells
-                  [m, StrToInt(CollectionNameTable.Items['Основная организация']
+                  [m, StrToInt(CollectionNameTable.Items['РћСЃРЅРѕРІРЅР°СЏ РѕСЂРіР°РЅРёР·Р°С†РёСЏ']
                   .ToString)].value;
 
                 tTraining.FieldByName('type_org').AsString :=
                   MyExcel.Cells
-                  [m, StrToInt(CollectionNameTable.Items['Тип организации']
+                  [m, StrToInt(CollectionNameTable.Items['РўРёРї РѕСЂРіР°РЅРёР·Р°С†РёРё']
                   .ToString)].value;
 
                 tTraining.Post;
@@ -406,9 +406,9 @@ begin
               end
               else
               begin
-              ShowMessage('Данні вже є в базі');
-              Inc(m);
-              ProgressBar.Position := m;
+                ShowMessage('Р”Р°РЅРЅС– РІР¶Рµ С” РІ Р±Р°Р·С–');
+                Inc(m);
+                ProgressBar.Position := m;
               end;
 
             end;
@@ -420,7 +420,7 @@ begin
       end;
 
     end;
-    ShowMessage('Завантаження даних УСПІШНО!!!');
+    ShowMessage('Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ РґР°РЅРёС… РЈРЎРџР†РЁРќРћ!!!');
 
     MyExcel.Application.DisplayAlerts := false;
     StopExcel;
@@ -435,9 +435,9 @@ begin
     on E: Exception do
     begin
       CollectionNameTable.Free;
-      // CleanOutTable('ZvitSnow'); // обнуляем таблицу
+      // CleanOutTable('ZvitSnow'); // РѕР±РЅСѓР»СЏРµРј С‚Р°Р±Р»РёС†Сѓ
       DM.tTraining.Active := false;
-      ShowMessage('Не вірний формат файлу, нема необхідних полів');
+      ShowMessage('РќРµ РІС–СЂРЅРёР№ С„РѕСЂРјР°С‚ С„Р°Р№Р»Сѓ, РЅРµРјР° РЅРµРѕР±С…С–РґРЅРёС… РїРѕР»С–РІ');
       StopExcel;
       dbGridTraining.DataSource := DM.dsTraining;
     end;

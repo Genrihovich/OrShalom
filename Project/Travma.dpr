@@ -8,12 +8,15 @@ uses
   uFrameDovidniky in '..\SOURCE\uFrameDovidniky.pas' {frmDovidniky: TFrame},
   uFrameCharts in '..\SOURCE\uFrameCharts.pas' {frmCharts: TFrame},
   uFrameStatistic in '..\SOURCE\uFrameStatistic.pas' {frmStatistic: TFrame},
+  uFrameKontakt in '..\SOURCE\uFrameKontakt.pas' {frmKontakt: TFrame},
   uDM in '..\SOURCE\uDM.pas' {DM: TDataModule},
   uAutorize in '..\SOURCE\uAutorize.pas' {fAutorize},
   myUtils in '..\SOURCE\myUtils.pas',
   myBDUtils in '..\SOURCE\myBDUtils.pas',
   uMyExcel in '..\SOURCE\uMyExcel.pas',
-  uFrameKontakt in '..\SOURCE\uFrameKontakt.pas' {frmKontakt: TFrame};
+  uObchinaMenu in '..\SOURCE\uObchinaMenu.pas' {frmObchiaMenu: TFrame},
+  uFrameObExport in '..\SOURCE\uFrameObExport.pas' {frmObExportData},
+  uFrameObInputZahid in '..\SOURCE\uFrameObInputZahid.pas' {frmObInputZahid};
 
 {$R *.res}
 
@@ -23,5 +26,8 @@ begin
   Application.CreateForm(TDM, DM);
   Application.CreateForm(TfAutorize, fAutorize);
   Application.CreateForm(TmyForm, myForm);
+  Application.CreateForm(TfrmObchiaMenu, frmObchiaMenu);
+  Application.CreateForm(TfrmObExportData, frmObExportData);
+  Application.CreateForm(TfrmObInputZahid, frmObInputZahid);
   Application.Run;
 end.

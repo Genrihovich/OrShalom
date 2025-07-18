@@ -176,6 +176,30 @@ begin
     collection.Add(28, 'AB');
     collection.Add(29, 'AC');
     collection.Add(30, 'AD');
+    collection.Add(31, 'AE');
+    collection.Add(32, 'AF');
+    collection.Add(33, 'AG');
+    collection.Add(34, 'AH');
+    collection.Add(35, 'AI');
+    collection.Add(36, 'AJ');
+    collection.Add(37, 'AK');
+    collection.Add(38, 'AL');
+    collection.Add(39, 'AM');
+    collection.Add(40, 'AN');
+    collection.Add(41, 'AO');
+    collection.Add(42, 'AP');
+    collection.Add(43, 'AQ');
+    collection.Add(44, 'AR');
+    collection.Add(45, 'AS');
+    collection.Add(46, 'AT');
+    collection.Add(47, 'AU');
+    collection.Add(48, 'AV');
+    collection.Add(49, 'AW');
+    collection.Add(50, 'AX');
+    collection.Add(51, 'AY');
+    collection.Add(52, 'AZ');
+    collection.Add(53, 'BA');
+    collection.Add(54, 'BB');
 
     if collection.ContainsKey(index) then
       result := collection[index]

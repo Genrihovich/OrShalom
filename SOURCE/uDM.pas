@@ -41,6 +41,8 @@ type
     tTraining: TUniTable;
     dsTraining: TUniDataSource;
     qTraining: TUniQuery;
+    qClients: TUniQuery;
+    dsClients: TUniDataSource;
   private
     { Private declarations }
   public

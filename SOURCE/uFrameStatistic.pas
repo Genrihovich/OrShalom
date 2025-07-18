@@ -464,6 +464,12 @@ begin
 
     // ............ буква последнего столбца .........
     StrEndColumnSylka := CellsCharFind(endColumn);
+    if StrEndColumnSylka = 'Ключ не найден' then
+    begin
+      ShowMessage
+        ('Буква останнього стовпчика виходить за рамки заявленного в програмі');
+      exit;
+    end;
 
     // ============= Выделяем и обьединяем ==================
 

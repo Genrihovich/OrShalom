@@ -6,7 +6,6 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, uFrameCustom,
-
   JvAppStorage, JvAppIniStorage,
   JvComponentBase, JvFormPlacement, acTitleBar, sSkinManager, sSkinProvider,
   Vcl.Controls, Vcl.StdCtrls, Vcl.ComCtrls, sComboBoxes, sLabel, JvExExtCtrls,
@@ -37,12 +36,15 @@ type
     sMonthCalendar1: TsMonthCalendar;
     Timer: TTimer;
     ProgressBar: TsProgressBar;
+    lbInfo: TsLabelFX;
     procedure sFrameBar1Items0CreateFrame(Sender: TObject;
       var Frame: TCustomFrame);
     procedure FormShow(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
+    procedure sFrameBar1Items1CreateFrame(Sender: TObject;
+      var Frame: TCustomFrame);
 
   private
     { Private declarations }
@@ -73,7 +75,7 @@ implementation
 
 {$R *.dfm}
 
-uses uMenu, uDM, uAutorize;
+uses uMenu, uDM, uAutorize, uObchinaMenu;
 
 { TForm2 }
 
@@ -131,23 +133,41 @@ begin
   begin
     AppLoading := True;
     FormShowed := True; // предотвращение повторной инициализации
+
      // Открываем первый элемент панели фрейма (TfrmMenu)
-    sFrameBar1.OpenItem(0, False { Без анимации } );
+ //   sFrameBar1.OpenItem(0, False { Без анимации } );
+
     // Пример доступа к фрейму (нажмите на spdBtn_CurrSkin)
 //    TfrmMenu(sFrameBar1.Items[0].Frame).btnVidomist.OnClick(TfrmMenu(sFrameBar1.Items[0].Frame).btnVidomist);
 //    GenerateSkinsList;  // Поиск доступных скинов
+
     AppLoading := False;
   end;
 end;
 
 procedure TmyForm.sFrameBar1Items0CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
-begin
+begin    // Травмацентр
   Frame := TfrmMenu.Create(nil);
+  stitleBar1.items[0].visible := false;
+  stitleBar1.items[2].visible := false;
+  stitleBar1.items[1].visible := true;
+  EsImage1.Visible := true;
   sSkinManager1.UpdateScale(Frame);
 end;
 
 
+
+procedure TmyForm.sFrameBar1Items1CreateFrame(Sender: TObject;
+  var Frame: TCustomFrame);
+begin   // Община
+  Frame := TfrmObchiaMenu.Create(nil);
+  stitleBar1.items[0].visible := false;
+  stitleBar1.items[1].visible := false;
+  stitleBar1.items[2].visible := true;
+  EsImage1.Visible := false;
+  sSkinManager1.UpdateScale(Frame);
+end;
 
 procedure TmyForm.UpdateFrame(Sender: TObject);
 begin

@@ -24,7 +24,6 @@ object fAutorize: TfAutorize
     Height = 122
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 320
     object wlabRegister: TsWebLabel
       Left = 167
       Top = 70
@@ -123,7 +122,6 @@ object fAutorize: TfAutorize
     Align = alTop
     TabOrder = 1
     Visible = False
-    ExplicitWidth = 320
     object btnSave: TButton
       Left = 96
       Top = 128
@@ -221,7 +219,6 @@ object fAutorize: TfAutorize
     Height = 69
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 320
     object Label1: TLabel
       Left = 16
       Top = 8
@@ -329,7 +326,6 @@ object fAutorize: TfAutorize
     Align = alClient
     TabOrder = 4
     Visible = False
-    ExplicitWidth = 320
     object dbLEditPIB: TDBEditEh
       Left = 24
       Top = 26
@@ -427,7 +423,6 @@ object fAutorize: TfAutorize
     Align = alTop
     TabOrder = 6
     Visible = False
-    ExplicitWidth = 320
     object sLabel1: TsLabel
       Left = 31
       Top = 6

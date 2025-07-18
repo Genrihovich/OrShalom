@@ -1,6 +1,6 @@
 object DM: TDM
   OldCreateOrder = False
-  Height = 349
+  Height = 460
   Width = 406
   object UniConnection: TUniConnection
     ProviderName = 'MySQL'
@@ -240,5 +240,18 @@ object DM: TDM
         Name = 'do'
         Value = 45107d
       end>
+  end
+  object qClients: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'select * From Clients')
+    Active = True
+    Left = 24
+    Top = 344
+  end
+  object dsClients: TUniDataSource
+    DataSet = qClients
+    Left = 24
+    Top = 400
   end
 end

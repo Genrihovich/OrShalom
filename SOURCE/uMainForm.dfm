@@ -11,6 +11,7 @@ object myForm: TmyForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
@@ -31,7 +32,7 @@ object myForm: TmyForm
     Width = 185
     Height = 495
     HorzScrollBar.Visible = False
-    VertScrollBar.Range = 36
+    VertScrollBar.Range = 66
     VertScrollBar.Tracking = True
     AutoScroll = False
     TabOrder = 0
@@ -46,6 +47,14 @@ object myForm: TmyForm
         Caption = #1058#1088#1072#1074#1084#1072#1094#1077#1085#1090#1088
         SkinSection = 'MENUCAPTION'
         OnCreateFrame = sFrameBar1Items0CreateFrame
+      end
+      item
+        DisplayName = 'TsTitleItem'
+        ShowArrow = True
+        TextAlignment = taLeftJustify
+        Caption = #1054#1073#1097#1080#1085#1072
+        SkinSection = 'MENUCAPTION'
+        OnCreateFrame = sFrameBar1Items1CreateFrame
       end>
     object sMonthCalendar1: TsMonthCalendar
       Left = 0
@@ -4982,6 +4991,28 @@ object myForm: TmyForm
           0058488B000000000000000000C0425A0400000000000000000016018D20F40A
           64B17F180000000049454E44AE426082}
         Stretch = Mixed
+        Visible = False
+      end
+      object lbInfo: TsLabelFX
+        Left = 97
+        Top = 1
+        Width = 511
+        Height = 53
+        Align = alClient
+        Alignment = taCenter
+        ParentFont = False
+        Layout = tlCenter
+        WordWrap = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clHotLight
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Angle = 0
+        Shadow.OffsetKeeper.LeftTop = -1
+        Shadow.OffsetKeeper.RightBottom = 3
+        ExplicitWidth = 8
+        ExplicitHeight = 20
       end
       object JvClock1: TJvClock
         Left = 608
@@ -18867,7 +18898,7 @@ object myForm: TmyForm
     Items = <
       item
         Align = tbaCenterInSpace
-        Caption = #1061#1077#1089#1077#1076#1041#1077#1096#1090' - '#1062#1077#1085#1090#1088' '#1058#1088#1072#1074#1084#1080
+        Caption = #1061#1077#1089#1077#1076#1041#1077#1096#1090
         FontData.Font.Charset = DEFAULT_CHARSET
         FontData.Font.Color = clWindowText
         FontData.Font.Height = -13
@@ -18879,6 +18910,32 @@ object myForm: TmyForm
         Height = 28
         Width = 142
         Index = 0
+        Name = 'TacTitleBarItem'
+        Style = bsInfo
+      end
+      item
+        Align = tbaCenterInSpace
+        Caption = #1061#1077#1089#1077#1076' - '#1058#1088#1072#1074#1084#1072' '#1094#1077#1085#1090#1088
+        FontData.Font.Charset = DEFAULT_CHARSET
+        FontData.Font.Color = clWindowText
+        FontData.Font.Height = -11
+        FontData.Font.Name = 'Tahoma'
+        FontData.Font.Style = []
+        Visible = False
+        Index = 1
+        Name = 'TacTitleBarItem'
+        Style = bsInfo
+      end
+      item
+        Align = tbaCenterInSpace
+        Caption = #1061#1077#1089#1077#1076' - '#1054#1073#1097#1080#1085#1085#1110' '#1087#1088#1086#1075#1088#1072#1084#1080
+        FontData.Font.Charset = DEFAULT_CHARSET
+        FontData.Font.Color = clWindowText
+        FontData.Font.Height = -11
+        FontData.Font.Name = 'Tahoma'
+        FontData.Font.Style = []
+        Visible = False
+        Index = 2
         Name = 'TacTitleBarItem'
         Style = bsInfo
       end>

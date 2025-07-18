@@ -24,24 +24,24 @@ inherited frmStatistic: TfrmStatistic
       1087
       33)
     object sLabelFX1: TsLabelFX
-      Left = 3
-      Top = 7
-      Width = 13
-      Height = 17
+      Left = 1
+      Top = 5
+      Width = 17
+      Height = 21
       Caption = #1089':'
       Angle = 0
-      Shadow.OffsetKeeper.LeftTop = -1
-      Shadow.OffsetKeeper.RightBottom = 3
+      Shadow.OffsetKeeper.LeftTop = -3
+      Shadow.OffsetKeeper.RightBottom = 5
     end
     object sLabelFX2: TsLabelFX
-      Left = 146
-      Top = 7
-      Width = 20
-      Height = 17
+      Left = 144
+      Top = 5
+      Width = 24
+      Height = 21
       Caption = #1087#1086':'
       Angle = 0
-      Shadow.OffsetKeeper.LeftTop = -1
-      Shadow.OffsetKeeper.RightBottom = 3
+      Shadow.OffsetKeeper.LeftTop = -3
+      Shadow.OffsetKeeper.RightBottom = 5
     end
     object sDateEdit3: TsDateEdit
       Left = 22
@@ -192,8 +192,6 @@ inherited frmStatistic: TfrmStatistic
     Height = 357
     Align = alClient
     TabOrder = 2
-    ExplicitTop = 188
-    ExplicitHeight = 317
     object Splitter2: TSplitter
       Left = 1
       Top = 205
@@ -223,9 +221,6 @@ inherited frmStatistic: TfrmStatistic
       FixedFont.Height = -11
       FixedFont.Name = 'Tahoma'
       FixedFont.Style = []
-      ExplicitLeft = -10
-      ExplicitTop = 65
-      ExplicitHeight = 216
     end
     object strGridTraining: TStringGrid
       Left = 1

@@ -49,8 +49,6 @@ object frmMenu: TfrmMenu
     Caption = #1043#1088#1072#1092#1110#1082#1080
     TabOrder = 3
     OnClick = btnChartClick
-    ExplicitLeft = 6
-    ExplicitTop = 73
   end
   object sFrameAdapter1: TsFrameAdapter
     Left = 160

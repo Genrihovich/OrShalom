@@ -10,6 +10,7 @@ uses
 type
   TfrmKontakt = class(TCustomInfoFrame)
     BitBtn1: TBitBtn;
+    procedure BitBtn1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -19,5 +20,11 @@ type
 implementation
 
 {$R *.dfm}
+
+procedure TfrmKontakt.BitBtn1Click(Sender: TObject);
+begin
+  inherited;
+//
+end;
 
 end.
