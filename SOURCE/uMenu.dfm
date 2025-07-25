@@ -12,10 +12,10 @@ object frmMenu: TfrmMenu
     Height = 25
     Align = alTop
     Caption = #1044#1086#1074#1110#1076#1085#1080#1082#1080
-    Default = True
     ModalResult = 1
     TabOrder = 0
     OnClick = btnVidomistClick
+    ShowFocus = False
   end
   object btnSLG: TsBitBtn
     AlignWithMargins = True
@@ -27,6 +27,7 @@ object frmMenu: TfrmMenu
     Caption = #1042#1085#1077#1089#1090#1080' '#1082#1086#1085#1090#1072#1082#1090
     TabOrder = 1
     OnClick = btnSLGClick
+    ShowFocus = False
   end
   object btnNalogy: TsBitBtn
     AlignWithMargins = True
@@ -38,6 +39,7 @@ object frmMenu: TfrmMenu
     Caption = #1057#1090#1072#1090#1080#1089#1090#1080#1082#1072
     TabOrder = 2
     OnClick = btnNalogyClick
+    ShowFocus = False
   end
   object btnChart: TsBitBtn
     AlignWithMargins = True
@@ -49,6 +51,7 @@ object frmMenu: TfrmMenu
     Caption = #1043#1088#1072#1092#1110#1082#1080
     TabOrder = 3
     OnClick = btnChartClick
+    ShowFocus = False
   end
   object sFrameAdapter1: TsFrameAdapter
     Left = 160

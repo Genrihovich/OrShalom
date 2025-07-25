@@ -9,7 +9,7 @@ uses
   DBGridEh, Vcl.Mask, DBCtrlsEh, DBLookupEh, sEdit, sCheckBox, sLabel,
   System.Actions, Vcl.ActnList, JvComponentBase, JvFormPlacement, Vcl.ExtCtrls,
   sPanel, dxGDIPlusClasses, JvExExtCtrls, JvImage, acTitleBar, ES.RegexControls,
-  sBitBtn;
+  sBitBtn, Uni, Data.DB, MemDS, DBAccess;
 
 type
   TfAutorize = class(TForm)
@@ -17,7 +17,6 @@ type
     Label1: TLabel;
     lbDBConnected: TLabel;
     spBtnConnectBD: TSpeedButton;
-    dbLComboRegion: TDBLookupComboboxEh;
     dbLComboUser: TDBLookupComboboxEh;
     chPsw: TsCheckBox;
     wlabRegister: TsWebLabel;
@@ -53,13 +52,11 @@ type
     btnDostup: TsBitBtn;
     acDostup: TAction;
     acEditUserData: TAction;
+    DBcbRegion: TDBComboBoxEh;
     procedure btnSignInClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure spBtnConnectBDClick(Sender: TObject);
-    procedure DBLookupComboboxEh7EditButtons0Click(Sender: TObject;
-      var Handled: Boolean);
     procedure chPswClick(Sender: TObject);
-    procedure dbLComboRegionChange(Sender: TObject);
     procedure acConnectedUpdate(Sender: TObject);
     procedure wlabRegisterClick(Sender: TObject);
     procedure acSignInUpdate(Sender: TObject);
@@ -76,6 +73,9 @@ type
     procedure btnEditUserDataClick(Sender: TObject);
     procedure acEditUserDataUpdate(Sender: TObject);
     procedure dbLComboUserChange(Sender: TObject);
+    procedure DBComboBoxEh1EditButtons0Click(Sender: TObject;
+      var Handled: Boolean);
+    procedure DBcbRegionChange(Sender: TObject);
   private
     { Private declarations }
     function isConnectedBD: String;
@@ -86,7 +86,15 @@ type
       DBLComboEh: TDBLookupComboboxEh): Boolean;
     // проверка входа в программу логин и пароль ок
     function isOKdataUser(login, psw: String): Boolean;
+    procedure LoadRegionsList;
+    // отримувати ID за текстом.
+    function GetRegionIDByName(const RegionName: string): Integer;
+    // Отримати текст за ID
+    function GetRegionNameByID(const RegionID: Integer): string;
+    // функція має шукати role по fullName
+    function GetRoleByFullName(const AFullName: string): string;
 
+    function GetRegionInfoByID(RegionID: Integer): string;
   public
     { Public declarations }
   end;
@@ -108,7 +116,6 @@ begin
   begin
     tUser.Active := true;
     tRegion.Active := true;
-
   end;
 end;
 
@@ -171,6 +178,27 @@ begin // -------------- валидация поля ------------------
   end;
 end;
 
+procedure TfAutorize.LoadRegionsList;
+var
+  Q: TUniQuery;
+begin
+  DBcbRegion.Items.Clear;
+  Q := TUniQuery.Create(nil);
+  try
+    Q.Connection := DM.UniConnection;
+    Q.Close;
+    Q.SQL.Text := 'SELECT NameRegion FROM Region ORDER BY NameRegion';
+    Q.Open;
+    while not Q.Eof do
+    begin
+      DBcbRegion.Items.Add(Q.FieldByName('NameRegion').AsString);
+      Q.Next;
+    end;
+  finally
+    Q.Free;
+  end;
+end;
+
 procedure TfAutorize.FormActivate(Sender: TObject);
 var
   s: String;
@@ -179,10 +207,104 @@ begin
   fAutorize.ClientHeight := 193;
   panRegister.Visible := False;
 
-  s := sStoreUtils.ReadIniString('Autorize', 'Region', IniName);
   // проверка на наличие записи
+  s := sStoreUtils.ReadIniString('Autorize', 'Region', IniName);
   if s <> '' then
-    dbLComboRegion.KeyValue := s; // регион по сохранению
+  begin
+     DBcbRegion.Text := GetRegionNameByID(s.ToInteger()); // регион по сохранению
+     NumRegion := s.ToInteger();
+  end;
+
+  LoadRegionsList;
+end;
+
+function TfAutorize.GetRegionIDByName(const RegionName: string): Integer;
+var
+  Q: TUniQuery;
+begin
+  Result := -1;
+  Q := TUniQuery.Create(nil);
+  try
+    Q.Connection := DM.UniConnection;
+    Q.SQL.Text := 'SELECT id_region FROM Region WHERE nameRegion = :p';
+    Q.ParamByName('p').AsString := RegionName;
+    Q.Open;
+    if not Q.Eof then
+      Result := Q.FieldByName('id_region').AsInteger;
+  finally
+    Q.Free;
+  end;
+
+end;
+
+function TfAutorize.GetRegionInfoByID(RegionID: Integer): string;
+var
+  Q: TUniQuery;
+  RegionName, KuratorName: string;
+begin
+  Result := '';
+  Q := TUniQuery.Create(nil);
+  try
+    Q.Connection := DM.UniConnection; // Або твоя змінна з'єднання
+    Q.SQL.Clear;
+    Q.SQL.Add('SELECT');
+    Q.SQL.Add('  R.`id_region`,');
+    Q.SQL.Add('  R.`nameRegion`,');
+    Q.SQL.Add('  R.`id_Kurator`,');
+    Q.SQL.Add('  CL.`ФИО` AS `ПІБ_Куратора`');
+    Q.SQL.Add('FROM `Region` R');
+    Q.SQL.Add('LEFT JOIN `Clients` CL ON R.`id_Kurator` = CL.`JDC ID`');
+    Q.SQL.Add('WHERE R.`id_region` = :RegionID;');
+
+    Q.ParamByName('RegionID').AsInteger := RegionID;
+    Q.Open;
+
+    if not Q.IsEmpty then
+    begin
+     // RegionName := Q.FieldByName('nameRegion').AsString;
+      KuratorName := Q.FieldByName('ПІБ_Куратора').AsString;
+      Result := KuratorName;
+    end;
+
+  finally
+    Q.Free;
+  end;
+end;
+
+function TfAutorize.GetRegionNameByID(const RegionID: Integer): string;
+var
+  Q: TUniQuery;
+begin
+  Result := '';
+  Q := TUniQuery.Create(nil);
+  try
+    Q.Connection := DM.UniConnection;
+    Q.SQL.Text := 'SELECT nameRegion FROM Region WHERE ID_region = :ID';
+    Q.ParamByName('ID').AsInteger := RegionID;
+    Q.Open;
+    if not Q.Eof then
+      Result := Q.FieldByName('nameRegion').AsString;
+  finally
+    Q.Free;
+  end;
+end;
+
+function TfAutorize.GetRoleByFullName(const AFullName: string): string;
+var
+  Q: TUniQuery;
+begin
+  Result := ''; // якщо не знайдено
+  Q := TUniQuery.Create(nil);
+  try
+    Q.Connection := DM.UniConnection; // заміни на свою змінну підключення
+    Q.SQL.Text := 'SELECT role FROM User WHERE fullName = :fullName LIMIT 1';
+    Q.ParamByName('fullName').AsString := AFullName;
+    Q.Open;
+    if not Q.IsEmpty then
+      Result := Q.FieldByName('role').AsString;
+  finally
+    Q.Free;
+  end;
 end;
 
 procedure TfAutorize.sTitleBar1Items0Click(Sender: TObject);
@@ -195,7 +317,7 @@ procedure TfAutorize.acConnectedUpdate(Sender: TObject);
 begin
   if DM.UniConnection.Connected = true then
   begin
-    dbLComboRegion.Enabled := true;
+    DBcbRegion.Enabled := true;
     dbLComboUser.Enabled := true;
     edPsw.Enabled := true;
     chPsw.Enabled := true;
@@ -206,7 +328,7 @@ begin
   end
   else
   begin
-    dbLComboRegion.Enabled := False;
+    DBcbRegion.Enabled := False;
     dbLComboUser.Enabled := False;
     edPsw.Enabled := False;
     chPsw.Enabled := False;
@@ -229,20 +351,18 @@ end;
 procedure TfAutorize.acVisibleComponentUpdate(Sender: TObject);
 begin
   // видимость полей выбора юзера от выбора региона
-  if dbLComboRegion.Text = '' then   // Первый выбор
+  if DBcbRegion.Text = '' then // Первый выбор
   begin
     chPsw.Enabled := False;
     panAutorize.Visible := False;
     BitBtn1.Enabled := False;
     fAutorize.ClientHeight := 74;
-
   end
   else
-  begin   // Регион выбирался
+  begin // Регион выбирался
     chPsw.Enabled := true;
 
     BitBtn1.Enabled := true;
-
 
     if fAutorize.Tag = 1 then // Авторизация
     begin
@@ -250,54 +370,76 @@ begin
       panAutorize.Visible := true;
     end;
 
-    if fAutorize.Tag = 0 then //Регистрация
+    if fAutorize.Tag = 0 then // Регистрация
       fAutorize.ClientHeight := 230;
 
-    if fAutorize.Tag = 2 then  //код доступа
+    if fAutorize.Tag = 2 then // код доступа
       fAutorize.ClientHeight := 138;
 
-        if fAutorize.Tag = 3 then //редактировать данные
+    if fAutorize.Tag = 3 then // редактировать данные
       fAutorize.ClientHeight := 240;
 
   end;
 end;
 
-procedure TfAutorize.DBLookupComboboxEh7EditButtons0Click(Sender: TObject;
+procedure TfAutorize.DBComboBoxEh1EditButtons0Click(Sender: TObject;
   var Handled: Boolean);
 var
-  val: String;
+  NewRegion: string;
+  Q: TUniQuery;
 begin
-  // добавить новое название региона
-  if isValidRecord('Region', 'nameRegion', dbLComboRegion.Text, dbLComboRegion)
-    = true then
-  begin // если новый регион то добавить
-    val := dbLComboRegion.Text;
-    InsertNewRecords('Region', 'nameRegion', Trim(dbLComboRegion.Text));
-    // вставить значение в комбобокс для отображения
-    dbLComboRegion.Text := val;
+  NewRegion := Trim(DBcbRegion.Text);
+  if NewRegion = '' then
+    Exit;
+
+  Q := TUniQuery.Create(nil);
+
+  try
+    Q.Connection := DM.UniConnection;
+    Q.SQL.Text := 'SELECT COUNT(*) FROM Region WHERE nameRegion = :p';
+    Q.ParamByName('p').AsString := NewRegion;
+    Q.Open;
+
+    if Q.Fields[0].AsInteger = 0 then
+    begin
+      Q.Close;
+      Q.SQL.Text := 'INSERT INTO Region (nameRegion) VALUES (:p)';
+      Q.ParamByName('p').AsString := NewRegion;
+      Q.ExecSQL;
+      LoadRegionsList;
+    end;
+    Handled := true;
+
+  finally
+    Q.Free;
   end;
 
-  DM.tRegion.Close;
-  DM.tRegion.Open;
 end;
 
-procedure TfAutorize.dbLComboRegionChange(Sender: TObject);
+procedure TfAutorize.DBcbRegionChange(Sender: TObject);
+var
+  RegionID: Integer;
 begin
-  with DM do
+  RegionID := GetRegionIDByName(DBcbRegion.Text);
+  if RegionID > 0 then
   begin
-    qUser.Active := False;
-    qUser.SQL.Clear;
-    qUser.SQL.Text := 'SELECT * FROM  User WHERE id_region = :param';
-    qUser.ParamByName('param').AsInteger := dbLComboRegion.KeyValue;
-    qUser.Execute;
+    with DM do
+    begin
+      qUser.Active := False;
+      qUser.SQL.Text := 'SELECT * FROM  User WHERE id_region = :param';
+      qUser.ParamByName('param').AsInteger := RegionID;
+      qUser.Execute;;
+    end;
+
+    sStoreUtils.WriteIniStr('Autorize', 'Region', RegionID.ToString, IniName);
   end;
-  sStoreUtils.WriteIniStr('Autorize', 'Region',
-    dbLComboRegion.KeyValue, IniName);
 end;
+
+
 procedure TfAutorize.dbLComboUserChange(Sender: TObject);
 begin
-// Фокус на поле пароля перевести
-edPsw.SetFocus;
+  // Фокус на поле пароля перевести
+  edPsw.SetFocus;
 end;
 
 // *********************************************************************
@@ -321,7 +463,7 @@ end;
 // ========================== Кнопка Входа в прогу ==========================
 procedure TfAutorize.acSignInUpdate(Sender: TObject);
 begin
-  if (dbLComboRegion.Text <> '') and (dbLComboUser.Text <> '') and
+  if (DBcbRegion.Text <> '') and (dbLComboUser.Text <> '') and
     (edPsw.Text <> '') then
     btnSignIn.Enabled := true
   else
@@ -329,6 +471,8 @@ begin
 end;
 
 procedure TfAutorize.btnSignInClick(Sender: TObject);
+var
+  Q: TUniQuery;
 begin // ---------- Проверка логина, если все ОК то впустить ------------
   if isOKdataUser(dbLComboUser.Text, MD5Hash(edPsw.Text)) = true then
   begin
@@ -337,7 +481,28 @@ begin // ---------- Проверка логина, если все ОК то впустить ------------
 
     // ----- запоминаем глобально данные сессии -----
     MyName := dbLComboUser.Text;
-    MyRegion := dbLComboRegion.Text;
+    MyRegion := DBcbRegion.Text;
+    NumRegion := GetRegionIDByName(DBcbRegion.Text);
+    UserRole := GetRoleByFullName(MyName);
+    Kurator := GetRegionInfoByID(NumRegion);
+    sStoreUtils.WriteIniStr('Autorize', 'Region', NumRegion.ToString, IniName);
+
+    // ----- отримуємо роль користувача -----
+    Q := TUniQuery.Create(nil);
+    try
+      Q.Connection := DM.UniConnection;
+      Q.SQL.Text := 'SELECT Role FROM User WHERE fullName = :name';
+      Q.ParamByName('name').AsString := MyName;
+      Q.Open;
+
+      if not Q.IsEmpty then
+        UserRole := Q.FieldByName('Role').Value
+      else
+        UserRole := Null; // якщо не знайдено
+    finally
+      Q.Free;
+    end;
+
     // Прячем авторизационную форму а лучше ее удалить из памяти
     fAutorize.Visible := False;
     myForm.Visible := true; // Показываем главную форму
@@ -405,7 +570,6 @@ begin
     dblcodDostupa.ControlLabel.Visible := true;
     dblcodDostupa.ControlLabel.Font.Color := clRed;
   end;
-
 end;
 
 // ================= редактировать данные пользователя ===================
@@ -440,15 +604,15 @@ begin
 
   panKodDostupa.Visible := true;
   panAutorize.Visible := False;
-  fAutorize.Tag := 2;   // Код доступа
+  fAutorize.Tag := 2; // Код доступа
 end;
 
 // --------- экшн кнопки Сохранить РЕДАКТИРУЕМЫЕ данные -----------------
 procedure TfAutorize.acEditUserDataUpdate(Sender: TObject);
 begin
   if (dbLEditPIB.Text <> oldName) or (dbLEditPosada.Text <> oldPosada) or
-    ((edEmailEdit.Text <> oldEmail) and (edEmailEdit.IsValid))  or
-    (edPSWEdit.Text <> '')  then
+    ((edEmailEdit.Text <> oldEmail) and (edEmailEdit.IsValid)) or
+    (edPSWEdit.Text <> '') then
     btnEditUserData.Enabled := true
   else
     btnEditUserData.Enabled := False;
@@ -528,13 +692,14 @@ end;
 procedure TfAutorize.btnSaveClick(Sender: TObject);
 var
   MyName, posada, mail, psw: string;
-  region: integer;
+  region: Integer;
 begin // ---- Зарегистрироваться --------
 
   MyName := edPIBregister.Text;
   posada := edPosada.Text;
   mail := edEmail.Text;
-  region := dbLComboRegion.KeyValue;
+  region := GetRegionIDByName(DBcbRegion.Text);
+
 
   // ========= проверка на валидность данніх =====
   if isAssetValue('User', 'fullName', MyName) then
@@ -593,7 +758,6 @@ begin // ---- Зарегистрироваться --------
 
     end;
   end;
-
 end;
 
 end.

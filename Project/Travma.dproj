@@ -156,6 +156,14 @@
             <Form>frmObInputZahid</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="..\SOURCE\uFrameObNewZahid.pas">
+            <Form>frmObNewZahid</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\SOURCE\uOptions.pas">
+            <Form>frmOption</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

@@ -1,4 +1,4 @@
-// чтоб фреймы показывались Delphi IDE, надо поменять *dfm object на inherited
+п»ї// С‡С‚РѕР± С„СЂРµР№РјС‹ РїРѕРєР°Р·С‹РІР°Р»РёСЃСЊ Delphi IDE, РЅР°РґРѕ РїРѕРјРµРЅСЏС‚СЊ *dfm object РЅР° inherited
 unit uMainForm;
 
 interface
@@ -11,8 +11,8 @@ uses
   Vcl.Controls, Vcl.StdCtrls, Vcl.ComCtrls, sComboBoxes, sLabel, JvExExtCtrls,
   JvExtComponent, JvClock, dxGDIPlusClasses, ES.BaseControls, ES.Images,
   Vcl.ExtCtrls, sPanel, sStatusBar, Vcl.Forms, sScrollBox, sFrameBar, sSplitter,
-  sMonthCalendar, acProgressBar, VclTee.TeeGDIPlus, VCLTee.TeEngine,
-  VCLTee.TeeProcs, VCLTee.Chart;
+  sMonthCalendar, acProgressBar, VclTee.TeeGDIPlus, VclTee.TeEngine,
+  VclTee.TeeProcs, VclTee.Chart, Uni, Dialogs;
 
 type
   TFrameClass = class of TCustomInfoFrame;
@@ -36,18 +36,25 @@ type
     sMonthCalendar1: TsMonthCalendar;
     Timer: TTimer;
     ProgressBar: TsProgressBar;
-    lbInfo: TsLabelFX;
-    procedure sFrameBar1Items0CreateFrame(Sender: TObject;
-      var Frame: TCustomFrame);
+    TimerBlink: TTimer;
+    lbInfo: TLabel;
     procedure FormShow(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
+    procedure TimerBlinkTimer(Sender: TObject);
+    procedure sFrameBar1Items0Click(Sender: TObject);
     procedure sFrameBar1Items1CreateFrame(Sender: TObject;
+      var Frame: TCustomFrame);
+    procedure sFrameBar1Items2CreateFrame(Sender: TObject;
+      var Frame: TCustomFrame);
+    procedure sFrameBar1Items0CreateFrame(Sender: TObject;
       var Frame: TCustomFrame);
 
   private
     { Private declarations }
+    //РџСЂРѕС†РµРґСѓСЂР° РїРµСЂРµРІС–СЂРєРё СЂРѕР»С–
+    procedure ApplyUserRoleAccess;
   public
     { Public declarations }
     myFrame: TFrame;
@@ -61,29 +68,45 @@ type
 var
   myForm: TmyForm;
   OldFrame, CurrentFrame: TCustomInfoFrame;
-  AppLoading: boolean = False; // Запретить анимацию кадра во время загрузки
-  // приложения
-  FormShowed: boolean = False; // Эта переменная используется при инициализации
-  // первой формы в событии OnShow. Используется для предотвращения повторной
-  // инициализации после каждого воссоздания формы. Событие Form.OnShow
-  // обрабатывается после каждого переключения в режим со скинами или без скинов.
-  MyName, MyRegion: String;
-  Nachalo, Konec: TDateTime; //начало и конец периодов для выборки
-  IspolnitelCount, mentorCount: Integer; //кол-во исполнителей для отчета в ексель
+  AppLoading: boolean = False; // Р—Р°РїСЂРµС‚РёС‚СЊ Р°РЅРёРјР°С†РёСЋ РєР°РґСЂР° РІРѕ РІСЂРµРјСЏ Р·Р°РіСЂСѓР·РєРё
+  // РїСЂРёР»РѕР¶РµРЅРёСЏ
+  FormShowed: boolean = False; // Р­С‚Р° РїРµСЂРµРјРµРЅРЅР°СЏ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
+  // РїРµСЂРІРѕР№ С„РѕСЂРјС‹ РІ СЃРѕР±С‹С‚РёРё OnShow. РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РїСЂРµРґРѕС‚РІСЂР°С‰РµРЅРёСЏ РїРѕРІС‚РѕСЂРЅРѕР№
+  // РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРѕСЃР»Рµ РєР°Р¶РґРѕРіРѕ РІРѕСЃСЃРѕР·РґР°РЅРёСЏ С„РѕСЂРјС‹. РЎРѕР±С‹С‚РёРµ Form.OnShow
+  // РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ РїРѕСЃР»Рµ РєР°Р¶РґРѕРіРѕ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІ СЂРµР¶РёРј СЃРѕ СЃРєРёРЅР°РјРё РёР»Рё Р±РµР· СЃРєРёРЅРѕРІ.
+  MyName, MyRegion, Kurator: String;
+  NumRegion: Integer; // id СЂРµРіРёРѕРЅРіР° СЃРµСЃСЃРёРё
+  UserRole: Variant; // РјРѕР¶Рµ Р±СѓС‚Рё Null - СЂРѕР»СЊ СЋР·РµСЂР° (РїСЂР°РІР° РґРѕСЃС‚СѓРїСѓ)
+  Nachalo, Konec: TDateTime; // РЅР°С‡Р°Р»Рѕ Рё РєРѕРЅРµС† РїРµСЂРёРѕРґРѕРІ РґР»СЏ РІС‹Р±РѕСЂРєРё
+  IspolnitelCount, mentorCount: Integer;
+  // РєРѕР»-РІРѕ РёСЃРїРѕР»РЅРёС‚РµР»РµР№ РґР»СЏ РѕС‚С‡РµС‚Р° РІ РµРєСЃРµР»СЊ
 
 implementation
 
 {$R *.dfm}
 
-uses uMenu, uDM, uAutorize, uObchinaMenu;
+uses uMenu, uDM, uAutorize, uObchinaMenu, uOptions;
 
 { TForm2 }
 
-
+procedure TmyForm.TimerBlinkTimer(Sender: TObject);
+begin // lbInfo
+  if lbInfo.Tag = 0 then
+  begin
+    lbInfo.Font.Color := clRed;
+    lbInfo.Tag := 1;
+  end
+  else
+  begin
+    lbInfo.Font.Color := clWhite;
+    lbInfo.Tag := 0;
+  end;
+  lbInfo.Repaint; // РІР°Р¶Р»РёРІРѕ РґР»СЏ РѕРЅРѕРІР»РµРЅРЅСЏ!
+end;
 
 procedure TmyForm.TimerTimer(Sender: TObject);
 begin
-  { Показываем окно авторизации }
+  { РџРѕРєР°Р·С‹РІР°РµРј РѕРєРЅРѕ Р°РІС‚РѕСЂРёР·Р°С†РёРё }
   myForm.Hide;
   Timer.Enabled := False;
   fAutorize := TfAutorize.Create(Application);
@@ -92,79 +115,140 @@ end;
 
 procedure TmyForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if Assigned(fAutorize) then fAutorize.Close;
+  if Assigned(fAutorize) then
+    fAutorize.Close;
 end;
-
-
 
 procedure TmyForm.FormCreate(Sender: TObject);
 begin
-  // перед созданием сделаем авторизацию
-//  Timer.Enabled := True; // Запускаем таймер для скрытия основного окна
-  // блок ini файла
-    IniName := ExtractFilePath(Application.ExeName) + 'options.ini';  // присвоить переменной имя ини файла
-      with ProgressBar do
+  // РїРµСЂРµРґ СЃРѕР·РґР°РЅРёРµРј СЃРґРµР»Р°РµРј Р°РІС‚РѕСЂРёР·Р°С†РёСЋ
+  // Timer.Enabled := True; // Р—Р°РїСѓСЃРєР°РµРј С‚Р°Р№РјРµСЂ РґР»СЏ СЃРєСЂС‹С‚РёСЏ РѕСЃРЅРѕРІРЅРѕРіРѕ РѕРєРЅР°
+  // Р±Р»РѕРє ini С„Р°Р№Р»Р°
+  IniName := ExtractFilePath(Application.ExeName) + 'options.ini';
+  // РїСЂРёСЃРІРѕРёС‚СЊ РїРµСЂРµРјРµРЅРЅРѕР№ РёРјСЏ РёРЅРё С„Р°Р№Р»Р°
+  with ProgressBar do
   begin
-    parent := statusBar;
+    parent := StatusBar;
     Position := 1;
-    statusBar.Panels[1].Style := psOwnerDraw;
+    StatusBar.Panels[1].Style := psOwnerDraw;
+  end;
+  // РЅРµ РїРѕРєР°Р·СѓРІР°С‚Рё С„СЂРµР№Рј РїС–Рґ РєРЅРѕРїРєРѕСЋ
+  sFrameBar1.Items[0].Frame := nil;
+end;
+
+
+procedure TmyForm.ApplyUserRoleAccess;
+var
+  RoleInt: Integer;
+begin
+  // РџСЂРёС…РѕРІСѓС”РјРѕ РІСЃРµ Р·Р° Р·Р°РјРѕРІС‡СѓРІР°РЅРЅСЏРј
+  sFrameBar1.Items[0].Visible := True;
+  sFrameBar1.Items[1].Visible := False;
+  sFrameBar1.Items[2].Visible := False;
+
+  // РЇРєС‰Рѕ СЂРѕР»СЊ РЅРµ РІРёР·РЅР°С‡РµРЅР° вЂ” Р»РёС€Рµ РїСѓРЅРєС‚ 0
+  if VarIsNull(UserRole) then
+    Exit;
+
+  // РљРѕРЅРІРµСЂС‚СѓС”РјРѕ Variant РґРѕ Integer
+  RoleInt := VarAsType(UserRole, varInteger);
+
+  case RoleInt of
+    0: begin
+      // РђРґРјС–РЅ вЂ” РІСЃС– РїСѓРЅРєС‚Рё
+      sFrameBar1.Items[0].Visible := True;
+      sFrameBar1.Items[1].Visible := True;
+      sFrameBar1.Items[2].Visible := True;
+    end;
+    1: begin
+      sFrameBar1.Items[1].Visible := True;
+    end;
+    2: begin
+      sFrameBar1.Items[2].Visible := True;
+      sFrameBar1.Items[0].Visible := False;
+    end;
+    3: begin
+      sFrameBar1.Items[1].Visible := True;
+      sFrameBar1.Items[2].Visible := True;
+    end;
   end;
 end;
 
 procedure TmyForm.CreateNewFrame(FrameType: TFrameClass; Sender: TObject);
 begin
+  // РЇРєС‰Рѕ РїРѕС‚РѕС‡РЅРёР№ С„СЂРµР№Рј С–СЃРЅСѓС” вЂ” Р·Р°РїР°Рј'СЏС‚Р°С‚Рё Р№РѕРіРѕ СЏРє СЃС‚Р°СЂРёР№
   if Assigned(CurrentFrame) then
     OldFrame := CurrentFrame;
 
+   // РЇРєС‰Рѕ СЃС‚Р°СЂРёР№ С„СЂРµР№Рј С‚Р°РєРѕРіРѕ Р¶ С‚РёРїСѓ вЂ” Р·РЅРёС‰РёС‚Рё Р№РѕРіРѕ
   if OldFrame <> nil then
-  begin // Выгрузить если существует
+  begin // Р’С‹РіСЂСѓР·РёС‚СЊ РµСЃР»Рё СЃСѓС‰РµСЃС‚РІСѓРµС‚
     if OldFrame is FrameType then
       FreeAndNil(OldFrame);
   end;
+
   CurrentFrame := FrameType.Create(myForm);
+
+ // РћРЅРѕРІР»СЋС”РјРѕ Р·РѕРІРЅС–С€РЅС–Р№ РІРёРіР»СЏРґ/РЅР°Р·РІСѓ С– С‚.Рї.
   myForm.UpdateFrame(Sender);
 end;
-
-
 
 procedure TmyForm.FormShow(Sender: TObject);
 begin
   if not FormShowed then
   begin
     AppLoading := True;
-    FormShowed := True; // предотвращение повторной инициализации
+    FormShowed := True; // РїСЂРµРґРѕС‚РІСЂР°С‰РµРЅРёРµ РїРѕРІС‚РѕСЂРЅРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 
-     // Открываем первый элемент панели фрейма (TfrmMenu)
- //   sFrameBar1.OpenItem(0, False { Без анимации } );
+    // РћС‚РєСЂС‹РІР°РµРј РїРµСЂРІС‹Р№ СЌР»РµРјРµРЅС‚ РїР°РЅРµР»Рё С„СЂРµР№РјР° (TfrmMenu)
+    // sFrameBar1.OpenItem(0, False { Р‘РµР· Р°РЅРёРјР°С†РёРё } );
 
-    // Пример доступа к фрейму (нажмите на spdBtn_CurrSkin)
-//    TfrmMenu(sFrameBar1.Items[0].Frame).btnVidomist.OnClick(TfrmMenu(sFrameBar1.Items[0].Frame).btnVidomist);
-//    GenerateSkinsList;  // Поиск доступных скинов
+    // РџСЂРёРјРµСЂ РґРѕСЃС‚СѓРїР° Рє С„СЂРµР№РјСѓ (РЅР°Р¶РјРёС‚Рµ РЅР° spdBtn_CurrSkin)
+    // TfrmMenu(sFrameBar1.Items[0].Frame).btnVidomist.OnClick(TfrmMenu(sFrameBar1.Items[0].Frame).btnVidomist);
+    // GenerateSkinsList;  // РџРѕРёСЃРє РґРѕСЃС‚СѓРїРЅС‹С… СЃРєРёРЅРѕРІ
+
+
+      // вњ… РџР•Р Р•Р’Р†Р РљРђ Р РћР›Р† Р®Р—Р•Р Рђ
+  ApplyUserRoleAccess;
 
     AppLoading := False;
+
   end;
+end;
+
+procedure TmyForm.sFrameBar1Items0Click(Sender: TObject);
+
+begin // РќР°СЃС‚СЂРѕР№РєРё
+  CreateNewFrame(TfrmOption, Sender);
 end;
 
 procedure TmyForm.sFrameBar1Items0CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
-begin    // Травмацентр
-  Frame := TfrmMenu.Create(nil);
-  stitleBar1.items[0].visible := false;
-  stitleBar1.items[2].visible := false;
-  stitleBar1.items[1].visible := true;
-  EsImage1.Visible := true;
-  sSkinManager1.UpdateScale(Frame);
+begin
+// РќРµ РїРѕРєР°Р·РёРІР°С‚СЊ С„СЂРµР№Рј
+  sFrameBar1.Items[0].Frame := nil;
 end;
-
-
 
 procedure TmyForm.sFrameBar1Items1CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
-begin   // Община
-  Frame := TfrmObchiaMenu.Create(nil);
-  stitleBar1.items[0].visible := false;
-  stitleBar1.items[1].visible := false;
-  stitleBar1.items[2].visible := true;
+begin    // РўСЂР°РІРјР°С†РµРЅС‚СЂ
+  Frame := TfrmMenu.Create(nil);
+
+  EsImage1.Visible := true;
+  lbInfo.Caption := '';
+  sSkinManager1.UpdateScale(Frame);
+end;
+
+procedure TmyForm.sFrameBar1Items2CreateFrame(Sender: TObject;
+  var Frame: TCustomFrame);
+  var
+  ObFrame: TfrmObchiaMenu;
+begin   // РћР±С‰РёРЅР°
+  ObFrame := TfrmObchiaMenu.Create(nil);
+  Frame := ObFrame; // РџСЂРёСЃРІРѕС”РЅРЅСЏ РІ Frame РґР»СЏ sFrameBar1
+  // Р’РёРєР»РёРє РїРµСЂРµРІС–СЂРєРё РїСЂР°РІ
+  ObFrame.ApplyPermissions;
+ // Р†РЅС€С– РЅР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ
   EsImage1.Visible := false;
   sSkinManager1.UpdateScale(Frame);
 end;
@@ -174,11 +258,11 @@ begin
   if Assigned(CurrentFrame) then
   begin
     CurrentFrame.Visible := False;
-    // Устанавливаем положение нового фрейма
+    // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕР»РѕР¶РµРЅРёРµ РЅРѕРІРѕРіРѕ С„СЂРµР№РјР°
     CurrentFrame.Align := alClient;
-    CurrentFrame.Parent := panConteiner;
+    CurrentFrame.parent := panConteiner;
     UpdateFrameControls;
-    // если Animated и sSkinManager1.Active, а не AppLoading, тогда начинаем
+    // РµСЃР»Рё Animated Рё sSkinManager1.Active, Р° РЅРµ AppLoading, С‚РѕРіРґР° РЅР°С‡РёРЅР°РµРј
     CurrentFrame.SendToBack;
     CurrentFrame.Visible := True;
     if Assigned(OldFrame) then
@@ -189,7 +273,7 @@ begin
     CurrentFrame.Visible := True;
 {$IFNDEF DELPHI_XE}
     CurrentFrame.Repaint;
-    // Перекрасить графические элементы управления, обходной путь для старой проблемы обновления Delphi
+    // РџРµСЂРµРєСЂР°СЃРёС‚СЊ РіСЂР°С„РёС‡РµСЃРєРёРµ СЌР»РµРјРµРЅС‚С‹ СѓРїСЂР°РІР»РµРЅРёСЏ, РѕР±С…РѕРґРЅРѕР№ РїСѓС‚СЊ РґР»СЏ СЃС‚Р°СЂРѕР№ РїСЂРѕР±Р»РµРјС‹ РѕР±РЅРѕРІР»РµРЅРёСЏ Delphi
 {$ENDIF}
   end;
   if Assigned(OldFrame) then

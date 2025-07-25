@@ -43,6 +43,20 @@ type
     qTraining: TUniQuery;
     qClients: TUniQuery;
     dsClients: TUniDataSource;
+    qEvents: TUniQuery;
+    dsEvents: TUniDataSource;
+    qFindClients: TUniQuery;
+    dsFindClients: TUniDataSource;
+    qEventBoss: TUniQuery;
+    dsEventBoss: TUniDataSource;
+    qClubs: TUniQuery;
+    dsClubs: TUniDataSource;
+    qRegions: TUniQuery;
+    qKurators: TUniQuery;
+    dsRegions: TUniDataSource;
+    dsKurators: TUniDataSource;
+    qUser_option: TUniQuery;
+    dsUser_option: TUniDataSource;
   private
     { Private declarations }
   public

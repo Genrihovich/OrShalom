@@ -1,6 +1,6 @@
 object DM: TDM
   OldCreateOrder = False
-  Height = 460
+  Height = 577
   Width = 406
   object UniConnection: TUniConnection
     ProviderName = 'MySQL'
@@ -54,6 +54,7 @@ object DM: TDM
     Connection = UniConnection
     SQL.Strings = (
       'SELECT * FROM User WHERE id_region = '#39'1'#39)
+    Active = True
     Left = 16
     Top = 120
   end
@@ -244,7 +245,7 @@ object DM: TDM
   object qClients: TUniQuery
     Connection = UniConnection
     SQL.Strings = (
-      'select * From Clients')
+      'SELECT * FROM `Clients` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39';')
     Active = True
     Left = 24
     Top = 344
@@ -253,5 +254,124 @@ object DM: TDM
     DataSet = qClients
     Left = 24
     Top = 400
+  end
+  object qEvents: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'SELECT'
+      '  E.`ID`,'
+      '  E.`'#1044#1072#1090#1072'`,'
+      '  C.`'#1053#1072#1079#1074#1072'` AS `ClubName`, '
+      '  E.`'#1053#1072#1079#1074#1072'_'#1079#1072#1093#1086#1076#1091'`,'
+      '  CL.`'#1060#1048#1054'` AS `'#1055#1030#1041'_'#1093#1090#1086'_'#1087#1088#1086#1074#1086#1076#1080#1074'`,'
+      '  E.`'#1050#1110#1083#1100#1082#1110#1089#1090#1100'_'#1089#1090#1086#1088#1086#1085#1085#1110#1093'`,'
+      '  E.`id_region`,'
+      '  R.`nameRegion` AS `'#1053#1072#1079#1074#1072'_'#1088#1077#1075#1110#1086#1085#1091'`'
+      'FROM `Events` E'
+      'LEFT JOIN `Clubs` C ON E.`ClubID` = C.`ID`'
+      'LEFT JOIN `Clients` CL ON E.`'#1061#1090#1086'_'#1087#1088#1086#1074#1086#1076#1080#1074'` = CL.`JDC ID`'
+      'LEFT JOIN `Region` R ON E.`id_region` = R.`id_region`'
+      '/*WHERE E.`id_region` = :RegionID*/'
+      'ORDER BY E.`'#1044#1072#1090#1072'` DESC;')
+    Active = True
+    Left = 80
+    Top = 344
+  end
+  object dsEvents: TUniDataSource
+    DataSet = qEvents
+    Left = 80
+    Top = 400
+  end
+  object qFindClients: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'SELECT * FROM `Clients` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39';')
+    Active = True
+    Left = 136
+    Top = 344
+  end
+  object dsFindClients: TUniDataSource
+    DataSet = qFindClients
+    Left = 136
+    Top = 400
+  end
+  object qEventBoss: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'select * from `Clients`')
+    Active = True
+    Left = 200
+    Top = 344
+  end
+  object dsEventBoss: TUniDataSource
+    DataSet = qEventBoss
+    Left = 200
+    Top = 400
+  end
+  object qClubs: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'select * from `Clubs`')
+    Active = True
+    Left = 256
+    Top = 344
+  end
+  object dsClubs: TUniDataSource
+    DataSet = qClubs
+    Left = 248
+    Top = 400
+  end
+  object qRegions: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'select * from Region')
+    Active = True
+    Left = 16
+    Top = 456
+  end
+  object qKurators: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'SELECT '
+      '  C1.`'#1050#1091#1088#1072#1090#1086#1088'`,'
+      '  C2.`JDC ID`'
+      'FROM '
+      '  Clients C1'
+      'JOIN '
+      '  Clients C2 ON C1.`'#1050#1091#1088#1072#1090#1086#1088'` = C2.`'#1060#1048#1054'`'
+      'WHERE '
+      '  C1.`'#1050#1091#1088#1072#1090#1086#1088'` <> '#39#39' '
+      '  AND C1.`'#1054#1089#1085#1086#1074#1085#1072#1103' '#1086#1088#1075#1072#1085#1080#1079#1072#1094#1080#1103'` = '#39#1061#1077#1089#1077#1076' '#1041#1077#1096#1090' - '#1061#1084#1077#1083#1100#1085#1080#1094#1082#1080#1081#39' '
+      '  AND C1.`'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')` <> '#39#39
+      'GROUP BY '
+      '  C1.`'#1050#1091#1088#1072#1090#1086#1088'`, C2.`JDC ID`'
+      'ORDER BY '
+      '  C1.`'#1050#1091#1088#1072#1090#1086#1088'`;')
+    Active = True
+    Left = 80
+    Top = 456
+  end
+  object dsRegions: TUniDataSource
+    DataSet = qRegions
+    Left = 16
+    Top = 512
+  end
+  object dsKurators: TUniDataSource
+    DataSet = qKurators
+    Left = 72
+    Top = 512
+  end
+  object qUser_option: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'select * from User')
+    Active = True
+    Left = 152
+    Top = 456
+  end
+  object dsUser_option: TUniDataSource
+    DataSet = qUser_option
+    Left = 152
+    Top = 512
   end
 end

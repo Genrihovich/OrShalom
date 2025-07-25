@@ -32,7 +32,7 @@ object myForm: TmyForm
     Width = 185
     Height = 495
     HorzScrollBar.Visible = False
-    VertScrollBar.Range = 66
+    VertScrollBar.Range = 96
     VertScrollBar.Tracking = True
     AutoScroll = False
     TabOrder = 0
@@ -42,11 +42,19 @@ object myForm: TmyForm
     Items = <
       item
         DisplayName = 'TsTitleItem'
+        TextAlignment = taLeftJustify
+        Caption = #1053#1072#1083#1072#1096#1090#1091#1074#1072#1085#1085#1103
+        SkinSection = 'BUTTON_HUGE'
+        OnCreateFrame = sFrameBar1Items0CreateFrame
+        OnClick = sFrameBar1Items0Click
+      end
+      item
+        DisplayName = 'TsTitleItem'
         ShowArrow = True
         TextAlignment = taLeftJustify
         Caption = #1058#1088#1072#1074#1084#1072#1094#1077#1085#1090#1088
         SkinSection = 'MENUCAPTION'
-        OnCreateFrame = sFrameBar1Items0CreateFrame
+        OnCreateFrame = sFrameBar1Items1CreateFrame
       end
       item
         DisplayName = 'TsTitleItem'
@@ -54,7 +62,7 @@ object myForm: TmyForm
         TextAlignment = taLeftJustify
         Caption = #1054#1073#1097#1080#1085#1072
         SkinSection = 'MENUCAPTION'
-        OnCreateFrame = sFrameBar1Items1CreateFrame
+        OnCreateFrame = sFrameBar1Items2CreateFrame
       end>
     object sMonthCalendar1: TsMonthCalendar
       Left = 0
@@ -4993,26 +5001,24 @@ object myForm: TmyForm
         Stretch = Mixed
         Visible = False
       end
-      object lbInfo: TsLabelFX
+      object lbInfo: TLabel
         Left = 97
         Top = 1
         Width = 511
         Height = 53
         Align = alClient
         Alignment = taCenter
-        ParentFont = False
-        Layout = tlCenter
-        WordWrap = True
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = clHotLight
-        Font.Height = -13
+        Font.Color = clWindowText
+        Font.Height = -16
         Font.Name = 'Tahoma'
         Font.Style = []
-        Angle = 0
-        Shadow.OffsetKeeper.LeftTop = -1
-        Shadow.OffsetKeeper.RightBottom = 3
-        ExplicitWidth = 8
-        ExplicitHeight = 20
+        ParentFont = False
+        ShowAccelChar = False
+        Layout = tlCenter
+        WordWrap = True
+        ExplicitWidth = 5
+        ExplicitHeight = 19
       end
       object JvClock1: TJvClock
         Left = 608
@@ -18968,5 +18974,12 @@ object myForm: TmyForm
     OnTimer = TimerTimer
     Left = 911
     Top = 329
+  end
+  object TimerBlink: TTimer
+    Enabled = False
+    Interval = 300
+    OnTimer = TimerBlinkTimer
+    Left = 912
+    Top = 392
   end
 end

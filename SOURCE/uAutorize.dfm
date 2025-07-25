@@ -282,32 +282,21 @@ object fAutorize: TfAutorize
         0000000000000000000000000000000000000000000000000000000000000000
         0000000000000000000000000000000000000000000000000000}
     end
-    object dbLComboRegion: TDBLookupComboboxEh
+    object DBcbRegion: TDBComboBoxEh
       Left = 16
-      Top = 40
-      Width = 247
+      Top = 42
+      Width = 240
       Height = 21
-      ControlLabel.Caption = #1080#1085#1092#1086' '#1083#1072#1073#1077#1083
-      ControlLabel.Transparent = True
-      ControlLabelLocation.Position = lpAboveCenterEh
       DynProps = <>
-      DataField = ''
-      DropDownBox.AutoDrop = True
-      DropDownBox.Rows = 20
       EmptyDataInfo.Text = #1042#1080#1073#1077#1088#1080' '#1088#1077#1075#1110#1086#1085
       EditButtons = <
         item
-          ShortCut = 0
           Style = ebsPlusEh
-          OnClick = DBLookupComboboxEh7EditButtons0Click
+          OnClick = DBComboBoxEh1EditButtons0Click
         end>
-      KeyField = 'id'
-      ListField = 'nameRegion'
-      ListSource = DM.dsRegion
-      Style = csDropDownEh
       TabOrder = 0
       Visible = True
-      OnChange = dbLComboRegionChange
+      OnChange = DBcbRegionChange
     end
   end
   object BitBtn1: TBitBtn

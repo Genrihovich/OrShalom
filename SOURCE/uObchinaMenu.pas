@@ -10,14 +10,17 @@ uses
 type
   TfrmObchiaMenu = class(TFrame)
     sFrameAdapter1: TsFrameAdapter;
-    btnVidomist: TsBitBtn;
+    btnExportData: TsBitBtn;
     sBitBtn1: TsBitBtn;
-    procedure btnVidomistClick(Sender: TObject);
+    procedure btnExportDataClick(Sender: TObject);
     procedure sBitBtn1Click(Sender: TObject);
+
   private
     { Private declarations }
   public
     { Public declarations }
+    procedure ApplyPermissions;
+
   end;
 
 var
@@ -29,7 +32,22 @@ implementation
 
 uses uFrameObExport, uMainForm, uFrameObInputZahid;
 
-procedure TfrmObchiaMenu.btnVidomistClick(Sender: TObject);
+
+
+
+procedure TfrmObchiaMenu.ApplyPermissions;
+var
+  RoleInt: Integer;
+begin
+  if not VarIsNull(UserRole) then
+  begin
+    RoleInt := VarAsType(UserRole, varInteger);
+    if RoleInt = 2 then
+      btnExportData.Visible := False;
+  end;
+end;
+
+procedure TfrmObchiaMenu.btnExportDataClick(Sender: TObject);
 begin
 myForm.CreateNewFrame(TfrmObExportData, Sender);
 end;

@@ -16,7 +16,9 @@ uses
   uMyExcel in '..\SOURCE\uMyExcel.pas',
   uObchinaMenu in '..\SOURCE\uObchinaMenu.pas' {frmObchiaMenu: TFrame},
   uFrameObExport in '..\SOURCE\uFrameObExport.pas' {frmObExportData},
-  uFrameObInputZahid in '..\SOURCE\uFrameObInputZahid.pas' {frmObInputZahid};
+  uFrameObInputZahid in '..\SOURCE\uFrameObInputZahid.pas' {frmObInputZahid},
+  uFrameObNewZahid in '..\SOURCE\uFrameObNewZahid.pas' {frmObNewZahid},
+  uOptions in '..\SOURCE\uOptions.pas' {frmOption};
 
 {$R *.res}
 
@@ -29,5 +31,7 @@ begin
   Application.CreateForm(TfrmObchiaMenu, frmObchiaMenu);
   Application.CreateForm(TfrmObExportData, frmObExportData);
   Application.CreateForm(TfrmObInputZahid, frmObInputZahid);
+  Application.CreateForm(TfrmObNewZahid, frmObNewZahid);
+  Application.CreateForm(TfrmOption, frmOption);
   Application.Run;
 end.

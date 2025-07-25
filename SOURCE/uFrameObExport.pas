@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, uFrameCustom, Vcl.StdCtrls,
   sFrameAdapter, sListBox, sCheckListBox, ShellAPI, Uni, DateUtils,
   DBGridEhGrouping, ToolCtrlsEh, DBGridEhToolCtrls, DynVarsEh, EhLibVCL,
-  GridsEh, DBAxisGridsEh, DBGridEh, Vcl.ExtCtrls, sPanel;
+  GridsEh, DBAxisGridsEh, DBGridEh, Vcl.ExtCtrls, sPanel, sLabel, sStoreUtils;
 
 type
   TfrmObExportData = class(TCustomInfoFrame)
@@ -16,12 +16,14 @@ type
     panTop: TsPanel;
     panAll: TsPanel;
     DBGridEh1: TDBGridEh;
+    labBackupText: TsLabelFX;
   private
     { Private declarations }
     procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
     procedure ConvertDropFile(fN: string);
     procedure ImportCsvFileToBD;
     function ParseDate(const S: string): TDateTime;
+
   public
     { Public declarations }
     procedure AfterCreation; override;
@@ -35,15 +37,27 @@ implementation
 
 {$R *.dfm}
 
-uses uDM, uMainForm;
+uses uDM, uMainForm, uAutorize;
 
 { TfrmObExportData }
 
 procedure TfrmObExportData.AfterCreation;
+var
+  s: String;
 begin
   inherited;
   DragAcceptFiles(Handle, true);
   myForm.lbInfo.Caption := 'Перетяни на форму вигружений із SNOW excel файл';
+
+  s := sStoreUtils.ReadIniString('Caption', 'OldImportData', IniName);
+  if s <> '' then labBackupText.Caption := s;
+
+  DM.qClients.Active := false;
+  DM.qClients.Active := true;
+
+  // Запускаємо таймер для блимання повідомлення на формі
+  myForm.TimerBlink.Enabled := True;
+
 end;
 
 procedure TfrmObExportData.BeforeDestruct;
@@ -54,16 +68,52 @@ end;
 procedure TfrmObExportData.ConvertDropFile(fN: string);
 var
   ExePath, Params: string;
+  SEI: TShellExecuteInfo;
+  hProcess: THandle;
 begin // Конвертація дроп файлу
 
   ExePath := ExtractFilePath(ParamStr(0)) + 'xlsxToCsv.exe';
+
   Params := '"' + myForm.lbInfo.Caption + '" "' + ExtractFilePath(ParamStr(0)) + 'sys_user.csv"';
  // Params := '"C:\Users\Slaventy\Downloads\sys_user.xlsx" "C:\Users\Slaventy\Downloads\sys_user.csv"';
 
   myForm.lbInfo.Caption := 'Конвертація файлу: ' + myForm.lbInfo.Caption;
-  ShellExecute(0, 'open', PChar(ExePath), PChar(Params), nil, SW_SHOW);
-  chkListBox.Checked[0] := true;
-  myForm.lbInfo.Caption := ExtractFilePath(ParamStr(0)) + 'sys_user.csv"';
+
+  ZeroMemory(@SEI, SizeOf(SEI));
+  SEI.cbSize := SizeOf(SEI);
+  SEI.fMask := SEE_MASK_NOCLOSEPROCESS;
+  SEI.Wnd := 0;
+  SEI.lpFile := PChar(ExePath);
+  SEI.lpParameters := PChar(Params);
+  SEI.lpDirectory := nil;
+  SEI.nShow := SW_HIDE;
+
+  if ShellExecuteEx(@SEI) then
+  begin
+    hProcess := SEI.hProcess;
+
+    // Чекаємо, поки процес завершиться
+    WaitForSingleObject(hProcess, INFINITE);
+    CloseHandle(hProcess);
+
+    chkListBox.Checked[0] := true;
+    myForm.lbInfo.Caption := ExtractFilePath(ParamStr(0)) + 'sys_user.csv';
+
+    // Вертаємо колір мітці та вимикаємо блимання
+    myForm.TimerBlink.Enabled := False;
+    myForm.lbInfo.Font.Color := clBlack;
+    myForm.lbInfo.Repaint;
+
+    // Імпортуємо CSV після завершення
+    ImportCsvFileToBD;
+    labBackupText.Caption := 'Останній імпорт - ' + DateToStr(Now);
+    sStoreUtils.WriteIniStr('Caption', 'OldImportData', labBackupText.Caption, IniName);
+  end
+  else
+  begin
+    ShowMessage('Помилка запуску xlsxToCsv.exe!');
+  end;
+
 end;
 
 procedure TfrmObExportData.WMDropFiles(var Msg: TWMDropFiles);
@@ -83,7 +133,7 @@ begin
    // Ім'я дроп файлу
    myForm.lbInfo.Caption := fname;
     ConvertDropFile(fname);
-    ImportCsvFileToBD;
+   RenameFile(ExtractFilePath(ParamStr(0)) + 'sys_user.csv', ExtractFilePath(ParamStr(0)) + '_sys_user.csv')
   end;
   DragFinish(h);
 end;
@@ -128,56 +178,60 @@ begin
         Continue;
       end;
 
-      Q.SQL.Text := 'INSERT INTO Clients (' +
-        'jdc_id, fio, vozrast, tip_klienta, data_rozhdeniya, data_smerti, s_kem_prozhivaet, zhn, '
-        + 'evreyskoe_proiskhozhdenie, kurator, organizatsii_uchastnika, sr_dokhod_mp_khesed, '
-        + 'mestopolozhenie, sr_dokhod_mp_det_deti, mobile_phone, pensiya, kod_organizatsii_jdc, '
-        + 'adres_bez_goroda, ne_mozhet_kartoy, dop_parametry, ne_raspisyvaetsya, vpl_2014, oblast, '
-        + 'rayon_goroda, gorod_prozhivaniya, gorod, bie, inn, bzh, invalidnost, pol, '
-        + 'prichina_net_dokhoda, dokhod_ne_predostavlen, data_nachala, bezhenets_vpl, '
-        + 'poluchaet_patronazh, tip_uchastnika, koordinator_patronazha, domashniy_telefon, '
-        + 'osnovnaya_organizatsiya, id_karta, imeetsya_bank_karta, srd_dokhod_chlen, adres, '
-        + 'adres_sovpadaet, poluchaet_mat_podderzhku, smartfon, projekty_jointech, '
-        + 'raschetnoe_kol_vo_chasov, data_okonchaniya_invalidnosti, stepen_podvizhnosti, '
-        + 'pravo_na_lik_subsidiyu, fio_nats, imya_otchestvo_nats, uchastnik_vov, uchastnik_boev, obshchie_zametki'
-        + ') VALUES (' +
-        ':jdc_id, :fio, :vozrast, :tip_klienta, :data_rozhdeniya, :data_smerti, :s_kem_prozhivaet, :zhn, '
-        + ':evreyskoe_proiskhozhdenie, :kurator, :organizatsii_uchastnika, :sr_dokhod_mp_khesed, '
-        + ':mestopolozhenie, :sr_dokhod_mp_det_deti, :mobile_phone, :pensiya, :kod_organizatsii_jdc, '
-        + ':adres_bez_goroda, :ne_mozhet_kartoy, :dop_parametry, :ne_raspisyvaetsya, :vpl_2014, :oblast, '
-        + ':rayon_goroda, :gorod_prozhivaniya, :gorod, :bie, :inn, :bzh, :invalidnost, :pol, '
-        + ':prichina_net_dokhoda, :dokhod_ne_predostavlen, :data_nachala, :bezhenets_vpl, '
-        + ':poluchaet_patronazh, :tip_uchastnika, :koordinator_patronazha, :domashniy_telefon, '
-        + ':osnovnaya_organizatsiya, :id_karta, :imeetsya_bank_karta, :srd_dokhod_chlen, :adres, '
-        + ':adres_sovpadaet, :poluchaet_mat_podderzhku, :smartfon, :projekty_jointech, '
-        + ':raschetnoe_kol_vo_chasov, :data_okonchaniya_invalidnosti, :stepen_podvizhnosti, ' +
-        ':pravo_na_lik_subsidiyu, :fio_nats, :imya_otchestvo_nats, :uchastnik_vov, :uchastnik_boev, :obshchie_zametki' +
+
+   Q.SQL.Text := 'INSERT INTO Clients (' +
+        '`JDC ID`, `ФИО`, `Возраст`, `Тип клиента (для поиска)`, `Дата рождения`, `Дата смерти`, ' +
+        '`С кем проживает`, `ЖН`, `Еврейское происхождение`, `Куратор`, `Организации участника`, ' +
+        '`Ср. доход для МП (Хесед)`, `Местоположение`, `Ср. доход для МП (детские программы)`, ' +
+        '`Мобильный телефон`, `Пенсия`, `Код организации JDC`, `Адрес без города`, ' +
+        '`Не может пользоваться картой`, `Дополнительные параметры`, `Не расписывается`, ' +
+        '`ВПЛ 2014`, `Область`, `Район города`, `Город проживания`, `Город`, `BIE`, `INN`, `БЖН`, ' +
+        '`Инвалидность`, `Пол`, `Причина отсутствия данных о доходе`, `Доход не предоставлен`, ' +
+        '`Дата начала действия`, `Беженец/ВПЛ`, `Получает патронаж`, `Тип участника`, ' +
+        '`Координатор патронажа`, `Домашний телефон`, `Основная организация`, `Идентификационная карта`, ' +
+        '`Имеется действующая банковская карта`, `Средний доход (член общины)`, `Адрес`, ' +
+        '`Адрес проживания совпадает с адресом прописки`, `Получает материальную поддержку`, ' +
+        '`Смартфон/девайс`, `Проекты Jointech`, `Расчетное количество часов`, ' +
+        '`Дата окончания инвалидности`, `Степень подвижности`, `Право на получение субсидии на лекарства`, ' +
+        '`ФИО/Фамилия на национальном языке`, `Имя отчество на национальном языке`, `Участник ВОВ (приравненный)`, ' +
+        '`Участник боевых действий`, `Общие примечания`' +
+        ') VALUES (' +
+        ':jdc_id, :fio, :vozrast, :tip_klienta, :data_rozhdeniya, :data_smerti, :s_kem_prozhivaet, :zhn, ' +
+        ':evreyskoe_proiskhozhdenie, :kurator, :organizatsii_uchastnika, :sr_dokhod_mp_khesed, :mestopolozhenie, ' +
+        ':sr_dokhod_mp_det_deti, :mobile_phone, :pensiya, :kod_organizatsii_jdc, :adres_bez_goroda, ' +
+        ':ne_mozhet_kartoy, :dop_parametry, :ne_raspisyvaetsya, :vpl_2014, :oblast, :rayon_goroda, :gorod_prozhivaniya, ' +
+        ':gorod, :bie, :inn, :bzh, :invalidnost, :pol, :prichina_net_dokhoda, :dokhod_ne_predostavlen, ' +
+        ':data_nachala, :bezhenets_vpl, :poluchaet_patronazh, :tip_uchastnika, :koordinator_patronazha, ' +
+        ':domashniy_telefon, :osnovnaya_organizatsiya, :id_karta, :imeetsya_bank_karta, :srd_dokhod_chlen, :adres, ' +
+        ':adres_sovpadaet, :poluchaet_mat_podderzhku, :smartfon, :projekty_jointech, :raschetnoe_kol_vo_chasov, ' +
+        ':data_okonchaniya_invalidnosti, :stepen_podvizhnosti, :pravo_na_lik_subsidiyu, :fio_nats, :imya_otchestvo_nats, ' +
+        ':uchastnik_vov, :uchastnik_boev, :obshchie_zametki' +
         ') ON DUPLICATE KEY UPDATE ' +
-        'fio=VALUES(fio), vozrast=VALUES(vozrast), tip_klienta=VALUES(tip_klienta), ' +
-        'data_rozhdeniya=VALUES(data_rozhdeniya), data_smerti=VALUES(data_smerti), ' +
-        's_kem_prozhivaet=VALUES(s_kem_prozhivaet), zhn=VALUES(zhn), ' +
-        'evreyskoe_proiskhozhdenie=VALUES(evreyskoe_proiskhozhdenie), kurator=VALUES(kurator), ' +
-        'organizatsii_uchastnika=VALUES(organizatsii_uchastnika), ' +
-        'sr_dokhod_mp_khesed=VALUES(sr_dokhod_mp_khesed), ' +
-        'mestopolozhenie=VALUES(mestopolozhenie), sr_dokhod_mp_det_deti=VALUES(sr_dokhod_mp_det_deti), ' +
-        'mobile_phone=VALUES(mobile_phone), pensiya=VALUES(pensiya), kod_organizatsii_jdc=VALUES(kod_organizatsii_jdc), ' +
-        'adres_bez_goroda=VALUES(adres_bez_goroda), ne_mozhet_kartoy=VALUES(ne_mozhet_kartoy), ' +
-        'dop_parametry=VALUES(dop_parametry), ne_raspisyvaetsya=VALUES(ne_raspisyvaetsya), vpl_2014=VALUES(vpl_2014), ' +
-        'oblast=VALUES(oblast), rayon_goroda=VALUES(rayon_goroda), gorod_prozhivaniya=VALUES(gorod_prozhivaniya), ' +
-        'gorod=VALUES(gorod), bie=VALUES(bie), inn=VALUES(inn), bzh=VALUES(bzh), invalidnost=VALUES(invalidnost), ' +
-        'pol=VALUES(pol), prichina_net_dokhoda=VALUES(prichina_net_dokhoda), dokhod_ne_predostavlen=VALUES(dokhod_ne_predostavlen), ' +
-        'data_nachala=VALUES(data_nachala), bezhenets_vpl=VALUES(bezhenets_vpl), poluchaet_patronazh=VALUES(poluchaet_patronazh), ' +
-        'tip_uchastnika=VALUES(tip_uchastnika), koordinator_patronazha=VALUES(koordinator_patronazha), domashniy_telefon=VALUES(domashniy_telefon), ' +
-        'osnovnaya_organizatsiya=VALUES(osnovnaya_organizatsiya), id_karta=VALUES(id_karta), imeetsya_bank_karta=VALUES(imeetsya_bank_karta), ' +
-        'srd_dokhod_chlen=VALUES(srd_dokhod_chlen), adres=VALUES(adres), adres_sovpadaet=VALUES(adres_sovpadaet), ' +
-        'poluchaet_mat_podderzhku=VALUES(poluchaet_mat_podderzhku), smartfon=VALUES(smartfon), projekty_jointech=VALUES(projekty_jointech), ' +
-        'raschetnoe_kol_vo_chasov=VALUES(raschetnoe_kol_vo_chasov), data_okonchaniya_invalidnosti=VALUES(data_okonchaniya_invalidnosti), ' +
-        'stepen_podvizhnosti=VALUES(stepen_podvizhnosti), pravo_na_lik_subsidiyu=VALUES(pravo_na_lik_subsidiyu), fio_nats=VALUES(fio_nats), ' +
-        'imya_otchestvo_nats=VALUES(imya_otchestvo_nats), uchastnik_vov=VALUES(uchastnik_vov), uchastnik_boev=VALUES(uchastnik_boev), ' +
-        'obshchie_zametki=VALUES(obshchie_zametki)';
-
-
-
+        '`ФИО`=VALUES(`ФИО`), `Возраст`=VALUES(`Возраст`), `Тип клиента (для поиска)`=VALUES(`Тип клиента (для поиска)`), ' +
+        '`Дата рождения`=VALUES(`Дата рождения`), `Дата смерти`=VALUES(`Дата смерти`), `С кем проживает`=VALUES(`С кем проживает`), ' +
+        '`ЖН`=VALUES(`ЖН`), `Еврейское происхождение`=VALUES(`Еврейское происхождение`), `Куратор`=VALUES(`Куратор`), ' +
+        '`Организации участника`=VALUES(`Организации участника`), `Ср. доход для МП (Хесед)`=VALUES(`Ср. доход для МП (Хесед)`), ' +
+        '`Местоположение`=VALUES(`Местоположение`), `Ср. доход для МП (детские программы)`=VALUES(`Ср. доход для МП (детские программы)`), ' +
+        '`Мобильный телефон`=VALUES(`Мобильный телефон`), `Пенсия`=VALUES(`Пенсия`), `Код организации JDC`=VALUES(`Код организации JDC`), ' +
+        '`Адрес без города`=VALUES(`Адрес без города`), `Не может пользоваться картой`=VALUES(`Не может пользоваться картой`), ' +
+        '`Дополнительные параметры`=VALUES(`Дополнительные параметры`), `Не расписывается`=VALUES(`Не расписывается`), ' +
+        '`ВПЛ 2014`=VALUES(`ВПЛ 2014`), `Область`=VALUES(`Область`), `Район города`=VALUES(`Район города`), ' +
+        '`Город проживания`=VALUES(`Город проживания`), `Город`=VALUES(`Город`), `BIE`=VALUES(`BIE`), `INN`=VALUES(`INN`), ' +
+        '`БЖН`=VALUES(`БЖН`), `Инвалидность`=VALUES(`Инвалидность`), `Пол`=VALUES(`Пол`), ' +
+        '`Причина отсутствия данных о доходе`=VALUES(`Причина отсутствия данных о доходе`), `Доход не предоставлен`=VALUES(`Доход не предоставлен`), ' +
+        '`Дата начала действия`=VALUES(`Дата начала действия`), `Беженец/ВПЛ`=VALUES(`Беженец/ВПЛ`), `Получает патронаж`=VALUES(`Получает патронаж`), ' +
+        '`Тип участника`=VALUES(`Тип участника`), `Координатор патронажа`=VALUES(`Координатор патронажа`), ' +
+        '`Домашний телефон`=VALUES(`Домашний телефон`), `Основная организация`=VALUES(`Основная организация`), ' +
+        '`Идентификационная карта`=VALUES(`Идентификационная карта`), `Имеется действующая банковская карта`=VALUES(`Имеется действующая банковская карта`), ' +
+        '`Средний доход (член общины)`=VALUES(`Средний доход (член общины)`), `Адрес`=VALUES(`Адрес`), ' +
+        '`Адрес проживания совпадает с адресом прописки`=VALUES(`Адрес проживания совпадает с адресом прописки`), ' +
+        '`Получает материальную поддержку`=VALUES(`Получает материальную поддержку`), `Смартфон/девайс`=VALUES(`Смартфон/девайс`), ' +
+        '`Проекты Jointech`=VALUES(`Проекты Jointech`), `Расчетное количество часов`=VALUES(`Расчетное количество часов`), ' +
+        '`Дата окончания инвалидности`=VALUES(`Дата окончания инвалидности`), `Степень подвижности`=VALUES(`Степень подвижности`), ' +
+        '`Право на получение субсидии на лекарства`=VALUES(`Право на получение субсидии на лекарства`), ' +
+        '`ФИО/Фамилия на национальном языке`=VALUES(`ФИО/Фамилия на национальном языке`), `Имя отчество на национальном языке`=VALUES(`Имя отчество на национальном языке`), ' +
+        '`Участник ВОВ (приравненный)`=VALUES(`Участник ВОВ (приравненный)`), `Участник боевых действий`=VALUES(`Участник боевых действий`), ' +
+        '`Общие примечания`=VALUES(`Общие примечания`)';
 
 
 
@@ -276,7 +330,7 @@ begin
       // Виконання SQL
       Q.ExecSQL;
     end;
-    myForm.lbInfo.Caption := i.ToString + ' - Імпортовано в Базу Даних';
+    myForm.lbInfo.Caption := (i-1).ToString + ' - Імпортовано в Базу Даних';
     ShowMessage('Імпорт завершено!');
   finally
     Q.Free;
@@ -290,6 +344,8 @@ begin
   end;
 
 end;
+
+
 
 function TfrmObExportData.ParseDate(const S: string): TDateTime;
 var
