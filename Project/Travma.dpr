@@ -28,10 +28,5 @@ begin
   Application.CreateForm(TDM, DM);
   Application.CreateForm(TfAutorize, fAutorize);
   Application.CreateForm(TmyForm, myForm);
-  Application.CreateForm(TfrmObchiaMenu, frmObchiaMenu);
-  Application.CreateForm(TfrmObExportData, frmObExportData);
-  Application.CreateForm(TfrmObInputZahid, frmObInputZahid);
-  Application.CreateForm(TfrmObNewZahid, frmObNewZahid);
-  Application.CreateForm(TfrmOption, frmOption);
   Application.Run;
 end.

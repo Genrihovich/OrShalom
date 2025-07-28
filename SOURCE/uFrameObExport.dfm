@@ -1,6 +1,7 @@
 inherited frmObExportData: TfrmObExportData
   Width = 840
   Height = 480
+  Font.Color = clWindowText
   ParentFont = False
   ExplicitWidth = 840
   ExplicitHeight = 480
@@ -12,14 +13,14 @@ inherited frmObExportData: TfrmObExportData
     Align = alTop
     TabOrder = 0
     object labBackupText: TsLabelFX
-      Left = 424
-      Top = 17
-      Width = 135
-      Height = 21
+      Left = 426
+      Top = 19
+      Width = 131
+      Height = 17
       Caption = #1054#1089#1090#1072#1085#1085#1110#1081' '#1110#1084#1087#1086#1088#1090': ..........'
       Angle = 0
-      Shadow.OffsetKeeper.LeftTop = -3
-      Shadow.OffsetKeeper.RightBottom = 5
+      Shadow.OffsetKeeper.LeftTop = -1
+      Shadow.OffsetKeeper.RightBottom = 3
     end
     object btnImport: TButton
       Left = 3

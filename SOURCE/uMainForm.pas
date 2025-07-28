@@ -80,6 +80,7 @@ var
   Nachalo, Konec: TDateTime; // начало и конец периодов для выборки
   IspolnitelCount, mentorCount: Integer;
   // кол-во исполнителей для отчета в ексель
+  DotCount: Integer = 0; // для таймера с точками
 
 implementation
 

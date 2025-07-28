@@ -4,17 +4,19 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
-  System.Classes, Vcl.Graphics,
+  System.Classes, Vcl.Graphics, Uni,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, uFrameCustom, Vcl.ExtCtrls, sPanel,
   sFrameAdapter, DBGridEhGrouping, ToolCtrlsEh, DBGridEhToolCtrls, DynVarsEh,
-  Vcl.StdCtrls, EhLibVCL, GridsEh, DBAxisGridsEh, DBGridEh;
+  Vcl.StdCtrls, EhLibVCL, GridsEh, DBAxisGridsEh, DBGridEh, Vcl.Buttons, sBitBtn;
 
 type
   TfrmObInputZahid = class(TCustomInfoFrame)
     sPanel1: TsPanel;
     DBGridEh1: TDBGridEh;
     Button1: TButton;
+    btnDeleteEven: TsBitBtn;
     procedure Button1Click(Sender: TObject);
+    procedure btnDeleteEvenClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -74,6 +76,50 @@ end;
 procedure TfrmObInputZahid.BeforeDestruct;
 begin
 
+end;
+
+procedure TfrmObInputZahid.btnDeleteEvenClick(Sender: TObject);
+var
+  EventID: Integer;
+  Answer: Integer;
+  Q: TUniQuery;
+begin
+  // Перевірка: чи є обрана строка
+  if not DBGridEh1.DataSource.DataSet.Active or DBGridEh1.DataSource.DataSet.IsEmpty then
+  begin
+    ShowMessage('Немає записів для видалення.');
+    Exit;
+  end;
+
+  // Отримуємо ID з активного запису
+  EventID := DBGridEh1.DataSource.DataSet.FieldByName('ID').AsInteger;
+
+  // Підтвердження
+  Answer := MessageDlg('Ви дійсно хочете видалити цей запис?', mtConfirmation, [mbYes, mbNo], 0);
+  if Answer <> mrYes then Exit;
+
+  // Створюємо локальний запит
+  Q := TUniQuery.Create(nil);
+  try
+    Q.Connection := DM.UniConnection;
+
+    // Видаляємо залежні записи, якщо потрібно
+    Q.SQL.Text := 'DELETE FROM EventClients WHERE EventID = :ID';
+    Q.ParamByName('ID').AsInteger := EventID;
+    Q.ExecSQL;
+
+    // Видаляємо саму подію
+    Q.SQL.Text := 'DELETE FROM Events WHERE ID = :ID';
+    Q.ParamByName('ID').AsInteger := EventID;
+    Q.ExecSQL;
+
+  finally
+    Q.Free;
+  end;
+
+  // Оновлюємо основний запит, щоб оновити грід
+ DM.qEvents.Close;
+  DM.qEvents.Open;
 end;
 
 procedure TfrmObInputZahid.Button1Click(Sender: TObject);
