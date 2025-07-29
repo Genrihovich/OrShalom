@@ -57,6 +57,7 @@ type
     dsKurators: TUniDataSource;
     qUser_option: TUniQuery;
     dsUser_option: TUniDataSource;
+    qSingleEvent: TUniQuery;
   private
     { Private declarations }
   public

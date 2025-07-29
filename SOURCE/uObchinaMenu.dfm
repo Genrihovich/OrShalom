@@ -23,7 +23,7 @@ object frmObchiaMenu: TfrmObchiaMenu
     OnClick = btnExportDataClick
     ShowFocus = False
   end
-  object sBitBtn1: TsBitBtn
+  object btnObchinaEvents: TsBitBtn
     AlignWithMargins = True
     Left = 3
     Top = 34
@@ -33,8 +33,23 @@ object frmObchiaMenu: TfrmObchiaMenu
     Caption = #1042#1085#1077#1089#1077#1085#1085#1103' '#1086#1073#1097#1080#1085#1085#1080#1093' '#1079#1072#1093#1086#1076#1110#1074
     ModalResult = 1
     TabOrder = 1
-    OnClick = sBitBtn1Click
+    OnClick = btnObchinaEventsClick
     ShowFocus = False
+  end
+  object btnAnalitic: TsBitBtn
+    AlignWithMargins = True
+    Left = 3
+    Top = 65
+    Width = 215
+    Height = 25
+    Align = alTop
+    Caption = #1040#1085#1072#1083#1110#1090#1110#1082#1072
+    ModalResult = 1
+    TabOrder = 2
+    OnClick = btnAnaliticClick
+    ShowFocus = False
+    ExplicitLeft = 6
+    ExplicitTop = 42
   end
   object sFrameAdapter1: TsFrameAdapter
     Left = 160

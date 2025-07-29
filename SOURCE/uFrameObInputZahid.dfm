@@ -1,6 +1,7 @@
 inherited frmObInputZahid: TfrmObInputZahid
   Width = 795
   Height = 345
+  Font.Color = clWindowText
   ParentFont = False
   ExplicitWidth = 795
   ExplicitHeight = 345
@@ -77,14 +78,6 @@ inherited frmObInputZahid: TfrmObInputZahid
     DynProps = <>
     TabOrder = 1
     Columns = <
-      item
-        CellButtons = <>
-        DynProps = <>
-        EditButtons = <>
-        FieldName = 'ID'
-        Footers = <>
-        Width = 17
-      end
       item
         CellButtons = <>
         DynProps = <>

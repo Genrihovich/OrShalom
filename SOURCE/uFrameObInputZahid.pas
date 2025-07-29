@@ -19,6 +19,7 @@ type
     procedure btnDeleteEvenClick(Sender: TObject);
   private
     { Private declarations }
+
   public
     { Public declarations }
     procedure AfterCreation; override;

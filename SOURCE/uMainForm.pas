@@ -81,7 +81,7 @@ var
   IspolnitelCount, mentorCount: Integer;
   // кол-во исполнителей для отчета в ексель
   DotCount: Integer = 0; // для таймера с точками
-
+  EventID: Integer; // id редактируемого евента
 implementation
 
 {$R *.dfm}

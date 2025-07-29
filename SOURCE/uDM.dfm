@@ -318,7 +318,7 @@ object DM: TDM
   end
   object dsClubs: TUniDataSource
     DataSet = qClubs
-    Left = 248
+    Left = 256
     Top = 400
   end
   object qRegions: TUniQuery
@@ -373,5 +373,10 @@ object DM: TDM
     DataSet = qUser_option
     Left = 152
     Top = 512
+  end
+  object qSingleEvent: TUniQuery
+    Connection = UniConnection
+    Left = 224
+    Top = 456
   end
 end

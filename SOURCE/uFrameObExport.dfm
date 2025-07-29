@@ -1,7 +1,6 @@
 inherited frmObExportData: TfrmObExportData
   Width = 840
   Height = 480
-  Font.Color = clWindowText
   ParentFont = False
   ExplicitWidth = 840
   ExplicitHeight = 480
@@ -478,6 +477,13 @@ inherited frmObExportData: TfrmObExportData
           DynProps = <>
           EditButtons = <>
           FieldName = #1054#1073#1097#1080#1077' '#1087#1088#1080#1084#1077#1095#1072#1085#1080#1103
+          Footers = <>
+        end
+        item
+          CellButtons = <>
+          DynProps = <>
+          EditButtons = <>
+          FieldName = #1057#1086#1079#1076#1072#1085#1086
           Footers = <>
         end>
       object RowDetailData: TRowDetailPanelControlEh

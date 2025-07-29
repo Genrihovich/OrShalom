@@ -177,16 +177,16 @@ begin
       Line := SL[i];
       Fields := Line.Split([';']);
 
-      // Перевірка: якщо рядок має менше 57 полів — пропустити
-      if Length(Fields) < 57 then
+      // Перевірка: якщо рядок має менше 58 полів — пропустити
+      if Length(Fields) < 58 then
       begin
         ShowMessage('Рядок ' + IntToStr(i + 1) + ' має недостатньо полів (' +
-          IntToStr(Length(Fields)) + ' замість 57). Пропускається.');
+          IntToStr(Length(Fields)) + ' замість 58). Пропускається.');
         Continue;
       end;
 
       Q.SQL.Text := 'INSERT INTO Clients (' +
-        '`JDC ID`, `ФИО`, `Возраст`, `Тип клиента (для поиска)`, `Дата рождения`, `Дата смерти`, '
+        '`Создано`,`JDC ID`, `ФИО`, `Возраст`, `Тип клиента (для поиска)`, `Дата рождения`, `Дата смерти`, '
         + '`С кем проживает`, `ЖН`, `Еврейское происхождение`, `Куратор`, `Организации участника`, '
         + '`Ср. доход для МП (Хесед)`, `Местоположение`, `Ср. доход для МП (детские программы)`, '
         + '`Мобильный телефон`, `Пенсия`, `Код организации JDC`, `Адрес без города`, '
@@ -200,8 +200,8 @@ begin
         + '`Смартфон/девайс`, `Проекты Jointech`, `Расчетное количество часов`, '
         + '`Дата окончания инвалидности`, `Степень подвижности`, `Право на получение субсидии на лекарства`, '
         + '`ФИО/Фамилия на национальном языке`, `Имя отчество на национальном языке`, `Участник ВОВ (приравненный)`, '
-        + '`Участник боевых действий`, `Общие примечания`' + ') VALUES (' +
-        ':jdc_id, :fio, :vozrast, :tip_klienta, :data_rozhdeniya, :data_smerti, :s_kem_prozhivaet, :zhn, '
+        + '`Участник боевых действий`,  `Общие примечания`' + ') VALUES (' +
+        ':data_sozdano, :jdc_id, :fio, :vozrast, :tip_klienta, :data_rozhdeniya, :data_smerti, :s_kem_prozhivaet, :zhn, '
         + ':evreyskoe_proiskhozhdenie, :kurator, :organizatsii_uchastnika, :sr_dokhod_mp_khesed, :mestopolozhenie, '
         + ':sr_dokhod_mp_det_deti, :mobile_phone, :pensiya, :kod_organizatsii_jdc, :adres_bez_goroda, '
         + ':ne_mozhet_kartoy, :dop_parametry, :ne_raspisyvaetsya, :vpl_2014, :oblast, :rayon_goroda, :gorod_prozhivaniya, '
@@ -212,7 +212,7 @@ begin
         + ':data_okonchaniya_invalidnosti, :stepen_podvizhnosti, :pravo_na_lik_subsidiyu, :fio_nats, :imya_otchestvo_nats, '
         + ':uchastnik_vov, :uchastnik_boev, :obshchie_zametki' +
         ') ON DUPLICATE KEY UPDATE ' +
-        '`ФИО`=VALUES(`ФИО`), `Возраст`=VALUES(`Возраст`), `Тип клиента (для поиска)`=VALUES(`Тип клиента (для поиска)`), '
+        '`Создано`=VALUES(`Создано`), `ФИО`=VALUES(`ФИО`), `Возраст`=VALUES(`Возраст`), `Тип клиента (для поиска)`=VALUES(`Тип клиента (для поиска)`), '
         + '`Дата рождения`=VALUES(`Дата рождения`), `Дата смерти`=VALUES(`Дата смерти`), `С кем проживает`=VALUES(`С кем проживает`), '
         + '`ЖН`=VALUES(`ЖН`), `Еврейское происхождение`=VALUES(`Еврейское происхождение`), `Куратор`=VALUES(`Куратор`), '
         + '`Организации участника`=VALUES(`Организации участника`), `Ср. доход для МП (Хесед)`=VALUES(`Ср. доход для МП (Хесед)`), '
@@ -236,98 +236,111 @@ begin
         + '`Право на получение субсидии на лекарства`=VALUES(`Право на получение субсидии на лекарства`), '
         + '`ФИО/Фамилия на национальном языке`=VALUES(`ФИО/Фамилия на национальном языке`), `Имя отчество на национальном языке`=VALUES(`Имя отчество на национальном языке`), '
         + '`Участник ВОВ (приравненный)`=VALUES(`Участник ВОВ (приравненный)`), `Участник боевых действий`=VALUES(`Участник боевых действий`), '
-        + '`Общие примечания`=VALUES(`Общие примечания`)';
+        + ' `Общие примечания`=VALUES(`Общие примечания`)';
 
       // Присвоєння параметрів
-      Q.ParamByName('jdc_id').AsString := Fields[0];
-      Q.ParamByName('fio').AsString := Fields[1];
-      Q.ParamByName('vozrast').AsInteger := StrToIntDef(Fields[2], 0);
-      Q.ParamByName('tip_klienta').AsString := Fields[3];
+
+            try
+        dt := ParseDate(Fields[0]);
+        Q.ParamByName('data_sozdano').AsDate := DateOf(dt);
+      except
+        Q.ParamByName('data_sozdano').Clear;
+      end;
+
+      Q.ParamByName('jdc_id').AsString := Fields[1];
+      Q.ParamByName('fio').AsString := Fields[2];
+      Q.ParamByName('vozrast').AsInteger := StrToIntDef(Fields[3], 0);
+      Q.ParamByName('tip_klienta').AsString := Fields[4];
 
       try
-        dt := ParseDate(Fields[4]);
+        dt := ParseDate(Fields[5]);
         Q.ParamByName('data_rozhdeniya').AsDate := DateOf(dt);
       except
         Q.ParamByName('data_rozhdeniya').Clear;
       end;
 
       try
-        dt := ParseDate(Fields[5]);
+        dt := ParseDate(Fields[6]);
         Q.ParamByName('data_smerti').AsDate := DateOf(dt);
       except
         Q.ParamByName('data_smerti').Clear;
       end;
 
-      Q.ParamByName('s_kem_prozhivaet').AsString := Fields[6];
-      Q.ParamByName('zhn').AsString := Fields[7];
-      Q.ParamByName('evreyskoe_proiskhozhdenie').AsString := Fields[8];
-      Q.ParamByName('kurator').AsString := Fields[9];
-      Q.ParamByName('organizatsii_uchastnika').AsString := Fields[10];
+      Q.ParamByName('s_kem_prozhivaet').AsString := Fields[7];
+      Q.ParamByName('zhn').AsString := Fields[8];
+      Q.ParamByName('evreyskoe_proiskhozhdenie').AsString := Fields[9];
+      Q.ParamByName('kurator').AsString := Fields[10];
+      Q.ParamByName('organizatsii_uchastnika').AsString := Fields[11];
       Q.ParamByName('sr_dokhod_mp_khesed').AsFloat :=
-        StrToFloatDef(Fields[11], 0);
-      Q.ParamByName('mestopolozhenie').AsString := Fields[12];
+        StrToFloatDef(Fields[12], 0);
+      Q.ParamByName('mestopolozhenie').AsString := Fields[13];
       Q.ParamByName('sr_dokhod_mp_det_deti').AsFloat :=
-        StrToFloatDef(Fields[13], 0);
-      Q.ParamByName('mobile_phone').AsString := Fields[14];
-      Q.ParamByName('pensiya').AsFloat := StrToFloatDef(Fields[15], 0);
+        StrToFloatDef(Fields[14], 0);
+      Q.ParamByName('mobile_phone').AsString := Fields[15];
+      Q.ParamByName('pensiya').AsFloat := StrToFloatDef(Fields[16], 0);
       Q.ParamByName('kod_organizatsii_jdc').AsInteger :=
-        StrToIntDef(Fields[16], 0);
-      Q.ParamByName('adres_bez_goroda').AsString := Fields[17];
-      Q.ParamByName('ne_mozhet_kartoy').AsString := Fields[18];
-      Q.ParamByName('dop_parametry').AsString := Fields[19];
-      Q.ParamByName('ne_raspisyvaetsya').AsString := Fields[20];
-      Q.ParamByName('vpl_2014').AsString := Fields[21];
-      Q.ParamByName('oblast').AsString := Fields[22];
-      Q.ParamByName('rayon_goroda').AsString := Fields[23];
-      Q.ParamByName('gorod_prozhivaniya').AsString := Fields[24];
-      Q.ParamByName('gorod').AsString := Fields[25];
-      Q.ParamByName('bie').AsString := Fields[26];
-      Q.ParamByName('inn').AsString := Fields[27];
-      Q.ParamByName('bzh').AsString := Fields[28];
-      Q.ParamByName('invalidnost').AsString := Fields[29];
-      Q.ParamByName('pol').AsString := Fields[30];
-      Q.ParamByName('prichina_net_dokhoda').AsString := Fields[31];
-      Q.ParamByName('dokhod_ne_predostavlen').AsString := Fields[32];
+        StrToIntDef(Fields[17], 0);
+      Q.ParamByName('adres_bez_goroda').AsString := Fields[18];
+      Q.ParamByName('ne_mozhet_kartoy').AsString := Fields[19];
+      Q.ParamByName('dop_parametry').AsString := Fields[20];
+      Q.ParamByName('ne_raspisyvaetsya').AsString := Fields[21];
+      Q.ParamByName('vpl_2014').AsString := Fields[22];
+      Q.ParamByName('oblast').AsString := Fields[23];
+      Q.ParamByName('rayon_goroda').AsString := Fields[24];
+      Q.ParamByName('gorod_prozhivaniya').AsString := Fields[25];
+      Q.ParamByName('gorod').AsString := Fields[26];
+      Q.ParamByName('bie').AsString := Fields[27];
+      Q.ParamByName('inn').AsString := Fields[28];
+      Q.ParamByName('bzh').AsString := Fields[29];
+      Q.ParamByName('invalidnost').AsString := Fields[30];
+      Q.ParamByName('pol').AsString := Fields[31];
+      Q.ParamByName('prichina_net_dokhoda').AsString := Fields[32];
+      Q.ParamByName('dokhod_ne_predostavlen').AsString := Fields[33];
 
       try
-        dt := ParseDate(Fields[33]);
+        dt := ParseDate(Fields[34]);
         Q.ParamByName('data_nachala').AsDate := DateOf(dt);
       except
         Q.ParamByName('data_nachala').Clear;
       end;
 
-      Q.ParamByName('bezhenets_vpl').AsString := Fields[34];
-      Q.ParamByName('poluchaet_patronazh').AsString := Fields[35];
-      Q.ParamByName('tip_uchastnika').AsString := Fields[36];
-      Q.ParamByName('koordinator_patronazha').AsString := Fields[37];
-      Q.ParamByName('domashniy_telefon').AsString := Fields[38];
-      Q.ParamByName('osnovnaya_organizatsiya').AsString := Fields[39];
-      Q.ParamByName('id_karta').AsFloat := StrToFloatDef(Fields[40], 0);
-      Q.ParamByName('imeetsya_bank_karta').AsString := Fields[41];
-      Q.ParamByName('srd_dokhod_chlen').AsFloat := StrToFloatDef(Fields[42], 0);
-      Q.ParamByName('adres').AsString := Fields[43];
-      Q.ParamByName('adres_sovpadaet').AsString := Fields[44];
-      Q.ParamByName('poluchaet_mat_podderzhku').AsString := Fields[45];
-      Q.ParamByName('smartfon').AsString := Fields[46];
+      Q.ParamByName('bezhenets_vpl').AsString := Fields[35];
+      Q.ParamByName('poluchaet_patronazh').AsString := Fields[36];
+      Q.ParamByName('tip_uchastnika').AsString := Fields[37];
+      Q.ParamByName('koordinator_patronazha').AsString := Fields[38];
+      Q.ParamByName('domashniy_telefon').AsString := Fields[39];
+      Q.ParamByName('osnovnaya_organizatsiya').AsString := Fields[40];
+      Q.ParamByName('id_karta').AsFloat := StrToFloatDef(Fields[41], 0);
+      Q.ParamByName('imeetsya_bank_karta').AsString := Fields[42];
+      Q.ParamByName('srd_dokhod_chlen').AsFloat := StrToFloatDef(Fields[43], 0);
+      Q.ParamByName('adres').AsString := Fields[44];
+      Q.ParamByName('adres_sovpadaet').AsString := Fields[45];
+      Q.ParamByName('poluchaet_mat_podderzhku').AsString := Fields[46];
+      Q.ParamByName('smartfon').AsString := Fields[47];
       Q.ParamByName('projekty_jointech').AsFloat :=
-        StrToFloatDef(Fields[47], 0);
-      Q.ParamByName('raschetnoe_kol_vo_chasov').AsFloat :=
         StrToFloatDef(Fields[48], 0);
+      Q.ParamByName('raschetnoe_kol_vo_chasov').AsFloat :=
+        StrToFloatDef(Fields[49], 0);
 
       try
-        dt := ParseDate(Fields[49]);
+        dt := ParseDate(Fields[50]);
         Q.ParamByName('data_okonchaniya_invalidnosti').AsDate := DateOf(dt);
       except
         Q.ParamByName('data_okonchaniya_invalidnosti').Clear;
       end;
 
-      Q.ParamByName('stepen_podvizhnosti').AsString := Fields[50];
-      Q.ParamByName('pravo_na_lik_subsidiyu').AsString := Fields[51];
-      Q.ParamByName('fio_nats').AsString := Fields[52];
-      Q.ParamByName('imya_otchestvo_nats').AsString := Fields[53];
-      Q.ParamByName('uchastnik_vov').AsString := Fields[54];
-      Q.ParamByName('uchastnik_boev').AsString := Fields[55];
-      Q.ParamByName('obshchie_zametki').AsString := Fields[56];
+      Q.ParamByName('stepen_podvizhnosti').AsString := Fields[51];
+      Q.ParamByName('pravo_na_lik_subsidiyu').AsString := Fields[52];
+      Q.ParamByName('fio_nats').AsString := Fields[53];
+      Q.ParamByName('imya_otchestvo_nats').AsString := Fields[54];
+      Q.ParamByName('uchastnik_vov').AsString := Fields[55];
+      Q.ParamByName('uchastnik_boev').AsString := Fields[56];
+
+//      Q.ParamByName('obshchie_zametki').AsString := Fields[57];
+
+
+      Q.ParamByName('obshchie_zametki').AsString := Fields[57];
+
 
       // Виконання SQL
       Q.ExecSQL;

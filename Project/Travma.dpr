@@ -18,7 +18,8 @@ uses
   uFrameObExport in '..\SOURCE\uFrameObExport.pas' {frmObExportData},
   uFrameObInputZahid in '..\SOURCE\uFrameObInputZahid.pas' {frmObInputZahid},
   uFrameObNewZahid in '..\SOURCE\uFrameObNewZahid.pas' {frmObNewZahid},
-  uOptions in '..\SOURCE\uOptions.pas' {frmOption};
+  uOptions in '..\SOURCE\uOptions.pas' {frmOption},
+  uFrameObAnalitics in '..\SOURCE\uFrameObAnalitics.pas' {frmObAnalitics};
 
 {$R *.res}
 

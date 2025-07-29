@@ -11,9 +11,11 @@ type
   TfrmObchiaMenu = class(TFrame)
     sFrameAdapter1: TsFrameAdapter;
     btnExportData: TsBitBtn;
-    sBitBtn1: TsBitBtn;
+    btnObchinaEvents: TsBitBtn;
+    btnAnalitic: TsBitBtn;
     procedure btnExportDataClick(Sender: TObject);
-    procedure sBitBtn1Click(Sender: TObject);
+    procedure btnObchinaEventsClick(Sender: TObject);
+    procedure btnAnaliticClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -30,7 +32,7 @@ implementation
 
 {$R *.dfm}
 
-uses uFrameObExport, uMainForm, uFrameObInputZahid;
+uses uFrameObExport, uMainForm, uFrameObInputZahid, uFrameObAnalitics;
 
 
 
@@ -43,8 +45,16 @@ begin
   begin
     RoleInt := VarAsType(UserRole, varInteger);
     if RoleInt = 2 then
+    begin
       btnExportData.Visible := False;
+      btnAnalitic.Visible := False;
+    end;
   end;
+end;
+
+procedure TfrmObchiaMenu.btnAnaliticClick(Sender: TObject);
+begin //Аналітіка
+ myForm.CreateNewFrame(TfrmObAnalitics, Sender);
 end;
 
 procedure TfrmObchiaMenu.btnExportDataClick(Sender: TObject);
@@ -52,7 +62,7 @@ begin
 myForm.CreateNewFrame(TfrmObExportData, Sender);
 end;
 
-procedure TfrmObchiaMenu.sBitBtn1Click(Sender: TObject);
+procedure TfrmObchiaMenu.btnObchinaEventsClick(Sender: TObject);
 begin  // общинка заходи  TfrmObInputZahid
  myForm.CreateNewFrame(TfrmObInputZahid, Sender);
 end;
