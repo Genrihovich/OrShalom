@@ -7,7 +7,8 @@ uses
   System.Classes, Vcl.Graphics, Uni,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, uFrameCustom, Vcl.ExtCtrls, sPanel,
   sFrameAdapter, DBGridEhGrouping, ToolCtrlsEh, DBGridEhToolCtrls, DynVarsEh,
-  Vcl.StdCtrls, EhLibVCL, GridsEh, DBAxisGridsEh, DBGridEh, Vcl.Buttons, sBitBtn;
+  Vcl.StdCtrls, EhLibVCL, GridsEh, DBAxisGridsEh, DBGridEh, Vcl.Buttons,
+  sBitBtn, System.UITypes, Data.DB, sSplitter;
 
 type
   TfrmObInputZahid = class(TCustomInfoFrame)
@@ -15,6 +16,8 @@ type
     DBGridEh1: TDBGridEh;
     Button1: TButton;
     btnDeleteEven: TsBitBtn;
+    DBGridEh2: TDBGridEh;
+    sSplitter1: TsSplitter;
     procedure Button1Click(Sender: TObject);
     procedure btnDeleteEvenClick(Sender: TObject);
   private
@@ -59,14 +62,14 @@ begin
       ParamByName('RegionID').AsInteger := NumRegion; // або будь-яке значення
     end
     else
-    begin   // для адміна
+    begin // для адміна
       SQL.Add('SELECT E.`ID`, E.`Дата`, C.`Назва` AS `ClubName`, E.`Назва_заходу`,');
       SQL.Add('  CL.`ФИО` AS `ПІБ_хто_проводив`, E.`Кількість_сторонніх`, E.`id_region`, R.`nameRegion` AS `Назва_регіону`');
       SQL.Add('FROM `Events` E');
       SQL.Add('LEFT JOIN `Clubs` C ON E.`ClubID` = C.`ID`');
       SQL.Add('LEFT JOIN `Clients` CL ON E.`Хто_проводив` = CL.`JDC ID`');
       SQL.Add('LEFT JOIN `Region` R ON E.`id_region` = R.`id_region`');
-//      SQL.Add('WHERE E.`id_region` = :RegionID');
+      // SQL.Add('WHERE E.`id_region` = :RegionID');
       SQL.Add('ORDER BY E.`Дата` DESC');
     end;
 
@@ -86,7 +89,8 @@ var
   Q: TUniQuery;
 begin
   // Перевірка: чи є обрана строка
-  if not DBGridEh1.DataSource.DataSet.Active or DBGridEh1.DataSource.DataSet.IsEmpty then
+  if not DBGridEh1.DataSource.DataSet.Active or DBGridEh1.DataSource.DataSet.IsEmpty
+  then
   begin
     ShowMessage('Немає записів для видалення.');
     Exit;
@@ -96,8 +100,10 @@ begin
   EventID := DBGridEh1.DataSource.DataSet.FieldByName('ID').AsInteger;
 
   // Підтвердження
-  Answer := MessageDlg('Ви дійсно хочете видалити цей запис?', mtConfirmation, [mbYes, mbNo], 0);
-  if Answer <> mrYes then Exit;
+  Answer := MessageDlg('Ви дійсно хочете видалити цей запис?', mtConfirmation,
+    [mbYes, mbNo], 0);
+  if Answer <> mrYes then
+    Exit;
 
   // Створюємо локальний запит
   Q := TUniQuery.Create(nil);
@@ -119,7 +125,7 @@ begin
   end;
 
   // Оновлюємо основний запит, щоб оновити грід
- DM.qEvents.Close;
+  DM.qEvents.Close;
   DM.qEvents.Open;
 end;
 

@@ -1,11 +1,20 @@
 inherited frmObInputZahid: TfrmObInputZahid
   Width = 795
-  Height = 345
-  Font.Color = clWindowText
+  Height = 490
   ParentFont = False
   ExplicitWidth = 795
-  ExplicitHeight = 345
-  object sPanel1: TsPanel [0]
+  ExplicitHeight = 490
+  object sSplitter1: TsSplitter [0]
+    Left = 0
+    Top = 322
+    Width = 795
+    Height = 6
+    Cursor = crVSplit
+    Align = alBottom
+    ExplicitTop = 41
+    ExplicitWidth = 287
+  end
+  object sPanel1: TsPanel [1]
     Left = 0
     Top = 0
     Width = 795
@@ -68,11 +77,11 @@ inherited frmObInputZahid: TfrmObInputZahid
       OnClick = btnDeleteEvenClick
     end
   end
-  object DBGridEh1: TDBGridEh [1]
+  object DBGridEh1: TDBGridEh [2]
     Left = 0
     Top = 41
     Width = 795
-    Height = 304
+    Height = 281
     Align = alClient
     DataSource = DM.dsEvents
     DynProps = <>
@@ -138,8 +147,41 @@ inherited frmObInputZahid: TfrmObInputZahid
     object RowDetailData: TRowDetailPanelControlEh
     end
   end
+  object DBGridEh2: TDBGridEh [3]
+    Left = 0
+    Top = 328
+    Width = 795
+    Height = 162
+    Align = alBottom
+    DataSource = DM.dsEventClients
+    DynProps = <>
+    FooterRowCount = 1
+    SumList.Active = True
+    TabOrder = 2
+    Columns = <
+      item
+        CellButtons = <>
+        DynProps = <>
+        EditButtons = <>
+        FieldName = 'ClientID'
+        Footer.Alignment = taCenter
+        Footer.FieldName = #1060#1048#1054
+        Footer.ValueType = fvtCount
+        Footers = <>
+        Title.Caption = 'JDC ID'
+      end
+      item
+        CellButtons = <>
+        DynProps = <>
+        EditButtons = <>
+        FieldName = #1060#1048#1054
+        Footers = <>
+      end>
+    object RowDetailData: TRowDetailPanelControlEh
+    end
+  end
   inherited sFrameAdapter1: TsFrameAdapter
-    Left = 16
-    Top = 240
+    Left = 608
+    Top = 8
   end
 end

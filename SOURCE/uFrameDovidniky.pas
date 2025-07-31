@@ -69,7 +69,7 @@ begin
       Exit;
 
     if uMyExcel.OpenWorkBook(DM.OpenDialog.FileName, false) then
-    // îòêðûâàåì êíèãó Excel
+    // відкриваємо книгу Excel
     begin
       myForm.ProgressBar.Visible := true;
       MyExcel.ActiveWorkBook.Sheets[1];

@@ -57,7 +57,13 @@ type
     dsKurators: TUniDataSource;
     qUser_option: TUniQuery;
     dsUser_option: TUniDataSource;
-    qSingleEvent: TUniQuery;
+    qAnalitic: TUniQuery;
+    dsAnalitic: TUniDataSource;
+    qCountAnalitics: TUniQuery;
+    dsCountAnalitics: TUniDataSource;
+    QEventClients: TUniQuery;
+    dsEventClients: TUniDataSource;
+    procedure qEventsAfterScroll(DataSet: TDataSet);
   private
     { Private declarations }
   public
@@ -73,4 +79,16 @@ implementation
 
 {$R *.dfm}
 //psv Ayt&fP632#
+procedure TDM.qEventsAfterScroll(DataSet: TDataSet);
+begin
+  if not QEvents.IsEmpty then
+  begin
+    QEventClients.Close;
+    QEventClients.ParamByName('EventID').AsInteger := QEvents.FieldByName('ID').AsInteger;
+    QEventClients.Open;
+  end
+  else
+    QEventClients.Close;
+end;
+
 end.

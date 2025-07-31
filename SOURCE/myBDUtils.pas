@@ -199,7 +199,7 @@ end;
 // Вытянуть список уникальных значений из поля таблицы
 function SpisokPoley(tabl, pole, poleDate: String): String;
 var
-  i, r: Integer;
+  i: Integer;
   spisok: TStringList;
   s: string;
 begin
@@ -215,7 +215,7 @@ begin
     s := SQL.Text;
     ExecSQL;
 
-    r := RecordCount;
+//    r := RecordCount;
     if RecordCount > 0 then
     begin
       spisok := TStringList.create;
@@ -241,7 +241,7 @@ end;
 // Вытянуть список уникальных значений из поля таблицы с условием
 function SpisokPoleyWhere(tabl, pole, pWhere: String): String;
 var
-  i, r: Integer;
+  i: Integer;
   spisok: TStringList;
   s: string;
 begin
@@ -260,7 +260,7 @@ begin
     s := SQL.Text;
     ExecSQL;
 
-    r := RecordCount;
+//    r := RecordCount;
     if RecordCount > 0 then
     begin
       spisok := TStringList.create;

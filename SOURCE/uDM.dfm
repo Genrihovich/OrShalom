@@ -274,6 +274,7 @@ object DM: TDM
       '/*WHERE E.`id_region` = :RegionID*/'
       'ORDER BY E.`'#1044#1072#1090#1072'` DESC;')
     Active = True
+    AfterScroll = qEventsAfterScroll
     Left = 80
     Top = 344
   end
@@ -374,9 +375,126 @@ object DM: TDM
     Left = 152
     Top = 512
   end
-  object qSingleEvent: TUniQuery
+  object qAnalitic: TUniQuery
     Connection = UniConnection
+    SQL.Strings = (
+      'SELECT '
+      '  E.ID AS EventID,'
+      '  E.`'#1053#1072#1079#1074#1072'_'#1079#1072#1093#1086#1076#1091'`,'
+      '  E.`'#1044#1072#1090#1072'`,'
+      '  E.`'#1061#1090#1086'_'#1087#1088#1086#1074#1086#1076#1080#1074'`,'
+      '  E.`'#1050#1110#1083#1100#1082#1110#1089#1090#1100'_'#1089#1090#1086#1088#1086#1085#1085#1110#1093'`,'
+      '  '
+      '  C.`JDC ID`,'
+      '  C.`'#1060#1048#1054'`,'
+      '  C.`'#1042#1086#1079#1088#1072#1089#1090'`,'
+      '  C.`'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`,'
+      '  C.`'#1057#1086#1079#1076#1072#1085#1086'`,'
+      ''
+      '  Cl.`'#1053#1072#1079#1074#1072'`,'
+      '  R.`nameRegion`'
+      ''
+      'FROM Events E'
+      'LEFT JOIN EventClients EC ON E.ID = EC.EventID'
+      'LEFT JOIN Clients C ON EC.ClientID = C.`JDC ID`'
+      'LEFT JOIN Clubs Cl ON E.ClubID = Cl.ID'
+      'LEFT JOIN Region R ON E.id_region = R.id_region'
+      ''
+      'WHERE E.`'#1044#1072#1090#1072'` BETWEEN :ot AND :do'
+      ''
+      'ORDER BY E.`'#1044#1072#1090#1072'` DESC, C.`'#1060#1048#1054'`;')
+    Active = True
     Left = 224
     Top = 456
+    ParamData = <
+      item
+        DataType = ftDate
+        Name = 'ot'
+        Value = 45809d
+      end
+      item
+        DataType = ftDate
+        Name = 'do'
+        Value = 45838d
+      end>
+  end
+  object dsAnalitic: TUniDataSource
+    DataSet = qAnalitic
+    Left = 224
+    Top = 512
+  end
+  object qCountAnalitics: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'SELECT'
+      '  IFNULL(R.nameRegion, '#39#1041#1077#1079' '#1088#1077#1075#1110#1086#1085#1091#39') AS '#1053#1072#1079#1074#1072'_'#1088#1077#1075#1110#1086#1085#1091','
+      
+        '  COUNT(DISTINCT CASE WHEN C.'#1042#1086#1079#1088#1072#1089#1090' BETWEEN 0 AND 6 THEN C.`JDC' +
+        ' ID` END) AS '#1042#1110#1082'_0_6,'
+      
+        '  COUNT(DISTINCT CASE WHEN C.'#1042#1086#1079#1088#1072#1089#1090' BETWEEN 7 AND 12 THEN C.`JD' +
+        'C ID` END) AS '#1042#1110#1082'_7_12,'
+      
+        '  COUNT(DISTINCT CASE WHEN C.'#1042#1086#1079#1088#1072#1089#1090' BETWEEN 13 AND 17 THEN C.`J' +
+        'DC ID` END) AS '#1042#1110#1082'_13_17,'
+      
+        '  COUNT(DISTINCT CASE WHEN C.'#1042#1086#1079#1088#1072#1089#1090' BETWEEN 18 AND 30 THEN C.`J' +
+        'DC ID` END) AS '#1042#1110#1082'_18_30,'
+      
+        '  COUNT(DISTINCT CASE WHEN C.'#1042#1086#1079#1088#1072#1089#1090' BETWEEN 31 AND 59 THEN C.`J' +
+        'DC ID` END) AS '#1042#1110#1082'_31_59,'
+      
+        '  COUNT(DISTINCT CASE WHEN C.'#1042#1086#1079#1088#1072#1089#1090' BETWEEN 60 AND 120 THEN C.`' +
+        'JDC ID` END) AS '#1042#1110#1082'_60_120,'
+      '  COUNT(DISTINCT C.`JDC ID`) AS '#1059#1085#1110#1082#1072#1083#1100#1085#1110'_'#1082#1083#1110#1108#1085#1090#1080
+      'FROM Events E'
+      'LEFT JOIN EventClients EC ON E.ID = EC.EventID'
+      'LEFT JOIN Clients C ON EC.ClientID = C.`JDC ID`'
+      'LEFT JOIN Region R ON E.id_region = R.id_region'
+      'WHERE (E.id_region IN (1,2,3,4,5,6) OR E.id_region IS NULL)'
+      '  AND E.`'#1044#1072#1090#1072'` BETWEEN :ot AND :do'
+      'GROUP BY R.nameRegion'
+      'ORDER BY R.nameRegion;')
+    Active = True
+    Left = 320
+    Top = 456
+    ParamData = <
+      item
+        DataType = ftDate
+        Name = 'ot'
+        Value = 45839d
+      end
+      item
+        DataType = ftDate
+        Name = 'do'
+        Value = 45868d
+      end>
+  end
+  object dsCountAnalitics: TUniDataSource
+    DataSet = qCountAnalitics
+    Left = 320
+    Top = 504
+  end
+  object QEventClients: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      '  SELECT EC.ClientID, CL.'#1060#1048#1054
+      '  FROM EventClients EC '
+      '  LEFT JOIN Clients CL ON EC.ClientID = CL.`JDC ID` '
+      '  WHERE EC.EventID = :EventID')
+    Active = True
+    Left = 320
+    Top = 344
+    ParamData = <
+      item
+        DataType = ftInteger
+        Name = 'EventID'
+        Value = 1
+      end>
+  end
+  object dsEventClients: TUniDataSource
+    DataSet = QEventClients
+    Left = 320
+    Top = 400
   end
 end

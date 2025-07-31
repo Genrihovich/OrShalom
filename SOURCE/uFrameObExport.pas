@@ -240,7 +240,7 @@ begin
 
       // Присвоєння параметрів
 
-            try
+      try
         dt := ParseDate(Fields[0]);
         Q.ParamByName('data_sozdano').AsDate := DateOf(dt);
       except
@@ -335,12 +335,7 @@ begin
       Q.ParamByName('imya_otchestvo_nats').AsString := Fields[54];
       Q.ParamByName('uchastnik_vov').AsString := Fields[55];
       Q.ParamByName('uchastnik_boev').AsString := Fields[56];
-
-//      Q.ParamByName('obshchie_zametki').AsString := Fields[57];
-
-
       Q.ParamByName('obshchie_zametki').AsString := Fields[57];
-
 
       // Виконання SQL
       Q.ExecSQL;
