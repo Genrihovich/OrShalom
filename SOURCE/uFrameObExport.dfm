@@ -12,14 +12,14 @@ inherited frmObExportData: TfrmObExportData
     Align = alTop
     TabOrder = 0
     object labBackupText: TsLabelFX
-      Left = 426
-      Top = 19
-      Width = 131
-      Height = 17
+      Left = 424
+      Top = 17
+      Width = 135
+      Height = 21
       Caption = #1054#1089#1090#1072#1085#1085#1110#1081' '#1110#1084#1087#1086#1088#1090': ..........'
       Angle = 0
-      Shadow.OffsetKeeper.LeftTop = -1
-      Shadow.OffsetKeeper.RightBottom = 3
+      Shadow.OffsetKeeper.LeftTop = -3
+      Shadow.OffsetKeeper.RightBottom = 5
     end
     object btnImport: TButton
       Left = 3
@@ -58,6 +58,8 @@ inherited frmObExportData: TfrmObExportData
       Align = alClient
       DataSource = DM.dsClients
       DynProps = <>
+      FooterRowCount = 1
+      SumList.Active = True
       TabOrder = 0
       Columns = <
         item
@@ -65,6 +67,8 @@ inherited frmObExportData: TfrmObExportData
           DynProps = <>
           EditButtons = <>
           FieldName = 'JDC ID'
+          Footer.Alignment = taCenter
+          Footer.ValueType = fvtCount
           Footers = <>
           Width = 74
         end

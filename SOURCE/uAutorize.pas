@@ -95,6 +95,9 @@ type
     function GetRoleByFullName(const AFullName: string): string;
 
     function GetRegionInfoByID(RegionID: Integer): string;
+
+    function GetDPIScaleFactor: Double;
+    // визначає фактичний масштаб (1.0, 1.25, 1.5, ...)
   public
     { Public declarations }
   end;
@@ -110,12 +113,17 @@ implementation
 
 uses uDM, uMainForm, sStoreUtils, myUtils, myBDUtils;
 
-procedure TfAutorize.ActivateTableBD;
+function TfAutorize.GetDPIScaleFactor: Double;
+var
+  hDC: Winapi.Windows.hDC;
+  dpiX: Integer;
 begin
-  with DM do
-  begin
-    tUser.Active := true;
-    tRegion.Active := true;
+  hDC := GetDC(0);
+  try
+    dpiX := GetDeviceCaps(hDC, LOGPIXELSX); // зазвичай 96, 120, 144
+    Result := dpiX / 96.0;
+  finally
+    ReleaseDC(0, hDC);
   end;
 end;
 
@@ -178,46 +186,6 @@ begin // -------------- валидация поля ------------------
   end;
 end;
 
-procedure TfAutorize.LoadRegionsList;
-var
-  Q: TUniQuery;
-begin
-  DBcbRegion.Items.Clear;
-  Q := TUniQuery.Create(nil);
-  try
-    Q.Connection := DM.UniConnection;
-    Q.Close;
-    Q.SQL.Text := 'SELECT NameRegion FROM Region ORDER BY NameRegion';
-    Q.Open;
-    while not Q.Eof do
-    begin
-      DBcbRegion.Items.Add(Q.FieldByName('NameRegion').AsString);
-      Q.Next;
-    end;
-  finally
-    Q.Free;
-  end;
-end;
-
-procedure TfAutorize.FormActivate(Sender: TObject);
-var
-  s: String;
-begin
-  lbDBConnected.Caption := isConnectedBD;
-  fAutorize.ClientHeight := 193;
-  panRegister.Visible := False;
-
-  // проверка на наличие записи
-  s := sStoreUtils.ReadIniString('Autorize', 'Region', IniName);
-  if s <> '' then
-  begin
-     DBcbRegion.Text := GetRegionNameByID(s.ToInteger()); // регион по сохранению
-     NumRegion := s.ToInteger();
-  end;
-
-  LoadRegionsList;
-end;
-
 function TfAutorize.GetRegionIDByName(const RegionName: string): Integer;
 var
   Q: TUniQuery;
@@ -261,7 +229,7 @@ begin
 
     if not Q.IsEmpty then
     begin
-     // RegionName := Q.FieldByName('nameRegion').AsString;
+      // RegionName := Q.FieldByName('nameRegion').AsString;
       KuratorName := Q.FieldByName('ПІБ_Куратора').AsString;
       Result := KuratorName;
     end;
@@ -302,6 +270,63 @@ begin
     Q.Open;
     if not Q.IsEmpty then
       Result := Q.FieldByName('role').AsString;
+  finally
+    Q.Free;
+  end;
+end;
+
+procedure TfAutorize.FormActivate(Sender: TObject);
+var
+  s: String;
+  scalePercent: Integer;
+  scale: Double;
+begin
+
+  scale := GetDPIScaleFactor;
+
+  lbDBConnected.Caption := isConnectedBD;
+  { if scalePercent = 125 then fAutorize.ClientHeight := 210
+    else
+    fAutorize.ClientHeight := 193;
+    panRegister.Visible := False; }
+  fAutorize.ClientHeight := Round(193 * scale);
+
+  // проверка на наличие записи
+  s := sStoreUtils.ReadIniString('Autorize', 'Region', IniName);
+  if s <> '' then
+  begin
+    DBcbRegion.Text := GetRegionNameByID(s.ToInteger()); // регион по сохранению
+    NumRegion := s.ToInteger();
+  end;
+
+  LoadRegionsList;
+end;
+
+procedure TfAutorize.ActivateTableBD;
+begin
+  with DM do
+  begin
+    tUser.Active := true;
+    tRegion.Active := true;
+  end;
+end;
+
+procedure TfAutorize.LoadRegionsList;
+var
+  Q: TUniQuery;
+begin
+  DBcbRegion.Items.Clear;
+  Q := TUniQuery.Create(nil);
+  try
+    Q.Connection := DM.UniConnection;
+    Q.Close;
+    Q.SQL.Text := 'SELECT NameRegion FROM Region ORDER BY NameRegion';
+    Q.Open;
+    while not Q.Eof do
+    begin
+      DBcbRegion.Items.Add(Q.FieldByName('NameRegion').AsString);
+      Q.Next;
+    end;
   finally
     Q.Free;
   end;
@@ -349,37 +374,67 @@ end;
 
 // ===================== Выбор Региона ======================
 procedure TfAutorize.acVisibleComponentUpdate(Sender: TObject);
+var
+  scale: Double;
 begin
+  scale := GetDPIScaleFactor;
   // видимость полей выбора юзера от выбора региона
-  if DBcbRegion.Text = '' then // Первый выбор
-  begin
+  { if DBcbRegion.Text = '' then // Первый выбор
+    begin
     chPsw.Enabled := False;
     panAutorize.Visible := False;
     BitBtn1.Enabled := False;
-    fAutorize.ClientHeight := 74;
-  end
-  else
-  begin // Регион выбирался
+    fAutorize.ClientHeight := Round(74 * scale);
+    end
+    else
+    begin // Регион выбирался
     chPsw.Enabled := true;
 
     BitBtn1.Enabled := true;
 
     if fAutorize.Tag = 1 then // Авторизация
     begin
-      fAutorize.ClientHeight := 193;
-      panAutorize.Visible := true;
+    fAutorize.ClientHeight := 193;
+    panAutorize.Visible := true;
     end;
 
     if fAutorize.Tag = 0 then // Регистрация
-      fAutorize.ClientHeight := 230;
+    fAutorize.ClientHeight := 230;
 
     if fAutorize.Tag = 2 then // код доступа
-      fAutorize.ClientHeight := 138;
+    fAutorize.ClientHeight := 138;
 
     if fAutorize.Tag = 3 then // редактировать данные
-      fAutorize.ClientHeight := 240;
+    fAutorize.ClientHeight := 240;
 
+    end; }
+  if DBcbRegion.Text = '' then // Перший вибір
+  begin
+    chPsw.Enabled := False;
+    panAutorize.Visible := False;
+    BitBtn1.Enabled := False;
+    fAutorize.ClientHeight := Round(74 * scale);
+  end
+  else
+  begin // Регіон вибрано
+    chPsw.Enabled := true;
+    BitBtn1.Enabled := true;
+
+    case fAutorize.Tag of
+      1: // Авторизація
+        begin
+          fAutorize.ClientHeight := Round(193 * scale);
+          panAutorize.Visible := true;
+        end;
+      0:
+        fAutorize.ClientHeight := Round(230 * scale); // Реєстрація
+      2:
+        fAutorize.ClientHeight := Round(138 * scale); // Код доступу
+      3:
+        fAutorize.ClientHeight := Round(240 * scale); // Редагування
+    end;
   end;
+
 end;
 
 procedure TfAutorize.DBComboBoxEh1EditButtons0Click(Sender: TObject;
@@ -435,7 +490,6 @@ begin
   end;
 end;
 
-
 procedure TfAutorize.dbLComboUserChange(Sender: TObject);
 begin
   // Фокус на поле пароля перевести
@@ -463,8 +517,8 @@ end;
 // ========================== Кнопка Входа в прогу ==========================
 procedure TfAutorize.acSignInUpdate(Sender: TObject);
 begin
-  if (DBcbRegion.Text <> '') and (dbLComboUser.Text <> '') and
-    (edPsw.Text <> '') then
+  if (DBcbRegion.Text <> '') and (dbLComboUser.Text <> '') and (edPsw.Text <> '')
+  then
     btnSignIn.Enabled := true
   else
     btnSignIn.Enabled := False;
@@ -699,7 +753,6 @@ begin // ---- Зарегистрироваться --------
   posada := edPosada.Text;
   mail := edEmail.Text;
   region := GetRegionIDByName(DBcbRegion.Text);
-
 
   // ========= проверка на валидность данніх =====
   if isAssetValue('User', 'fullName', MyName) then

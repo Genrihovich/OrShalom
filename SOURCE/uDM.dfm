@@ -245,7 +245,8 @@ object DM: TDM
   object qClients: TUniQuery
     Connection = UniConnection
     SQL.Strings = (
-      'SELECT * FROM `Clients` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39';')
+      'SELECT * FROM `Clients` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39
+      'ORDER BY `'#1060#1048#1054'`;')
     Active = True
     Left = 24
     Top = 344

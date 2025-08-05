@@ -241,41 +241,41 @@ begin
       // Присвоєння параметрів
 
       try
-        dt := ParseDate(Fields[0]);
+        dt := ParseDate(Fields[14]);
         Q.ParamByName('data_sozdano').AsDate := DateOf(dt);
       except
         Q.ParamByName('data_sozdano').Clear;
       end;
 
-      Q.ParamByName('jdc_id').AsString := Fields[1];
-      Q.ParamByName('fio').AsString := Fields[2];
-      Q.ParamByName('vozrast').AsInteger := StrToIntDef(Fields[3], 0);
-      Q.ParamByName('tip_klienta').AsString := Fields[4];
+      Q.ParamByName('jdc_id').AsString := Fields[0];
+      Q.ParamByName('fio').AsString := Fields[1];
+      Q.ParamByName('vozrast').AsInteger := StrToIntDef(Fields[2], 0);
+      Q.ParamByName('tip_klienta').AsString := Fields[3];
 
       try
-        dt := ParseDate(Fields[5]);
+        dt := ParseDate(Fields[4]);
         Q.ParamByName('data_rozhdeniya').AsDate := DateOf(dt);
       except
         Q.ParamByName('data_rozhdeniya').Clear;
       end;
 
       try
-        dt := ParseDate(Fields[6]);
+        dt := ParseDate(Fields[5]);
         Q.ParamByName('data_smerti').AsDate := DateOf(dt);
       except
         Q.ParamByName('data_smerti').Clear;
       end;
 
-      Q.ParamByName('s_kem_prozhivaet').AsString := Fields[7];
-      Q.ParamByName('zhn').AsString := Fields[8];
-      Q.ParamByName('evreyskoe_proiskhozhdenie').AsString := Fields[9];
-      Q.ParamByName('kurator').AsString := Fields[10];
-      Q.ParamByName('organizatsii_uchastnika').AsString := Fields[11];
+      Q.ParamByName('s_kem_prozhivaet').AsString := Fields[6];
+      Q.ParamByName('zhn').AsString := Fields[7];
+      Q.ParamByName('evreyskoe_proiskhozhdenie').AsString := Fields[8];
+      Q.ParamByName('kurator').AsString := Fields[9];
+      Q.ParamByName('organizatsii_uchastnika').AsString := Fields[10];
       Q.ParamByName('sr_dokhod_mp_khesed').AsFloat :=
-        StrToFloatDef(Fields[12], 0);
-      Q.ParamByName('mestopolozhenie').AsString := Fields[13];
+        StrToFloatDef(Fields[11], 0);
+      Q.ParamByName('mestopolozhenie').AsString := Fields[12];
       Q.ParamByName('sr_dokhod_mp_det_deti').AsFloat :=
-        StrToFloatDef(Fields[14], 0);
+        StrToFloatDef(Fields[13], 0);
       Q.ParamByName('mobile_phone').AsString := Fields[15];
       Q.ParamByName('pensiya').AsFloat := StrToFloatDef(Fields[16], 0);
       Q.ParamByName('kod_organizatsii_jdc').AsInteger :=
@@ -350,6 +350,7 @@ begin
     btnImport.Caption := 'Експорт Exls в Базу Даних';
     chkListBox.Checked[1] := true;
     btnImport.Enabled := false;
+    DM.qClients.Active := false;
     DM.qClients.Active := true;
   end;
 
