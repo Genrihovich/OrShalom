@@ -108,7 +108,6 @@ object myForm: TmyForm
     Width = 795
     Height = 495
     Align = alClient
-    Caption = 'panConteiner'
     TabOrder = 2
   end
   object sPanel2: TsPanel
