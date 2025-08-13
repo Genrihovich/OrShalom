@@ -74,6 +74,7 @@ begin
     end;
 
     Open;
+    if RecordCount = 0 then DM.QEventClients.Active := false;
   end;
 end;
 

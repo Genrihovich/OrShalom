@@ -479,18 +479,18 @@ object DM: TDM
   object QEventClients: TUniQuery
     Connection = UniConnection
     SQL.Strings = (
+      ''
       '  SELECT EC.ClientID, CL.'#1060#1048#1054
       '  FROM EventClients EC '
       '  LEFT JOIN Clients CL ON EC.ClientID = CL.`JDC ID` '
       '  WHERE EC.EventID = :EventID')
-    Active = True
     Left = 320
     Top = 344
     ParamData = <
       item
-        DataType = ftInteger
+        DataType = ftUnknown
         Name = 'EventID'
-        Value = 1
+        Value = nil
       end>
   end
   object dsEventClients: TUniDataSource
