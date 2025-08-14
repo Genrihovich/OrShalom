@@ -11,7 +11,7 @@ uses
   sEdit, sListBox, Vcl.Buttons, sBitBtn, Vcl.Mask, sMaskEdit, sCustomComboEdit,
   sToolEdit, DBCtrlsEh, DBLookupEh, System.Actions, Vcl.ActnList, Data.DB, Uni,
   sGroupBox, sLabel, sButton, sSplitter, JvAppStorage, JvAppIniStorage,
-  JvComponentBase, JvFormPlacement, sStoreUtils;
+  JvComponentBase, JvFormPlacement, sStoreUtils, Vcl.ComCtrls, acProgressBar;
 
 type
   TfrmObNewZahid = class(TCustomInfoFrame)
@@ -44,6 +44,7 @@ type
     panRight: TsPanel;
     sPanel2: TsPanel;
     SaveDialog1: TSaveDialog;
+    ProgressBar: TsProgressBar;
     procedure btnProvestyClick(Sender: TObject);
     procedure edFindClientChange(Sender: TObject);
     procedure DBGridEh1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -63,6 +64,10 @@ type
       var Accept: Boolean); // >>> ДОДАНО
   private
     { Private declarations }
+  FExportProgress: TProgressBar;
+  FExportHideTimer: TTimer;
+
+
     procedure UpdateListBoxDisplay; // >>> ДОДАНО
     // знайти або вставити клуб і повернути його ID
     function GetOrCreateClubID(const ClubName: string): Integer;
@@ -73,11 +78,14 @@ type
     procedure LoadClients; // загрузка клієнтів згідно ролі і регіона
     function IsAdmin: Boolean;
     procedure ReloadClientList;
+    procedure ExportHideTimerTimer(Sender: TObject);
+
 
   public
     { Public declarations }
     procedure AfterCreation; override;
     procedure BeforeDestruct; override;
+
   end;
 
 var
@@ -155,8 +163,9 @@ begin
     if Assigned(lbClients.Items.Objects[i]) then
       StrDispose(PChar(lbClients.Items.Objects[i]));
 
- // frmObNewZahid.JvFormStorage1.SaveFormPlacement; // збереження
-
+  //На всяк випадок — прибрати ресурси при закритті фрейма
+  if Assigned(FExportHideTimer) then FreeAndNil(FExportHideTimer);
+  if Assigned(FExportProgress) then FreeAndNil(FExportProgress);
 
 end;
 
@@ -210,6 +219,21 @@ begin
   end;
 end;
 
+procedure TfrmObNewZahid.ExportHideTimerTimer(Sender: TObject);
+begin
+  if Assigned(FExportHideTimer) then
+  begin
+    FExportHideTimer.Enabled := False;
+    FreeAndNil(FExportHideTimer);
+  end;
+
+  if Assigned(FExportProgress) then
+  begin
+    FExportProgress.Visible := False;
+    FreeAndNil(FExportProgress);
+  end;
+end;
+
 function TfrmObNewZahid.GetOrCreateClubID(const ClubName: string): Integer;
 var // знайти або вставити клуб і повернути його ID
   Q: TUniQuery;
@@ -248,6 +272,8 @@ begin
     Q.Free;
   end;
 end;
+
+
 
 procedure TfrmObNewZahid.InicialRegionalData;
 begin
@@ -372,6 +398,8 @@ begin
   if Button = mbLeft then
     DBGridEh1.BeginDrag(false);
 end;
+
+
 
 procedure TfrmObNewZahid.lbClientsDragOver(Sender, Source: TObject;
   X, Y: Integer; State: TDragState; var Accept: Boolean);
@@ -607,6 +635,26 @@ var
   jdcID, fio: String;
   DirectoryNow, FileNameS: String;
 begin
+  // --- показуємо/ініціалізуємо прогресбар ---
+  if not Assigned(FExportProgress) then
+  begin
+    FExportProgress := TProgressBar.Create(panRight);
+    FExportProgress.Parent := panRight;
+    FExportProgress.Align := alBottom;
+    FExportProgress.Height := 22;
+    FExportProgress.Min := 0;
+  end;
+  FExportProgress.Max := lbClients.Items.Count;
+  FExportProgress.Position := 0;
+  FExportProgress.Visible := True;
+
+  // якщо попередній таймер ще живий — прибираємо
+  if Assigned(FExportHideTimer) then
+  begin
+    FExportHideTimer.Enabled := False;
+    FreeAndNil(FExportHideTimer);
+  end;
+
   try
     // добавляем новую книгу
     if uMyExcel.RunExcel(false, false) = true then
@@ -641,6 +689,11 @@ begin
       ExcelApp.Cells[i + 2, 1] := i + 1; // №
       ExcelApp.Cells[i + 2, 2] := jdcID; // JDC ID
       ExcelApp.Cells[i + 2, 3] := fio; // ПІБ
+
+      // прогрес
+      FExportProgress.Position := i + 1;
+      Application.ProcessMessages;
+
     end;
 
     // Автопідбір ширини колонок
@@ -663,6 +716,16 @@ begin
     ShellExecute(Handle, 'open', PWideChar(DirectoryNow), nil, nil,
       SW_SHOWNORMAL);
 
+
+    // --- на 100% ще показуємо 1 хвилину і ховаємо ---
+    FExportProgress.Position := FExportProgress.Max;
+
+    FExportHideTimer := TTimer.Create(Self);
+    FExportHideTimer.Interval := 10000; //
+    FExportHideTimer.OnTimer := ExportHideTimerTimer;
+    FExportHideTimer.Enabled := True;
+
+
   except
     on E: Exception do
     begin
@@ -670,6 +733,17 @@ begin
       Sheets := unassigned;
       ExcelApp := unassigned;
       uMyExcel.StopExcel;
+            // у разі помилки — прибрати індикатор одразу
+      if Assigned(FExportHideTimer) then
+      begin
+        FExportHideTimer.Enabled := False;
+        FreeAndNil(FExportHideTimer);
+      end;
+      if Assigned(FExportProgress) then
+      begin
+        FExportProgress.Visible := False;
+        FreeAndNil(FExportProgress);
+      end;
     end;
   end;
 

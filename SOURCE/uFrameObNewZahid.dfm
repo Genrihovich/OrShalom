@@ -1,7 +1,6 @@
 inherited frmObNewZahid: TfrmObNewZahid
   Width = 946
   Height = 501
-  Font.Color = clWindowText
   ParentFont = False
   ExplicitWidth = 946
   ExplicitHeight = 501
@@ -208,6 +207,18 @@ inherited frmObNewZahid: TfrmObNewZahid
           BoundLabel.Caption = #1058#1077#1084#1072' '#1079#1072#1093#1086#1076#1091
           BoundLabel.Layout = sclTopCenter
         end
+        object ProgressBar: TsProgressBar
+          Left = 1
+          Top = 397
+          Width = 346
+          Height = 17
+          Align = alBottom
+          TabOrder = 5
+          Visible = False
+          ExplicitLeft = 198
+          ExplicitTop = 376
+          ExplicitWidth = 150
+        end
       end
       object sPanel1: TsPanel
         Left = 1
@@ -268,7 +279,7 @@ inherited frmObNewZahid: TfrmObNewZahid
       OnChange = edFindClientChange
     end
     object bbtnDel: TsBitBtn
-      Left = 295
+      Left = 582
       Top = 10
       Width = 25
       Height = 25
@@ -313,8 +324,8 @@ inherited frmObNewZahid: TfrmObNewZahid
       TabOrder = 1
     end
     object sRadioGroup1: TsRadioGroup
-      Left = 337
-      Top = -4
+      Left = 325
+      Top = -6
       Width = 251
       Height = 41
       Font.Charset = DEFAULT_CHARSET
@@ -378,7 +389,7 @@ inherited frmObNewZahid: TfrmObNewZahid
     object btnSaveExcel: TsButton
       Left = 325
       Top = 6
-      Width = 257
+      Width = 436
       Height = 25
       Action = acSaveExcel
       Font.Charset = DEFAULT_CHARSET
