@@ -86,6 +86,7 @@ inherited frmObInputZahid: TfrmObInputZahid
     Align = alClient
     DataSource = DM.dsEvents
     DynProps = <>
+    ReadOnly = True
     TabOrder = 1
     Columns = <
       item

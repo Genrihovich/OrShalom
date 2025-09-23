@@ -32,7 +32,7 @@ object myForm: TmyForm
     Width = 185
     Height = 495
     HorzScrollBar.Visible = False
-    VertScrollBar.Range = 96
+    VertScrollBar.Range = 126
     VertScrollBar.Tracking = True
     AutoScroll = False
     TabOrder = 0
@@ -63,6 +63,14 @@ object myForm: TmyForm
         Caption = #1054#1073#1097#1080#1085#1072
         SkinSection = 'MENUCAPTION'
         OnCreateFrame = sFrameBar1Items2CreateFrame
+      end
+      item
+        DisplayName = 'TsTitleItem'
+        ShowArrow = True
+        TextAlignment = taLeftJustify
+        Caption = #1040#1076#1084#1110#1085#1110#1089#1090#1088#1091#1074#1072#1085#1085#1103
+        SkinSection = 'MENUCAPTION'
+        OnCreateFrame = sFrameBar1Items3CreateFrame
       end>
     object sMonthCalendar1: TsMonthCalendar
       Left = 0

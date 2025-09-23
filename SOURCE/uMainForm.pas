@@ -50,11 +50,14 @@ type
       var Frame: TCustomFrame);
     procedure sFrameBar1Items0CreateFrame(Sender: TObject;
       var Frame: TCustomFrame);
+    procedure sFrameBar1Items3CreateFrame(Sender: TObject;
+      var Frame: TCustomFrame);
 
   private
     { Private declarations }
     //Процедура перевірки ролі
     procedure ApplyUserRoleAccess;
+
   public
     { Public declarations }
     myFrame: TFrame;
@@ -77,6 +80,7 @@ var
   MyName, MyRegion, Kurator: String;
   NumRegion: Integer; // id регионга сессии
   UserRole: Variant; // може бути Null - роль юзера (права доступу)
+  isAdmin, isVolonter: Boolean;
   Nachalo, Konec: TDateTime; // начало и конец периодов для выборки
   IspolnitelCount, mentorCount: Integer;
   // кол-во исполнителей для отчета в ексель
@@ -86,7 +90,7 @@ implementation
 
 {$R *.dfm}
 
-uses uMenu, uDM, uAutorize, uObchinaMenu, uOptions;
+uses uMenu, uDM, uAutorize, uObchinaMenu, uOptions, uAdminMenu;
 
 { TForm2 }
 
@@ -135,6 +139,7 @@ begin
   end;
   // не показувати фрейм під кнопкою
   sFrameBar1.Items[0].Frame := nil;
+
 end;
 
 
@@ -160,17 +165,26 @@ begin
       sFrameBar1.Items[0].Visible := True;
       sFrameBar1.Items[1].Visible := True;
       sFrameBar1.Items[2].Visible := True;
+      sFrameBar1.Items[3].Visible := True;
     end;
     1: begin
       sFrameBar1.Items[1].Visible := True;
+      sFrameBar1.Items[3].Visible := False;
     end;
     2: begin
       sFrameBar1.Items[2].Visible := True;
       sFrameBar1.Items[0].Visible := False;
+      sFrameBar1.Items[3].Visible := False;
     end;
     3: begin
       sFrameBar1.Items[1].Visible := True;
       sFrameBar1.Items[2].Visible := True;
+      sFrameBar1.Items[3].Visible := False;
+    end;
+    4: begin  // для волонтерів
+      sFrameBar1.Items[2].Visible := True;
+      sFrameBar1.Items[0].Visible := False;
+      sFrameBar1.Items[3].Visible := False;
     end;
   end;
 end;
@@ -217,6 +231,8 @@ begin
   end;
 end;
 
+
+
 procedure TmyForm.sFrameBar1Items0Click(Sender: TObject);
 
 begin // Настройки
@@ -251,6 +267,16 @@ begin   // Община
   ObFrame.ApplyPermissions;
  // Інші налаштування
   EsImage1.Visible := false;
+  sSkinManager1.UpdateScale(Frame);
+end;
+
+procedure TmyForm.sFrameBar1Items3CreateFrame(Sender: TObject;
+  var Frame: TCustomFrame);
+begin   //Адміністрування
+  Frame := TfrmAdminMenu.Create(nil);
+
+//  EsImage1.Visible := true;
+//  lbInfo.Caption := '';
   sSkinManager1.UpdateScale(Frame);
 end;
 

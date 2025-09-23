@@ -19,7 +19,10 @@ uses
   uFrameObInputZahid in '..\SOURCE\uFrameObInputZahid.pas' {frmObInputZahid},
   uFrameObNewZahid in '..\SOURCE\uFrameObNewZahid.pas' {frmObNewZahid},
   uOptions in '..\SOURCE\uOptions.pas' {frmOption},
-  uFrameObAnalitics in '..\SOURCE\uFrameObAnalitics.pas' {frmObAnalitics};
+  uFrameObAnalitics in '..\SOURCE\uFrameObAnalitics.pas' {frmObAnalitics},
+  uAdminMenu in '..\SOURCE\uAdminMenu.pas' {frmAdminMenu},
+  uFrameAdmExport in '..\SOURCE\uFrameAdmExport.pas' {frmAdmExportData: TFrame},
+  uImportExcelThread in '..\SOURCE\uImportExcelThread.pas';
 
 {$R *.res}
 
@@ -29,5 +32,6 @@ begin
   Application.CreateForm(TDM, DM);
   Application.CreateForm(TfAutorize, fAutorize);
   Application.CreateForm(TmyForm, myForm);
+  Application.CreateForm(TfrmAdminMenu, frmAdminMenu);
   Application.Run;
 end.

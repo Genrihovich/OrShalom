@@ -98,6 +98,9 @@ type
 
     function GetDPIScaleFactor: Double;
     // визначає фактичний масштаб (1.0, 1.25, 1.5, ...)
+
+        function IsAdmins: Boolean;
+    function IsVolonters: Boolean;
   public
     { Public declarations }
   end;
@@ -184,6 +187,11 @@ begin // -------------- валидация поля ------------------
       Result := False;
     end;
   end;
+end;
+
+function TfAutorize.IsVolonters: Boolean;
+begin // Перевірка, чи UserRole не є Null і чи дорівнює 0 (тобто адміністратор)
+  Result := (not VarIsNull(UserRole)) and (UserRole = 4);
 end;
 
 function TfAutorize.GetRegionIDByName(const RegionName: string): Integer;
@@ -275,6 +283,11 @@ begin
   end;
 end;
 
+function TfAutorize.IsAdmins: Boolean;
+begin // Перевірка, чи UserRole не є Null і чи дорівнює 0 (тобто адміністратор)
+Result := (not VarIsNull(UserRole)) and (UserRole = 0);
+end;
+
 procedure TfAutorize.FormActivate(Sender: TObject);
 var
   s: String;
@@ -300,6 +313,11 @@ begin
   end;
 
   LoadRegionsList;
+
+    // +++ Відновлення користувача
+  s := sStoreUtils.ReadIniString('Autorize', 'User', IniName);
+  if s <> '' then
+    dbLComboUser.Text := s;
 end;
 
 procedure TfAutorize.ActivateTableBD;
@@ -540,6 +558,8 @@ begin // ---------- Проверка логина, если все ОК то впустить ------------
     UserRole := GetRoleByFullName(MyName);
     Kurator := GetRegionInfoByID(NumRegion);
     sStoreUtils.WriteIniStr('Autorize', 'Region', NumRegion.ToString, IniName);
+        // +++ Зберігаємо вибраного користувача
+    sStoreUtils.WriteIniStr('Autorize', 'User', MyName, IniName);
 
     // ----- отримуємо роль користувача -----
     Q := TUniQuery.Create(nil);
@@ -561,6 +581,9 @@ begin // ---------- Проверка логина, если все ОК то впустить ------------
     fAutorize.Visible := False;
     myForm.Visible := true; // Показываем главную форму
     myForm.StatusBar.Panels[0].Text := MyName + ' - ' + MyRegion + ' регіон';
+      //Зберігаємо статус для запитів
+     isAdmin := IsAdmins;
+     isVolonter := IsVolonters;
   end
   else
   begin // если валидация не прошла

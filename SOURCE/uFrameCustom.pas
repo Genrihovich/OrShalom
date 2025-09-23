@@ -15,11 +15,12 @@ type
   public
     { Public declarations }
     procedure AfterCreation; virtual; // Вызывается после создания frame
-    procedure BeforeDestruct;    virtual;
+    procedure BeforeDestruct; virtual;
     procedure AfterSkinChange; virtual;
     procedure BeforeSkinChange; virtual;
     procedure SkinActiveChanged; virtual;
     // Called when SkinManager.Active switched on/off
+    destructor Destroy; override;
   end;
 
 implementation
@@ -29,6 +30,12 @@ implementation
 uses uMainForm;
 
 { TCustomInfoFrame }
+
+destructor TCustomInfoFrame.Destroy;
+begin
+  BeforeDestruct;  // викликаємо наш хук
+  inherited;
+end;
 
 procedure TCustomInfoFrame.AfterCreation;
 begin

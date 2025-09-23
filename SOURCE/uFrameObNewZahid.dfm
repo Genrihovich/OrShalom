@@ -1,6 +1,7 @@
 inherited frmObNewZahid: TfrmObNewZahid
   Width = 946
   Height = 501
+  Font.Color = clWindowText
   ParentFont = False
   ExplicitWidth = 946
   ExplicitHeight = 501
@@ -215,9 +216,6 @@ inherited frmObNewZahid: TfrmObNewZahid
           Align = alBottom
           TabOrder = 5
           Visible = False
-          ExplicitLeft = 198
-          ExplicitTop = 376
-          ExplicitWidth = 150
         end
       end
       object sPanel1: TsPanel

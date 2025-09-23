@@ -48,8 +48,6 @@ object frmObchiaMenu: TfrmObchiaMenu
     TabOrder = 2
     OnClick = btnAnaliticClick
     ShowFocus = False
-    ExplicitLeft = 6
-    ExplicitTop = 42
   end
   object sFrameAdapter1: TsFrameAdapter
     Left = 160

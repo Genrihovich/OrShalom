@@ -44,7 +44,7 @@ begin
   if not VarIsNull(UserRole) then
   begin
     RoleInt := VarAsType(UserRole, varInteger);
-    if RoleInt = 2 then
+    if (RoleInt = 2) or (RoleInt = 4) then
     begin
       btnExportData.Visible := False;
       btnAnalitic.Visible := False;

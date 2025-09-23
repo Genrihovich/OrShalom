@@ -10,7 +10,7 @@ uses
   sCustomComboEdit, sToolEdit, sLabel, DBGridEhGrouping, ToolCtrlsEh,
   DBGridEhToolCtrls, DynVarsEh, Vcl.Grids, JvExGrids, JvStringGrid, EhLibVCL,
   GridsEh, DBAxisGridsEh, DBGridEh, System.DateUtils, Math, Uni, System.Actions,
-  Vcl.ActnList, sComboBox;
+  Vcl.ActnList, sComboBox, Winapi.ShellAPI;
 
 type
   TfrmObAnalitics = class(TCustomInfoFrame)
@@ -64,8 +64,8 @@ procedure TfrmObAnalitics.acCalckUpdate(Sender: TObject);
 begin
   inherited;
   if (sDateEdit3.Text <> '') and (sDateEdit4.Text <> '') and
-   not DBGridEh1.DataSource.DataSet.IsEmpty and
-   (sDateEdit3.Date <> sDateEdit4.Date) then
+    not DBGridEh1.DataSource.DataSet.IsEmpty and
+    (sDateEdit3.Date <> sDateEdit4.Date) then
     btnCalck.Enabled := True
   else
     btnCalck.Enabled := False;
@@ -200,7 +200,7 @@ end;
 procedure TfrmObAnalitics.StringGridDrawCell(Sender: TObject;
   ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
 var
-  text: string;
+  Text: string;
   DrawFlags, HesedBeshtCol, i: Integer;
 begin
   HesedBeshtCol := -1;
@@ -217,13 +217,13 @@ begin
   begin
     // Зміна кольору фону для стовпця "ХеседБешт"
     if ACol = HesedBeshtCol then
-      Brush.Color := $00FFE0E0   // Світло-рожевий (можна змінити)
+      Brush.Color := $00FFE0E0 // Світло-рожевий (можна змінити)
     else
-      Brush.Color := clWindow;   // Звичайний білий фон
+      Brush.Color := clWindow; // Звичайний білий фон
 
     FillRect(Rect); // Очистити клітинку з обраним фоном
 
-    text := StringGrid.Cells[ACol, ARow];
+    Text := StringGrid.Cells[ACol, ARow];
 
     // Центрування тексту
     DrawFlags := DT_CENTER or DT_VCENTER or DT_SINGLELINE;
@@ -234,7 +234,7 @@ begin
     else
       Font.Style := [];
 
-    DrawText(Handle, PChar(text), Length(text), Rect, DrawFlags);
+    DrawText(Handle, PChar(Text), Length(Text), Rect, DrawFlags);
   end;
 
 end;
@@ -249,7 +249,7 @@ begin
   try
     Q.Connection := DM.UniConnection;
     Q.Close;
-    Q.SQL.text := 'SELECT ' +
+    Q.SQL.Text := 'SELECT ' +
       '  IFNULL(R.nameRegion, ''Без регіону'') AS Назва_регіону, ' +
       '  COUNT(DISTINCT CASE WHEN C.Возраст BETWEEN 0 AND 6 THEN C.`JDC ID` END) AS Вік_0_6, '
       + '  COUNT(DISTINCT CASE WHEN C.Возраст BETWEEN 7 AND 12 THEN C.`JDC ID` END) AS Вік_7_12, '
@@ -301,7 +301,7 @@ begin
 
     // ==== "Нові клієнти за регіонами" ==========
     Q.Close;
-    Q.SQL.text := 'SELECT ' +
+    Q.SQL.Text := 'SELECT ' +
       '  IFNULL(R.nameRegion, ''Без регіону'') AS Назва_регіону, ' +
       '  COUNT(DISTINCT C.`JDC ID`) AS Нові_клієнти ' + 'FROM Clients C ' +
       'JOIN EventClients EC ON C.`JDC ID` = EC.ClientID ' +
@@ -336,7 +336,7 @@ begin
 
     // ======= "Активні клієнти (2+ заходів) за регіонами", ========
     Q.Close;
-    Q.SQL.text := 'SELECT ' +
+    Q.SQL.Text := 'SELECT ' +
       '  IFNULL(R.nameRegion, ''Без регіону'') AS Назва_регіону, ' +
       '  COUNT(*) AS Активні_клієнти ' + 'FROM ( ' +
       '  SELECT EC.ClientID, E.id_region ' + '  FROM EventClients EC ' +
@@ -372,7 +372,7 @@ begin
     end;
     // ========= "Мультипрограмні клієнти (2+ клуби) за регіонами" ==============
     Q.Close;
-    Q.SQL.text := 'SELECT ' +
+    Q.SQL.Text := 'SELECT ' +
       '  IFNULL(R.nameRegion, ''Без регіону'') AS Назва_регіону, ' +
       '  COUNT(*) AS Мультипрограмні_клієнти ' + 'FROM ( ' +
       '  SELECT EC.ClientID, E.id_region ' + '  FROM EventClients EC ' +
@@ -408,7 +408,7 @@ begin
     end;
     // ========= "Не анкетовані клієнти за регіонами" ==============
     Q.Close;
-    Q.SQL.text := 'SELECT ' +
+    Q.SQL.Text := 'SELECT ' +
       '  IFNULL(R.nameRegion, ''Без регіону'') AS Назва_регіону, ' +
       '  SUM(IFNULL(E.Кількість_сторонніх, 0)) AS Кількість_сторонніх ' +
       'FROM Events E ' + 'LEFT JOIN Region R ON E.id_region = R.id_region ' +
@@ -434,8 +434,9 @@ begin
         end;
 
       if ColIndex <> -1 then
-    StringGrid.Cells[ColIndex, 11] :=  // припустимо, що 9-й рядок для "Кількість_сторонніх"
-      Q.FieldByName('Кількість_сторонніх').AsString;
+        StringGrid.Cells[ColIndex, 11] :=
+        // припустимо, що 9-й рядок для "Кількість_сторонніх"
+          Q.FieldByName('Кількість_сторонніх').AsString;
 
       Q.Next;
     end;
@@ -478,35 +479,35 @@ begin
 
   case cbPeriod.ItemIndex of
     0: // 1 квартал
-    begin
-      StartDate := EncodeDate(Year, 1, 1);
-      EndDate := EncodeDate(Year, 3, 31);
-    end;
+      begin
+        StartDate := EncodeDate(Year, 1, 1);
+        EndDate := EncodeDate(Year, 3, 31);
+      end;
     1: // 2 квартал
-    begin
-      StartDate := EncodeDate(Year, 4, 1);
-      EndDate := EncodeDate(Year, 6, 30);
-    end;
+      begin
+        StartDate := EncodeDate(Year, 4, 1);
+        EndDate := EncodeDate(Year, 6, 30);
+      end;
     2: // 3 квартал
-    begin
-      StartDate := EncodeDate(Year, 7, 1);
-      EndDate := EncodeDate(Year, 9, 30);
-    end;
+      begin
+        StartDate := EncodeDate(Year, 7, 1);
+        EndDate := EncodeDate(Year, 9, 30);
+      end;
     3: // 4 квартал
-    begin
-      StartDate := EncodeDate(Year, 10, 1);
-      EndDate := EncodeDate(Year, 12, 31);
-    end;
+      begin
+        StartDate := EncodeDate(Year, 10, 1);
+        EndDate := EncodeDate(Year, 12, 31);
+      end;
     4: // Пів року
-    begin
-      StartDate := EncodeDate(Year, 1, 1);
-      EndDate := EncodeDate(Year, 6, 30);
-    end;
+      begin
+        StartDate := EncodeDate(Year, 1, 1);
+        EndDate := EncodeDate(Year, 6, 30);
+      end;
     5: // Рік
-    begin
-      StartDate := EncodeDate(Year, 1, 1);
-      EndDate := EncodeDate(Year, 12, 31);
-    end;
+      begin
+        StartDate := EncodeDate(Year, 1, 1);
+        EndDate := EncodeDate(Year, 12, 31);
+      end;
   else
     Exit;
   end;
@@ -518,11 +519,8 @@ end;
 procedure TfrmObAnalitics.btnSaveClick(Sender: TObject);
 var
   Sheets, ExcelApp: Variant;
-  { i, j, endColumn, colum, rowStart, rowEnd, Rows: Integer;
-    DirectoryNow, FileNameS: String;
-    StrEndColumnSylka, RangeSylka, FIO, Formula, Formula2: string;
-    NewBlock: Boolean;
-    s: string; }
+  i, j: Integer;
+  DirectoryNow, FileNameS: String;
 begin
   try
     myForm.ProgressBar.Visible := True;
@@ -536,19 +534,70 @@ begin
     Sheets.name := 'Analitics';
     ParametryStr; // Парметры страницы
     Sheets.PageSetup.PrintTitleRows := '$2:$2';
-    {
 
+    // Параметры таблицы ( цифра номер столбца ) ширины столбцов
+    ExcelApp := MyExcel.ActiveWorkBook.Worksheets[1].columns;
+    ExcelApp.columns[1].columnwidth := 20;
+    ExcelApp.columns[2].columnwidth := 20;
+    ExcelApp.columns[3].columnwidth := 20;
+    ExcelApp.columns[4].columnwidth := 20;
+    ExcelApp.columns[5].columnwidth := 20;
+    ExcelApp.columns[6].columnwidth := 20;
+    ExcelApp.columns[7].columnwidth := 20;
+    ExcelApp.columns[8].columnwidth := 20;
+    ExcelApp.columns[9].columnwidth := 20;
 
-      ТІЛО процедури
+    // ------------ 1-я строка ------------------------
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['A1:I1'].Select;
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['A1:I1'].Merge;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.Font.name := 'Calibri';
+    MyExcel.Selection.Font.Size := 16;
+    MyExcel.Selection.Font.Bold := True;
+    MyExcel.ActiveWorkBook.Worksheets[1].Cells[1, 1] :=
+      'Аналітика общинних програм по регіонах ХБФ "ХеседБешт" на  ' +
+      DateTimeToStr(Now) + ' за період: ' + cbPeriod.Text;
 
+    // ----------------- Шапка таблицы --------------------------------------
+    ExcelApp := MyExcel.ActiveWorkBook.Worksheets[1].Rows;
 
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['A3:I14'].Select;
+    MyExcel.Selection.HorizontalAlignment := xlCenter;
+    MyExcel.Selection.VerticalAlignment := xlCenter;
+    MyExcel.Selection.Font.Size := 10;
 
+    MyExcel.Selection.Borders.LineStyle := xlContinuous; // границы
+    MyExcel.Selection.Borders.Weight := xlThin; // показать
 
-    }
+    MyExcel.ActiveWorkBook.Worksheets[1].Range['A3:I3'].Select;
+    MyExcel.Selection.Font.Bold := True;
+    MyExcel.Selection.Borders[9].LineStyle := 9; // Двойная линия
+
+    for i := 0 to StringGrid.RowCount - 1 do // строки
+      for j := 0 to StringGrid.ColCount - 1 do // столбцы
+      begin
+        MyExcel.Cells[i + 3, j + 1] := StringGrid.Cells[j, i];
+      end;
+
+    DirectoryNow := ExtractFilePath(ParamStr(0)) + 'Община\Аналитика\';
+
+    if not DirectoryExists('DirectoryNow') then
+      ForceDirectories(DirectoryNow);
+    // ForceDirectories(ExtractFilePath(Application.ExeName) + '/folder1/folder2/newfolder');
+
+    FileNameS := DirectoryNow + 'АО_' + FormatDateTime('dd.mm.yyyy hh_mm_ss',
+      Now) + '.xlsx';
+
+    uMyExcel.SaveWorkBook(FileNameS, 1);
+
     Sheets := unassigned;
     ExcelApp := unassigned;
     uMyExcel.StopExcel;
     myForm.ProgressBar.Visible := False;
+    ShowMessage('Данные экспортированы и сохранены в файл');
+
+    ShellExecute(Handle, 'open', PWideChar(DirectoryNow), nil, nil,
+      SW_SHOWNORMAL);
   except
     on E: Exception do
     begin

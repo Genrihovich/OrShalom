@@ -22,8 +22,6 @@ inherited frmOption: TfrmOption
       Angle = 0
       Shadow.OffsetKeeper.LeftTop = -3
       Shadow.OffsetKeeper.RightBottom = 5
-      ExplicitLeft = -1
-      ExplicitTop = -1
       ExplicitWidth = 219
     end
     object sPanel3: TsPanel
@@ -33,10 +31,6 @@ inherited frmOption: TfrmOption
       Height = 226
       Align = alClient
       TabOrder = 0
-      ExplicitLeft = 32
-      ExplicitTop = 96
-      ExplicitWidth = 601
-      ExplicitHeight = 129
       object dbGridKurators: TDBGridEh
         Left = 372
         Top = 1
@@ -124,7 +118,6 @@ inherited frmOption: TfrmOption
     Height = 35
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 585
     object btnClearEvent: TButton
       Left = 16
       Top = 4
@@ -142,10 +135,6 @@ inherited frmOption: TfrmOption
     Height = 205
     Align = alClient
     TabOrder = 2
-    ExplicitLeft = 1
-    ExplicitTop = 1
-    ExplicitWidth = 702
-    ExplicitHeight = 39
     object sLabelFX1: TsLabelFX
       Left = 1
       Top = 1
@@ -157,8 +146,6 @@ inherited frmOption: TfrmOption
       Angle = 0
       Shadow.OffsetKeeper.LeftTop = -3
       Shadow.OffsetKeeper.RightBottom = 5
-      ExplicitLeft = -1
-      ExplicitTop = -1
       ExplicitWidth = 268
     end
     object sPanel2: TsPanel
@@ -168,10 +155,6 @@ inherited frmOption: TfrmOption
       Height = 182
       Align = alClient
       TabOrder = 0
-      ExplicitLeft = 16
-      ExplicitTop = 56
-      ExplicitWidth = 665
-      ExplicitHeight = 218
       object dbGridUsers: TDBGridEh
         AlignWithMargins = True
         Left = 4
@@ -247,11 +230,9 @@ inherited frmOption: TfrmOption
           '0 - '#1040#1076#1084#1110#1085#1110#1089#1090#1088#1072#1090#1086#1088
           '1 - '#1058#1088#1072#1074#1084#1072' '#1062#1077#1085#1090#1088
           '2 - '#1054#1073#1097#1080#1085#1085#1110' '#1087#1088#1086#1075#1088#1072#1084#1084#1080
-          '3 - '#1058#1088#1072#1074#1084#1072' & '#1054#1073#1097#1080#1085#1072)
+          '3 - '#1058#1088#1072#1074#1084#1072' & '#1054#1073#1097#1080#1085#1072
+          '4 - '#1042#1086#1083#1086#1085#1090#1077#1088' '#1050#1086#1084#39#1102#1085#1110#1090#1110)
         TabOrder = 1
-        ExplicitLeft = 504
-        ExplicitTop = 24
-        ExplicitHeight = 193
       end
     end
   end

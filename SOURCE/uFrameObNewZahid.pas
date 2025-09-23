@@ -64,9 +64,8 @@ type
       var Accept: Boolean); // >>> ДОДАНО
   private
     { Private declarations }
-  FExportProgress: TProgressBar;
-  FExportHideTimer: TTimer;
-
+    FExportProgress: TProgressBar;
+    FExportHideTimer: TTimer;
 
     procedure UpdateListBoxDisplay; // >>> ДОДАНО
     // знайти або вставити клуб і повернути його ID
@@ -76,10 +75,8 @@ type
       ClubID, GuestsCount: Integer; lbClients: TsListBox);
     procedure InicialRegionalData;
     procedure LoadClients; // загрузка клієнтів згідно ролі і регіона
-    function IsAdmin: Boolean;
     procedure ReloadClientList;
     procedure ExportHideTimerTimer(Sender: TObject);
-
 
   public
     { Public declarations }
@@ -97,6 +94,9 @@ implementation
 
 uses uDM, uFrameObInputZahid, uMainForm, uMyExcel, uAutorize;
 
+// ----------------------------------------------------------------------------
+// Action
+// ----------------------------------------------------------------------------
 procedure TfrmObNewZahid.acDeleteItemUpdate(Sender: TObject);
 begin
   inherited;
@@ -125,13 +125,14 @@ begin
   else
     btnSaveExcel.Enabled := false;
 end;
+// ============================================================================
 
 procedure TfrmObNewZahid.AfterCreation;
 var
   S: String;
 begin
   inherited;
-//  frmObNewZahid.JvFormStorage1.RestoreFormPlacement; // завантаження
+  // frmObNewZahid.JvFormStorage1.RestoreFormPlacement; // завантаження
   if EventID = 0 then
   begin
     DBGridEh1.DragMode := dmAutomatic;
@@ -146,13 +147,12 @@ begin
   else
   begin
     myForm.lbInfo.Caption := 'редагування';
-
   end;
-   S := sStoreUtils.ReadIniString('panLeft', 'Width', IniName);
+
+  // положення сплітера
+  S := sStoreUtils.ReadIniString('panLeft', 'Width', IniName);
   if S <> '' then
     panLeft.Width := S.ToInteger;
-
-
 end;
 
 procedure TfrmObNewZahid.BeforeDestruct;
@@ -163,12 +163,16 @@ begin
     if Assigned(lbClients.Items.Objects[i]) then
       StrDispose(PChar(lbClients.Items.Objects[i]));
 
-  //На всяк випадок — прибрати ресурси при закритті фрейма
-  if Assigned(FExportHideTimer) then FreeAndNil(FExportHideTimer);
-  if Assigned(FExportProgress) then FreeAndNil(FExportProgress);
-
+  // На всяк випадок — прибрати ресурси при закритті фрейма
+  if Assigned(FExportHideTimer) then
+    FreeAndNil(FExportHideTimer);
+  if Assigned(FExportProgress) then
+    FreeAndNil(FExportProgress);
 end;
 
+//-----------------------------------------------------------------------------
+//                  Пошук клієнта по полю
+//-----------------------------------------------------------------------------
 procedure TfrmObNewZahid.edFindClientChange(Sender: TObject);
 var
   a1, a2: String;
@@ -187,7 +191,7 @@ begin
       SQL.Add('WHERE `ФИО` LIKE :name');
       SQL.Add(' AND `Тип клиента (для поиска)`<> '''' ');
 
-      if not IsAdmin then
+      if not(IsAdmin or IsVolonter) then
         SQL.Add('AND `Куратор` = :KurName');
 
       case sRadioGroup1.ItemIndex of
@@ -202,7 +206,7 @@ begin
             SQL.Add('WHERE `ФИО` LIKE :name');
             SQL.Add('AND `Возраст` BETWEEN 0 AND 17');
             SQL.Add('AND `Тип клиента (для поиска)` <> ''''');
-            if not IsAdmin then
+            if not(IsAdmin or IsVolonter) then
               SQL.Add('AND `Куратор` = :KurName');
           end;
       end;
@@ -223,13 +227,13 @@ procedure TfrmObNewZahid.ExportHideTimerTimer(Sender: TObject);
 begin
   if Assigned(FExportHideTimer) then
   begin
-    FExportHideTimer.Enabled := False;
+    FExportHideTimer.Enabled := false;
     FreeAndNil(FExportHideTimer);
   end;
 
   if Assigned(FExportProgress) then
   begin
-    FExportProgress.Visible := False;
+    FExportProgress.Visible := false;
     FreeAndNil(FExportProgress);
   end;
 end;
@@ -273,13 +277,32 @@ begin
   end;
 end;
 
-
-
 procedure TfrmObNewZahid.InicialRegionalData;
 begin
   with DM do
   begin
-    if UserRole <> 0 then
+    if UserRole = 4 then // для Волонтерів
+    begin
+      qFindClients.Close;
+      qFindClients.SQL.Clear;
+      qFindClients.SQL.Add
+        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''';');
+      qFindClients.Open;
+      labCount.Caption := IntToStr(qFindClients.RecordCount);
+
+      qClients.Close;
+      qClients.SQL.Clear;
+      qClients.SQL.Add
+        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''';');
+
+      qClients.Open;
+      qClubs.Close;
+      qClubs.SQL.Clear;
+      qClubs.SQL.Add('SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;');
+      qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
+      qClubs.Open;
+    end
+    else if (UserRole <> 0) and (UserRole <> 4) then
     begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
@@ -292,8 +315,9 @@ begin
       qClients.Close;
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''' and `Куратор` = :KurName;');
-      qClients.ParamByName('KurName').AsString := Kurator;
+        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''';');
+      // and `Куратор` = :KurName;');
+      // qClients.ParamByName('KurName').AsString := Kurator;
       qClients.Open;
 
       qClubs.Close;
@@ -383,12 +407,6 @@ begin
   end;
 end;
 
-function TfrmObNewZahid.IsAdmin: Boolean;
-begin
-  // Перевірка, чи UserRole не є Null і чи дорівнює 0 (тобто адміністратор)
-  Result := (not VarIsNull(UserRole)) and (UserRole = 0);
-end;
-
 procedure TfrmObNewZahid.DBGridEh1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 // Процедура реагує на натискання миші по DBGridEh1
@@ -398,8 +416,6 @@ begin
   if Button = mbLeft then
     DBGridEh1.BeginDrag(false);
 end;
-
-
 
 procedure TfrmObNewZahid.lbClientsDragOver(Sender, Source: TObject;
   X, Y: Integer; State: TDragState; var Accept: Boolean);
@@ -422,7 +438,7 @@ begin
   end;
 end;
 
-// =============================================================================
+
 procedure TfrmObNewZahid.lbClientsDragDrop(Sender, Source: TObject;
   X, Y: Integer);
 // Ця процедура викликається, коли об’єкт "скидається" у lbClients
@@ -470,7 +486,7 @@ begin
     edFindClient.SetFocus;
   end;
 end;
-// ==============================================================================
+
 
 procedure TfrmObNewZahid.UpdateListBoxDisplay;
 begin
@@ -481,29 +497,26 @@ procedure TfrmObNewZahid.lbClientsDrawItem(Control: TWinControl; Index: Integer;
   Rect: TRect; State: TOwnerDrawState);
 // >>> ДОДАНО: кастомне малювання з нумерацією
 var
-  s: String;
+  S: String;
 begin
   with (Control as TListBox).Canvas do
   begin
     FillRect(Rect);
-    s := Format('%d. %s', [Index + 1, lbClients.Items[Index]]);
-    TextOut(Rect.Left + 4, Rect.Top + 1, s);
+    S := Format('%d. %s', [Index + 1, lbClients.Items[Index]]);
+    TextOut(Rect.Left + 4, Rect.Top + 1, S);
   end;
 end;
 
 procedure TfrmObNewZahid.LoadClients;
 var
-  IsAdmin: Boolean;
   queryBase: TStringList;
 begin
-  IsAdmin := false; // ← додай це перед першим використанням
-  IsAdmin := IsAdmin; // використовуємо функцію
   queryBase := TStringList.Create;
   try
     queryBase.Add('SELECT * FROM `Clients`');
     queryBase.Add('WHERE `Тип клиента (для поиска)` <> ''''');
 
-    if not IsAdmin then
+    if not(IsAdmin or IsVolonter) then
       queryBase.Add('AND `Куратор` = :KurName');
 
     case sRadioGroup1.ItemIndex of
@@ -515,7 +528,7 @@ begin
           queryBase.Clear;
           queryBase.Add('SELECT * FROM `Clients`');
           queryBase.Add('WHERE `Возраст` BETWEEN 0 AND 17');
-          if not IsAdmin then
+          if not(IsAdmin or IsVolonter) then
             queryBase.Add('AND `Куратор` = :KurName');
         end;
     end;
@@ -524,7 +537,7 @@ begin
     begin
       Close;
       SQL.Text := queryBase.Text;
-      if not IsAdmin then
+      if not(IsAdmin or IsVolonter) then
         ParamByName('KurName').AsString := Kurator;
       Open;
     end;
@@ -534,8 +547,6 @@ begin
     queryBase.Free;
   end;
 end;
-
-
 
 procedure TfrmObNewZahid.ReloadClientList;
 begin
@@ -547,19 +558,16 @@ begin
     SQL.Add('WHERE `Тип клиента (для поиска)` <> ''''');
 
     // Якщо користувач не адміністратор — обмежити по куратору
-    if not IsAdmin then
+    if not(IsAdmin or IsVolonter) then
       SQL.Add('AND `Куратор` = :KurName');
 
     SQL.Add('ORDER BY `ФИО`');
 
-    if not IsAdmin then
+    if not(IsAdmin or IsVolonter) then
       ParamByName('KurName').AsString := Kurator;
-
     Open;
   end;
 end;
-
-
 
 procedure TfrmObNewZahid.sRadioGroup1Change(Sender: TObject);
 begin
@@ -574,7 +582,8 @@ begin
     SQL.Add('SELECT * FROM `Clients`');
     SQL.Add('WHERE `Тип клиента (для поиска)` <> ''''');
 
-    if not IsAdmin then
+    // if not (IsAdmin = true) or (IsVolonter = True) then
+    if not(IsAdmin or IsVolonter) then
       SQL.Add('AND `Куратор` = :KurName');
 
     case sRadioGroup1.ItemIndex of
@@ -588,14 +597,13 @@ begin
           SQL.Add('SELECT * FROM `Clients`');
           SQL.Add('WHERE `Возраст` BETWEEN 0 AND 17');
           SQL.Add('AND `Тип клиента (для поиска)` <> ''''');
-          if not IsAdmin then
+          if not(IsAdmin or IsVolonter) then
             SQL.Add('AND `Куратор` = :KurName');
         end;
     end;
 
     if SQL.Text.Contains(':KurName') then
       ParamByName('KurName').AsString := Kurator;
-
     Open;
     labCount.Caption := IntToStr(RecordCount);
   end;
@@ -605,8 +613,7 @@ procedure TfrmObNewZahid.sSplitter1CanResize(Sender: TObject;
   var NewSize: Integer; var Accept: Boolean);
 begin
   inherited;
- sStoreUtils.WriteIniStr('panLeft', 'Width',
-      panLeft.Width.ToString, IniName);
+  sStoreUtils.WriteIniStr('panLeft', 'Width', panLeft.Width.ToString, IniName);
 end;
 
 procedure TfrmObNewZahid.btnProvestyClick(Sender: TObject);
@@ -628,6 +635,9 @@ begin
   myForm.TimerBlink.Enabled := false; // відміняємо мигання мітки
 end;
 
+// -----------------------------------------------------------------------------
+// Зберегти список в Ексель
+// -----------------------------------------------------------------------------
 procedure TfrmObNewZahid.btnSaveExcelClick(Sender: TObject);
 var
   Sheets, ExcelApp: Variant;
@@ -646,12 +656,12 @@ begin
   end;
   FExportProgress.Max := lbClients.Items.Count;
   FExportProgress.Position := 0;
-  FExportProgress.Visible := True;
+  FExportProgress.Visible := true;
 
   // якщо попередній таймер ще живий — прибираємо
   if Assigned(FExportHideTimer) then
   begin
-    FExportHideTimer.Enabled := False;
+    FExportHideTimer.Enabled := false;
     FreeAndNil(FExportHideTimer);
   end;
 
@@ -699,11 +709,12 @@ begin
     // Автопідбір ширини колонок
     ExcelApp.columns.AutoFit;
 
-    DirectoryNow := ExtractFilePath(ParamStr(0)) + 'Списки\';
+    DirectoryNow := ExtractFilePath(ParamStr(0)) + 'Община\' + MyName +
+      '\Списки\';
     if not DirectoryExists('DirectoryNow') then
       ForceDirectories(DirectoryNow);
 
-    FileNameS := DirectoryNow + 'Общіна_' + DateTimeToStr(Nachalo) + '-' +
+    FileNameS := DirectoryNow + 'Община_' + DateTimeToStr(Nachalo) + '-' +
       DateTimeToStr(Konec) + '_' + FormatDateTime('dd.mm.yyyy hh_mm_ss', Now)
       + '.xlsx';
 
@@ -716,15 +727,13 @@ begin
     ShellExecute(Handle, 'open', PWideChar(DirectoryNow), nil, nil,
       SW_SHOWNORMAL);
 
-
     // --- на 100% ще показуємо 1 хвилину і ховаємо ---
     FExportProgress.Position := FExportProgress.Max;
 
     FExportHideTimer := TTimer.Create(Self);
     FExportHideTimer.Interval := 10000; //
     FExportHideTimer.OnTimer := ExportHideTimerTimer;
-    FExportHideTimer.Enabled := True;
-
+    FExportHideTimer.Enabled := true;
 
   except
     on E: Exception do
@@ -733,15 +742,15 @@ begin
       Sheets := unassigned;
       ExcelApp := unassigned;
       uMyExcel.StopExcel;
-            // у разі помилки — прибрати індикатор одразу
+      // у разі помилки — прибрати індикатор одразу
       if Assigned(FExportHideTimer) then
       begin
-        FExportHideTimer.Enabled := False;
+        FExportHideTimer.Enabled := false;
         FreeAndNil(FExportHideTimer);
       end;
       if Assigned(FExportProgress) then
       begin
-        FExportProgress.Visible := False;
+        FExportProgress.Visible := false;
         FreeAndNil(FExportProgress);
       end;
     end;
