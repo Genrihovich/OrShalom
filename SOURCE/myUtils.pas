@@ -11,7 +11,7 @@ uses
   JvStringGrid,
   system.Variants, VCL.Grids, ComObj,
   Generics.Collections, Data.DB, Uni, sMemo, acProgressBar, sLabel,
-  System.IniFiles;
+  System.IniFiles, Math;
 
 type
 TProgressCallback = reference to procedure(Pos: Integer);
@@ -35,6 +35,8 @@ function SendEmailAndAttach(pHost, pSubject, pTo, pFrom, pTextBody, pHTMLBody,
   pLogin, pPassword, pFilePath: string): boolean;
 
 procedure AutoStringGridWidth(StringGrid: TJvStringGrid);
+procedure AdjustGridColumnWidths(Grid: TJvStringGrid);
+
 procedure SaveStringGridToExcel(StringGrid: TStringGrid;
   const FileName: string);
 // поиск по номеру столбца в екселе его буквенное значение
@@ -462,7 +464,37 @@ begin
   end;
 end;
 
+procedure AdjustGridColumnWidths(Grid: TJvStringGrid);
+var
+  i, j, MaxTextWidth: Integer;
+  CellText: string;
+begin
+  Grid.Canvas.Font.Assign(Grid.Font);
 
+  for i := 0 to Grid.ColCount - 1 do
+  begin
+    MaxTextWidth := Grid.Canvas.TextWidth(Grid.Cells[i, 0]); // заголовок
+
+  {  // якщо це перша колонка — перевір ще назви рядків (наприклад, перші 6)
+    if i = 0 then
+    begin
+      for j := 1 to Min(11, Grid.RowCount - 1) do
+      begin
+        CellText := Grid.Cells[i, j];
+        MaxTextWidth := Max(MaxTextWidth, Grid.Canvas.TextWidth(CellText));
+      end;
+    end;}
+
+        // тепер дивимось по всіх рядках у цьому стовпці
+    for j := 1 to Grid.RowCount - 1 do
+    begin
+      CellText := Grid.Cells[i, j];
+      MaxTextWidth := Max(MaxTextWidth, Grid.Canvas.TextWidth(CellText));
+    end;
+
+    Grid.ColWidths[i] := MaxTextWidth + 20; // запас
+  end;
+end;
 
 
 end.

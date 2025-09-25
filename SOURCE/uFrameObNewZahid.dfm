@@ -1,22 +1,21 @@
 inherited frmObNewZahid: TfrmObNewZahid
   Width = 946
-  Height = 501
-  Font.Color = clWindowText
+  Height = 497
   ParentFont = False
   ExplicitWidth = 946
-  ExplicitHeight = 501
+  ExplicitHeight = 497
   object panCenter: TsPanel [0]
     Left = 0
     Top = 41
     Width = 946
-    Height = 419
+    Height = 415
     Align = alClient
     TabOrder = 0
     object sSplitter1: TsSplitter
       Left = 313
       Top = 1
       Width = 9
-      Height = 417
+      Height = 413
       OnCanResize = sSplitter1CanResize
       ExplicitLeft = 318
       ExplicitTop = 2
@@ -26,14 +25,14 @@ inherited frmObNewZahid: TfrmObNewZahid
       Left = 1
       Top = 1
       Width = 312
-      Height = 417
+      Height = 413
       Align = alLeft
       TabOrder = 0
       object DBGridEh1: TDBGridEh
         Left = 1
         Top = 1
         Width = 310
-        Height = 415
+        Height = 411
         Align = alClient
         AutoFitColWidths = True
         DataSource = DM.dsFindClients
@@ -63,14 +62,14 @@ inherited frmObNewZahid: TfrmObNewZahid
       Left = 322
       Top = 1
       Width = 623
-      Height = 417
+      Height = 413
       Align = alClient
       TabOrder = 1
       object panRight: TsPanel
         Left = 274
         Top = 1
         Width = 348
-        Height = 415
+        Height = 411
         Align = alRight
         TabOrder = 0
         object Label1: TLabel
@@ -164,7 +163,7 @@ inherited frmObNewZahid: TfrmObNewZahid
           Height = 27
           EditMask = '!99/99/9999;1; '
           Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
+          Font.Color = clBlack
           Font.Height = -16
           Font.Name = 'Tahoma'
           Font.Style = []
@@ -184,7 +183,7 @@ inherited frmObNewZahid: TfrmObNewZahid
           Width = 89
           Height = 27
           Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
+          Font.Color = clBlack
           Font.Height = -16
           Font.Name = 'Tahoma'
           Font.Style = []
@@ -197,7 +196,7 @@ inherited frmObNewZahid: TfrmObNewZahid
           Width = 329
           Height = 27
           Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
+          Font.Color = clBlack
           Font.Height = -16
           Font.Name = 'Tahoma'
           Font.Style = []
@@ -210,7 +209,7 @@ inherited frmObNewZahid: TfrmObNewZahid
         end
         object ProgressBar: TsProgressBar
           Left = 1
-          Top = 397
+          Top = 393
           Width = 346
           Height = 17
           Align = alBottom
@@ -222,7 +221,7 @@ inherited frmObNewZahid: TfrmObNewZahid
         Left = 1
         Top = 1
         Width = 273
-        Height = 415
+        Height = 411
         Align = alClient
         TabOrder = 1
         object lbClients: TsListBox
@@ -230,7 +229,7 @@ inherited frmObNewZahid: TfrmObNewZahid
           Left = 11
           Top = 4
           Width = 258
-          Height = 407
+          Height = 403
           Margins.Left = 10
           Style = lbOwnerDrawFixed
           Align = alClient
@@ -267,7 +266,7 @@ inherited frmObNewZahid: TfrmObNewZahid
       Width = 281
       Height = 27
       Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
+      Font.Color = clBlack
       Font.Height = -16
       Font.Name = 'Tahoma'
       Font.Style = []
@@ -341,10 +340,24 @@ inherited frmObNewZahid: TfrmObNewZahid
         #1044#1110#1090#1080)
       OnChange = sRadioGroup1Change
     end
+    object chbUpdateClients: TsCheckBox
+      Left = 640
+      Top = 14
+      Width = 307
+      Height = 21
+      Caption = #1047#1072#1084#1086#1088#1086#1079#1080#1090#1080' '#1089#1082#1088#1086#1083#1083#1110#1085#1075' '#1089#1087#1080#1089#1082#1072' '#1082#1083#1110#1108#1085#1090#1110#1074
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+    end
   end
   object panDown: TsPanel [2]
     Left = 0
-    Top = 460
+    Top = 456
     Width = 946
     Height = 41
     Align = alBottom

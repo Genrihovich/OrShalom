@@ -11,7 +11,8 @@ uses
   sEdit, sListBox, Vcl.Buttons, sBitBtn, Vcl.Mask, sMaskEdit, sCustomComboEdit,
   sToolEdit, DBCtrlsEh, DBLookupEh, System.Actions, Vcl.ActnList, Data.DB, Uni,
   sGroupBox, sLabel, sButton, sSplitter, JvAppStorage, JvAppIniStorage,
-  JvComponentBase, JvFormPlacement, sStoreUtils, Vcl.ComCtrls, acProgressBar;
+  JvComponentBase, JvFormPlacement, sStoreUtils, Vcl.ComCtrls, acProgressBar,
+  sCheckBox;
 
 type
   TfrmObNewZahid = class(TCustomInfoFrame)
@@ -45,6 +46,7 @@ type
     sPanel2: TsPanel;
     SaveDialog1: TSaveDialog;
     ProgressBar: TsProgressBar;
+    chbUpdateClients: TsCheckBox;
     procedure btnProvestyClick(Sender: TObject);
     procedure edFindClientChange(Sender: TObject);
     procedure DBGridEh1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -187,7 +189,7 @@ begin
     begin
       Close;
       SQL.Clear;
-      SQL.Add('SELECT `ФИО`, `JDC ID` FROM `Clients`');
+      SQL.Add('SELECT `ФИО`, `JDC ID` FROM `admUch`');
       SQL.Add('WHERE `ФИО` LIKE :name');
       SQL.Add(' AND `Тип клиента (для поиска)`<> '''' ');
 
@@ -202,7 +204,7 @@ begin
         2:
           begin
             SQL.Clear;
-            SQL.Add('SELECT * FROM `Clients`');
+            SQL.Add('SELECT * FROM `admUch`');
             SQL.Add('WHERE `ФИО` LIKE :name');
             SQL.Add('AND `Возраст` BETWEEN 0 AND 17');
             SQL.Add('AND `Тип клиента (для поиска)` <> ''''');
@@ -286,14 +288,14 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
       qFindClients.Open;
       labCount.Caption := IntToStr(qFindClients.RecordCount);
 
       qClients.Close;
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
 
       qClients.Open;
       qClubs.Close;
@@ -307,7 +309,7 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''' and `Куратор` = :KurName;');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' and `Куратор` = :KurName;');
       qFindClients.ParamByName('KurName').AsString := Kurator;
       qFindClients.Open;
       labCount.Caption := IntToStr(qFindClients.RecordCount);
@@ -315,7 +317,7 @@ begin
       qClients.Close;
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
       // and `Куратор` = :KurName;');
       // qClients.ParamByName('KurName').AsString := Kurator;
       qClients.Open;
@@ -332,14 +334,14 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
       qFindClients.Open;
       labCount.Caption := IntToStr(qFindClients.RecordCount);
 
       qClients.Close;
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `Clients` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
       qClients.Open;
 
       qClubs.Close;
@@ -447,9 +449,12 @@ var
   fio, jdcID: String;
   i: Integer;
   alreadyExists: Boolean;
+
 begin
   if Source = DBGridEh1 then
   begin
+
+
     // Отримуємо дані з активного рядка
     fio := DBGridEh1.DataSource.DataSet.FieldByName('ФИО').AsString;
     jdcID := DBGridEh1.DataSource.DataSet.FieldByName('JDC ID').AsString;
@@ -476,11 +481,19 @@ begin
     lbClients.Items.AddObject(fio, TObject(Pointer(StrNew(PChar(jdcID)))));
     edFindClient.Text := '';
 
-    // Повторно завантажуємо клієнтів (з урахуванням ролі)
-    ReloadClientList;
+
+  if not chbUpdateClients.Checked then
+  begin
+   // Повторно завантажуємо клієнтів (з урахуванням ролі)
+      ReloadClientList;
     sRadioGroup1Change(Sender);
+  end;
+
+
     // Оновлення нумерації
     UpdateListBoxDisplay;
+
+
 
     // Повертаємо фокус на поле пошуку
     edFindClient.SetFocus;
@@ -513,7 +526,7 @@ var
 begin
   queryBase := TStringList.Create;
   try
-    queryBase.Add('SELECT * FROM `Clients`');
+    queryBase.Add('SELECT * FROM `admUch`');
     queryBase.Add('WHERE `Тип клиента (для поиска)` <> ''''');
 
     if not(IsAdmin or IsVolonter) then
@@ -526,7 +539,7 @@ begin
       2:
         begin
           queryBase.Clear;
-          queryBase.Add('SELECT * FROM `Clients`');
+          queryBase.Add('SELECT * FROM `admUch`');
           queryBase.Add('WHERE `Возраст` BETWEEN 0 AND 17');
           if not(IsAdmin or IsVolonter) then
             queryBase.Add('AND `Куратор` = :KurName');
@@ -554,7 +567,7 @@ begin
   begin
     Close;
     SQL.Clear;
-    SQL.Add('SELECT `ФИО`, `JDC ID` FROM `Clients`');
+    SQL.Add('SELECT `ФИО`, `JDC ID` FROM `admUch`');
     SQL.Add('WHERE `Тип клиента (для поиска)` <> ''''');
 
     // Якщо користувач не адміністратор — обмежити по куратору
@@ -579,7 +592,7 @@ begin
     SQL.Clear;
 
     // Базовий запит
-    SQL.Add('SELECT * FROM `Clients`');
+    SQL.Add('SELECT * FROM `admUch`');
     SQL.Add('WHERE `Тип клиента (для поиска)` <> ''''');
 
     // if not (IsAdmin = true) or (IsVolonter = True) then
@@ -594,7 +607,7 @@ begin
       2:
         begin
           SQL.Clear;
-          SQL.Add('SELECT * FROM `Clients`');
+          SQL.Add('SELECT * FROM `admUch`');
           SQL.Add('WHERE `Возраст` BETWEEN 0 AND 17');
           SQL.Add('AND `Тип клиента (для поиска)` <> ''''');
           if not(IsAdmin or IsVolonter) then

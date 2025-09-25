@@ -259,7 +259,7 @@ begin
       + '  COUNT(DISTINCT CASE WHEN C.Возраст BETWEEN 60 AND 120 THEN C.`JDC ID` END) AS Вік_60_120, '
       + '  COUNT(DISTINCT C.`JDC ID`) AS Унікальні_клієнти ' + 'FROM Events E '
       + 'LEFT JOIN EventClients EC ON E.ID = EC.EventID ' +
-      'LEFT JOIN Clients C ON EC.ClientID = C.`JDC ID` ' +
+      'LEFT JOIN admUch C ON EC.ClientID = C.`JDC ID` ' +
       'LEFT JOIN Region R ON E.id_region = R.id_region ' +
       'WHERE (E.id_region IN (1,2,3,4,5,6) OR E.id_region IS NULL) ' +
       '  AND E.`Дата` BETWEEN :ot AND :do ' + 'GROUP BY R.nameRegion ' +
@@ -303,7 +303,7 @@ begin
     Q.Close;
     Q.SQL.Text := 'SELECT ' +
       '  IFNULL(R.nameRegion, ''Без регіону'') AS Назва_регіону, ' +
-      '  COUNT(DISTINCT C.`JDC ID`) AS Нові_клієнти ' + 'FROM Clients C ' +
+      '  COUNT(DISTINCT C.`JDC ID`) AS Нові_клієнти ' + 'FROM admUch C ' +
       'JOIN EventClients EC ON C.`JDC ID` = EC.ClientID ' +
       'JOIN Events E ON EC.EventID = E.ID ' +
       'LEFT JOIN Region R ON E.id_region = R.id_region ' +

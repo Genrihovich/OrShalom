@@ -54,7 +54,7 @@ begin
       SQL.Add('  CL.`ФИО` AS `ПІБ_хто_проводив`, E.`Кількість_сторонніх`, E.`id_region`, R.`nameRegion` AS `Назва_регіону`');
       SQL.Add('FROM `Events` E');
       SQL.Add('LEFT JOIN `Clubs` C ON E.`ClubID` = C.`ID`');
-      SQL.Add('LEFT JOIN `Clients` CL ON E.`Хто_проводив` = CL.`JDC ID`');
+      SQL.Add('LEFT JOIN `admUch` CL ON E.`Хто_проводив` = CL.`JDC ID`');
       SQL.Add('LEFT JOIN `Region` R ON E.`id_region` = R.`id_region`');
       SQL.Add('WHERE E.`id_region` = :RegionID');
       SQL.Add('ORDER BY E.`Дата` DESC');
@@ -67,7 +67,7 @@ begin
       SQL.Add('  CL.`ФИО` AS `ПІБ_хто_проводив`, E.`Кількість_сторонніх`, E.`id_region`, R.`nameRegion` AS `Назва_регіону`');
       SQL.Add('FROM `Events` E');
       SQL.Add('LEFT JOIN `Clubs` C ON E.`ClubID` = C.`ID`');
-      SQL.Add('LEFT JOIN `Clients` CL ON E.`Хто_проводив` = CL.`JDC ID`');
+      SQL.Add('LEFT JOIN `admUch` CL ON E.`Хто_проводив` = CL.`JDC ID`');
       SQL.Add('LEFT JOIN `Region` R ON E.`id_region` = R.`id_region`');
       // SQL.Add('WHERE E.`id_region` = :RegionID');
       SQL.Add('ORDER BY E.`Дата` DESC');

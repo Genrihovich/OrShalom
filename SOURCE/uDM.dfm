@@ -245,7 +245,7 @@ object DM: TDM
   object qClients: TUniQuery
     Connection = UniConnection
     SQL.Strings = (
-      'SELECT * FROM `Clients` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39
+      'SELECT * FROM `admUch` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39
       'ORDER BY `'#1060#1048#1054'`;')
     Active = True
     Left = 24
@@ -270,7 +270,7 @@ object DM: TDM
       '  R.`nameRegion` AS `'#1053#1072#1079#1074#1072'_'#1088#1077#1075#1110#1086#1085#1091'`'
       'FROM `Events` E'
       'LEFT JOIN `Clubs` C ON E.`ClubID` = C.`ID`'
-      'LEFT JOIN `Clients` CL ON E.`'#1061#1090#1086'_'#1087#1088#1086#1074#1086#1076#1080#1074'` = CL.`JDC ID`'
+      'LEFT JOIN `admUch` CL ON E.`'#1061#1090#1086'_'#1087#1088#1086#1074#1086#1076#1080#1074'` = CL.`JDC ID`'
       'LEFT JOIN `Region` R ON E.`id_region` = R.`id_region`'
       '/*WHERE E.`id_region` = :RegionID*/'
       'ORDER BY E.`'#1044#1072#1090#1072'` DESC;')
@@ -287,7 +287,7 @@ object DM: TDM
   object qFindClients: TUniQuery
     Connection = UniConnection
     SQL.Strings = (
-      'SELECT * FROM `Clients` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39';')
+      'SELECT * FROM `admUch` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39';')
     Active = True
     Left = 136
     Top = 344
@@ -300,7 +300,7 @@ object DM: TDM
   object qEventBoss: TUniQuery
     Connection = UniConnection
     SQL.Strings = (
-      'select * from `Clients`')
+      'select * from `admUch`')
     Active = True
     Left = 200
     Top = 344
@@ -338,9 +338,9 @@ object DM: TDM
       '  C1.`'#1050#1091#1088#1072#1090#1086#1088'`,'
       '  C2.`JDC ID`'
       'FROM '
-      '  Clients C1'
+      '  admUch C1'
       'JOIN '
-      '  Clients C2 ON C1.`'#1050#1091#1088#1072#1090#1086#1088'` = C2.`'#1060#1048#1054'`'
+      '  admUch C2 ON C1.`'#1050#1091#1088#1072#1090#1086#1088'` = C2.`'#1060#1048#1054'`'
       'WHERE '
       '  C1.`'#1050#1091#1088#1072#1090#1086#1088'` <> '#39#39' '
       '  AND C1.`'#1054#1089#1085#1086#1074#1085#1072#1103' '#1086#1088#1075#1072#1085#1080#1079#1072#1094#1080#1103'` = '#39#1061#1077#1089#1077#1076' '#1041#1077#1096#1090' - '#1061#1084#1077#1083#1100#1085#1080#1094#1082#1080#1081#39' '
@@ -397,7 +397,7 @@ object DM: TDM
       ''
       'FROM Events E'
       'LEFT JOIN EventClients EC ON E.ID = EC.EventID'
-      'LEFT JOIN Clients C ON EC.ClientID = C.`JDC ID`'
+      'LEFT JOIN admUch C ON EC.ClientID = C.`JDC ID`'
       'LEFT JOIN Clubs Cl ON E.ClubID = Cl.ID'
       'LEFT JOIN Region R ON E.id_region = R.id_region'
       ''
@@ -450,7 +450,7 @@ object DM: TDM
       '  COUNT(DISTINCT C.`JDC ID`) AS '#1059#1085#1110#1082#1072#1083#1100#1085#1110'_'#1082#1083#1110#1108#1085#1090#1080
       'FROM Events E'
       'LEFT JOIN EventClients EC ON E.ID = EC.EventID'
-      'LEFT JOIN Clients C ON EC.ClientID = C.`JDC ID`'
+      'LEFT JOIN admUch C ON EC.ClientID = C.`JDC ID`'
       'LEFT JOIN Region R ON E.id_region = R.id_region'
       'WHERE (E.id_region IN (1,2,3,4,5,6) OR E.id_region IS NULL)'
       '  AND E.`'#1044#1072#1090#1072'` BETWEEN :ot AND :do'
@@ -482,8 +482,9 @@ object DM: TDM
       ''
       '  SELECT EC.ClientID, CL.'#1060#1048#1054
       '  FROM EventClients EC '
-      '  LEFT JOIN Clients CL ON EC.ClientID = CL.`JDC ID` '
+      '  LEFT JOIN admUch CL ON EC.ClientID = CL.`JDC ID` '
       '  WHERE EC.EventID = :EventID')
+    Active = True
     Left = 320
     Top = 344
     ParamData = <
