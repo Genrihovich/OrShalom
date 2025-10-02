@@ -1,16 +1,18 @@
 inherited frmObNewZahid: TfrmObNewZahid
-  Width = 946
+  Width = 1069
   Height = 497
+  Font.Color = clWindowText
   ParentFont = False
-  ExplicitWidth = 946
+  ExplicitWidth = 1069
   ExplicitHeight = 497
   object panCenter: TsPanel [0]
     Left = 0
     Top = 41
-    Width = 946
+    Width = 1069
     Height = 415
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 946
     object sSplitter1: TsSplitter
       Left = 313
       Top = 1
@@ -42,6 +44,7 @@ inherited frmObNewZahid: TfrmObNewZahid
         Font.Height = -16
         Font.Name = 'Tahoma'
         Font.Style = []
+        Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
         ParentFont = False
         TabOrder = 0
         OnMouseDown = DBGridEh1MouseDown
@@ -61,17 +64,19 @@ inherited frmObNewZahid: TfrmObNewZahid
     object sPanel2: TsPanel
       Left = 322
       Top = 1
-      Width = 623
+      Width = 746
       Height = 413
       Align = alClient
       TabOrder = 1
+      ExplicitWidth = 623
       object panRight: TsPanel
-        Left = 274
+        Left = 397
         Top = 1
         Width = 348
         Height = 411
         Align = alRight
         TabOrder = 0
+        ExplicitLeft = 274
         object Label1: TLabel
           Left = 125
           Top = 0
@@ -220,15 +225,16 @@ inherited frmObNewZahid: TfrmObNewZahid
       object sPanel1: TsPanel
         Left = 1
         Top = 1
-        Width = 273
+        Width = 396
         Height = 411
         Align = alClient
         TabOrder = 1
+        ExplicitWidth = 273
         object lbClients: TsListBox
           AlignWithMargins = True
           Left = 11
           Top = 4
-          Width = 258
+          Width = 381
           Height = 403
           Margins.Left = 10
           Style = lbOwnerDrawFixed
@@ -249,6 +255,7 @@ inherited frmObNewZahid: TfrmObNewZahid
           BoundLabel.Font.Height = -16
           BoundLabel.Font.Name = 'Tahoma'
           BoundLabel.Font.Style = []
+          ExplicitWidth = 258
         end
       end
     end
@@ -256,10 +263,11 @@ inherited frmObNewZahid: TfrmObNewZahid
   object panTop: TsPanel [1]
     Left = 0
     Top = 0
-    Width = 946
+    Width = 1069
     Height = 41
     Align = alTop
     TabOrder = 1
+    ExplicitWidth = 946
     object edFindClient: TsEdit
       Left = 13
       Top = 8
@@ -341,9 +349,9 @@ inherited frmObNewZahid: TfrmObNewZahid
       OnChange = sRadioGroup1Change
     end
     object chbUpdateClients: TsCheckBox
-      Left = 640
-      Top = 14
-      Width = 307
+      Left = 757
+      Top = 9
+      Width = 306
       Height = 21
       Caption = #1047#1072#1084#1086#1088#1086#1079#1080#1090#1080' '#1089#1082#1088#1086#1083#1083#1110#1085#1075' '#1089#1087#1080#1089#1082#1072' '#1082#1083#1110#1108#1085#1090#1110#1074
       Font.Charset = DEFAULT_CHARSET
@@ -354,16 +362,26 @@ inherited frmObNewZahid: TfrmObNewZahid
       ParentFont = False
       TabOrder = 3
     end
+    object btnClear: TsBitBtn
+      Left = 618
+      Top = 10
+      Width = 104
+      Height = 25
+      Action = acClear
+      Caption = #1054#1095#1080#1089#1090#1080#1090#1080' '#1089#1087#1080#1089#1086#1082
+      TabOrder = 4
+    end
   end
   object panDown: TsPanel [2]
     Left = 0
     Top = 456
-    Width = 946
+    Width = 1069
     Height = 41
     Align = alBottom
     TabOrder = 2
+    ExplicitWidth = 946
     DesignSize = (
-      946
+      1069
       41)
     object labCount: TsWebLabel
       Left = 13
@@ -383,7 +401,7 @@ inherited frmObNewZahid: TfrmObNewZahid
       HoverFont.Style = []
     end
     object btnProvesty: TButton
-      Left = 784
+      Left = 907
       Top = 6
       Width = 153
       Height = 25
@@ -396,6 +414,7 @@ inherited frmObNewZahid: TfrmObNewZahid
       Font.Style = []
       ParentFont = False
       TabOrder = 0
+      ExplicitLeft = 784
     end
     object btnSaveExcel: TsButton
       Left = 325
@@ -433,6 +452,12 @@ inherited frmObNewZahid: TfrmObNewZahid
       Caption = #1047#1073#1077#1088#1077#1075#1090#1080' '#1089#1087#1080#1089#1086#1082' '#1074' Excel'
       OnExecute = btnSaveExcelClick
       OnUpdate = acSaveExcelUpdate
+    end
+    object acClear: TAction
+      AutoCheck = True
+      Caption = #1054#1095#1080#1089#1090#1080#1090#1080' '#1089#1087#1080#1089#1086#1082
+      OnExecute = btnClearClick
+      OnUpdate = acClearUpdate
     end
   end
   object SaveDialog1: TSaveDialog

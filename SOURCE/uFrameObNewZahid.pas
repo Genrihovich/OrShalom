@@ -47,6 +47,8 @@ type
     SaveDialog1: TSaveDialog;
     ProgressBar: TsProgressBar;
     chbUpdateClients: TsCheckBox;
+    btnClear: TsBitBtn;
+    acClear: TAction;
     procedure btnProvestyClick(Sender: TObject);
     procedure edFindClientChange(Sender: TObject);
     procedure DBGridEh1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -63,7 +65,9 @@ type
     procedure btnSaveExcelClick(Sender: TObject);
     procedure acSaveExcelUpdate(Sender: TObject);
     procedure sSplitter1CanResize(Sender: TObject; var NewSize: Integer;
-      var Accept: Boolean); // >>> ДОДАНО
+      var Accept: Boolean);
+    procedure acClearUpdate(Sender: TObject);
+    procedure btnClearClick(Sender: TObject); // >>> ДОДАНО
   private
     { Private declarations }
     FExportProgress: TProgressBar;
@@ -99,6 +103,15 @@ uses uDM, uFrameObInputZahid, uMainForm, uMyExcel, uAutorize;
 // ----------------------------------------------------------------------------
 // Action
 // ----------------------------------------------------------------------------
+procedure TfrmObNewZahid.acClearUpdate(Sender: TObject);
+begin
+  inherited;
+  if (lbClients.Items.Count > 0) then
+    btnClear.Enabled := true
+  else
+    btnClear.Enabled := false;
+end;
+
 procedure TfrmObNewZahid.acDeleteItemUpdate(Sender: TObject);
 begin
   inherited;
@@ -177,53 +190,54 @@ end;
 //-----------------------------------------------------------------------------
 procedure TfrmObNewZahid.edFindClientChange(Sender: TObject);
 var
-  a1, a2: String;
+  searchValue: String;
 begin
-  inherited; // Пошук клієнта по полю
+  inherited;
 
-  if edFindClient.Text <> '' then
+  // Якщо текст порожній - беремо '%', щоб вибрати всіх
+  if edFindClient.Text = '' then
+    searchValue := '%'
+  else
+    searchValue := '%' + edFindClient.Text + '%';
+
+  with DM.qFindClients do
   begin
-    a1 := '%' + edFindClient.Text + '%';
-    a2 := QuotedStr(a1);
-    with DM.qFindClients do
-    begin
-      Close;
-      SQL.Clear;
-      SQL.Add('SELECT `ФИО`, `JDC ID` FROM `admUch`');
-      SQL.Add('WHERE `ФИО` LIKE :name');
-      SQL.Add(' AND `Тип клиента (для поиска)`<> '''' ');
+    Close;
+    SQL.Clear;
+    SQL.Add('SELECT `ФИО`, `JDC ID` FROM `admUch`');
+    SQL.Add('WHERE `ФИО` LIKE :name');
+    SQL.Add(' AND `Тип клиента (для поиска)`<> '''' ');
 
-      if not(IsAdmin or IsVolonter) then
-        SQL.Add('AND `Куратор` = :KurName');
+    if not(IsAdmin or IsVolonter) then
+      SQL.Add('AND `Куратор` = :KurName');
 
-      case sRadioGroup1.ItemIndex of
-        0:
-          ; // ВСІ
-        1:
-          SQL.Add('AND `Тип клиента (для поиска)` LIKE ''%Клиент Хеседа%''');
-        2:
-          begin
-            SQL.Clear;
-            SQL.Add('SELECT * FROM `admUch`');
-            SQL.Add('WHERE `ФИО` LIKE :name');
-            SQL.Add('AND `Возраст` BETWEEN 0 AND 17');
-            SQL.Add('AND `Тип клиента (для поиска)` <> ''''');
-            if not(IsAdmin or IsVolonter) then
-              SQL.Add('AND `Куратор` = :KurName');
-          end;
-      end;
+    case sRadioGroup1.ItemIndex of
+      0: ; // ВСІ
+      1: SQL.Add('AND `Тип клиента (для поиска)` LIKE ''%Клиент Хеседа%''');
+      2:
+        begin
+          SQL.Clear;
+          SQL.Add('SELECT * FROM `admUch`');
+          SQL.Add('WHERE `ФИО` LIKE :name');
+          SQL.Add('AND `Возраст` BETWEEN 0 AND 17');
+          SQL.Add('AND `Тип клиента (для поиска)` <> ''''');
 
-      SQL.Add('ORDER BY `ФИО`');
-      ParamByName('name').AsString := '%' + edFindClient.Text + '%';
-
-      if SQL.Text.Contains(':KurName') then
-        ParamByName('KurName').AsString := Kurator;
-
-      Open;
-      labCount.Caption := IntToStr(RecordCount);
+          if not(IsAdmin or IsVolonter) then
+            SQL.Add('AND `Куратор` = :KurName');
+        end;
     end;
+
+    SQL.Add('ORDER BY `ФИО`');
+    ParamByName('name').AsString := searchValue;
+
+    if SQL.Text.Contains(':KurName') then
+      ParamByName('KurName').AsString := Kurator;
+
+    Open;
+    labCount.Caption := IntToStr(RecordCount);
   end;
 end;
+
 
 procedure TfrmObNewZahid.ExportHideTimerTimer(Sender: TObject);
 begin
@@ -288,20 +302,23 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
+
       qFindClients.Open;
       labCount.Caption := IntToStr(qFindClients.RecordCount);
-
       qClients.Close;
+
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
-
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
       qClients.Open;
+
       qClubs.Close;
       qClubs.SQL.Clear;
       qClubs.SQL.Add('SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;');
+    //  qClubs.SQL.Add('  AND `id_Editor` = :IdEditor'); // додали умову
       qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
+    //  qClubs.ParamByName('IdEditor').AsString := CurrentUserID; // твій знайдений редактор
       qClubs.Open;
     end
     else if (UserRole <> 0) and (UserRole <> 4) then
@@ -309,23 +326,27 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' and `Куратор` = :KurName;');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' and `Куратор` = :KurName ORDER BY `ФИО`;');
       qFindClients.ParamByName('KurName').AsString := Kurator;
+
       qFindClients.Open;
       labCount.Caption := IntToStr(qFindClients.RecordCount);
 
       qClients.Close;
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
       // and `Куратор` = :KurName;');
       // qClients.ParamByName('KurName').AsString := Kurator;
+
       qClients.Open;
 
       qClubs.Close;
       qClubs.SQL.Clear;
       qClubs.SQL.Add('SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;');
+    //  qClubs.SQL.Add('  AND `id_Editor` = :IdEditor'); // додали умову
       qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
+    //  qClubs.ParamByName('IdEditor').AsString := CurrentUserID; // твій знайдений редактор
       qClubs.Open;
 
     end
@@ -334,14 +355,14 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
       qFindClients.Open;
       labCount.Caption := IntToStr(qFindClients.RecordCount);
 
       qClients.Close;
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''';');
+        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
       qClients.Open;
 
       qClubs.Close;
@@ -367,14 +388,15 @@ begin
 
     // Крок 1 — вставка нової події
     Q.SQL.Text := 'INSERT INTO Events ' +
-      '(`Назва_заходу`, `Дата`, `Хто_проводив`, `ClubID`, `Кількість_сторонніх`, `id_region`) '
-      + 'VALUES (:name, :date, :who, :club, :guests, :region)';
+      '(`Назва_заходу`, `Дата`, `Хто_проводив`, `ClubID`, `Кількість_сторонніх`, `id_region`, `id_Editor`) '
+      + 'VALUES (:name, :date, :who, :club, :guests, :region, :editor)';
     Q.ParamByName('name').AsString := EventName;
     Q.ParamByName('date').AsDate := StrToDate(DateStr);
     Q.ParamByName('who').AsString := WhoConducted;
     Q.ParamByName('club').AsInteger := ClubID;
     Q.ParamByName('guests').AsInteger := GuestsCount;
     Q.ParamByName('region').AsInteger := NumRegion;
+    Q.ParamByName('editor').AsString := CurrentUserID;
     Q.ExecSQL;
 
     // Крок 2 — отримуємо ID нової події
@@ -545,6 +567,7 @@ begin
             queryBase.Add('AND `Куратор` = :KurName');
         end;
     end;
+     queryBase.Add('ORDER BY `ФИО`');
 
     with DM.qFindClients do
     begin
@@ -615,8 +638,11 @@ begin
         end;
     end;
 
+    SQL.Add('ORDER BY `ФИО`');
+
     if SQL.Text.Contains(':KurName') then
       ParamByName('KurName').AsString := Kurator;
+
     Open;
     labCount.Caption := IntToStr(RecordCount);
   end;
@@ -627,6 +653,12 @@ procedure TfrmObNewZahid.sSplitter1CanResize(Sender: TObject;
 begin
   inherited;
   sStoreUtils.WriteIniStr('panLeft', 'Width', panLeft.Width.ToString, IniName);
+end;
+
+procedure TfrmObNewZahid.btnClearClick(Sender: TObject);
+begin
+  inherited;
+lbClients.Clear;
 end;
 
 procedure TfrmObNewZahid.btnProvestyClick(Sender: TObject);

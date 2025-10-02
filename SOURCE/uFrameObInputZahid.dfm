@@ -1,6 +1,7 @@
 inherited frmObInputZahid: TfrmObInputZahid
   Width = 795
   Height = 490
+  Font.Color = clWindowText
   ParentFont = False
   ExplicitWidth = 795
   ExplicitHeight = 490
@@ -75,6 +76,18 @@ inherited frmObInputZahid: TfrmObInputZahid
       ShowHint = True
       TabOrder = 1
       OnClick = btnDeleteEvenClick
+    end
+    object chbMyRecords: TsCheckBox
+      Left = 272
+      Top = 14
+      Width = 84
+      Height = 15
+      Hint = #1055#1086#1082#1072#1079#1091#1108' '#1079#1072#1093#1086#1076#1080' '#1074#1089#1100#1086#1075#1086' '#1088#1077#1075#1110#1086#1085#1091' '#1072#1073#1086' '#1090#1110#1083#1100#1082#1080' '#1090#1110' , '#1097#1086' '#1079#1072#1074#1086#1076#1080#1083#1080' '#1042#1080
+      Caption = #1042#1077#1089#1100' '#1088#1077#1075#1110#1086#1085
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 2
+      OnClick = chbMyRecordsClick
     end
   end
   object DBGridEh1: TDBGridEh [2]

@@ -78,6 +78,7 @@ var
   // инициализации после каждого воссоздания формы. Событие Form.OnShow
   // обрабатывается после каждого переключения в режим со скинами или без скинов.
   MyName, MyRegion, Kurator: String;
+  CurrentUserID: String; // id редактируемого
   NumRegion: Integer; // id регионга сессии
   UserRole: Variant; // може бути Null - роль юзера (права доступу)
   isAdmin, isVolonter: Boolean;
