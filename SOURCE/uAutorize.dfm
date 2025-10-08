@@ -73,8 +73,8 @@ object fAutorize: TfAutorize
     object chPsw: TsCheckBox
       Left = 246
       Top = 47
-      Width = 18
-      Height = 16
+      Width = 17
+      Height = 15
       TabOrder = 3
       OnClick = chPswClick
     end
@@ -166,8 +166,8 @@ object fAutorize: TfAutorize
     object chPswReg: TsCheckBox
       Left = 246
       Top = 103
-      Width = 18
-      Height = 16
+      Width = 17
+      Height = 15
       Checked = True
       State = cbChecked
       TabOrder = 4

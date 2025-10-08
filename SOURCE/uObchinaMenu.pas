@@ -13,9 +13,11 @@ type
     btnExportData: TsBitBtn;
     btnObchinaEvents: TsBitBtn;
     btnAnalitic: TsBitBtn;
+    btnCreateItems: TsBitBtn;
     procedure btnExportDataClick(Sender: TObject);
     procedure btnObchinaEventsClick(Sender: TObject);
     procedure btnAnaliticClick(Sender: TObject);
+    procedure btnCreateItemsClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -32,7 +34,8 @@ implementation
 
 {$R *.dfm}
 
-uses uFrameObExport, uMainForm, uFrameObInputZahid, uFrameObAnalitics;
+uses uFrameObExport, uMainForm, uFrameObInputZahid, uFrameObAnalitics,
+  uFrameObNewZahid;
 
 
 
@@ -55,6 +58,12 @@ end;
 procedure TfrmObchiaMenu.btnAnaliticClick(Sender: TObject);
 begin //Аналітіка
  myForm.CreateNewFrame(TfrmObAnalitics, Sender);
+end;
+
+procedure TfrmObchiaMenu.btnCreateItemsClick(Sender: TObject);
+begin  //Створення списків
+isCreateSpisok := true;
+ myForm.CreateNewFrame(TfrmObNewZahid, Sender);
 end;
 
 procedure TfrmObchiaMenu.btnExportDataClick(Sender: TObject);

@@ -49,6 +49,21 @@ object frmObchiaMenu: TfrmObchiaMenu
     OnClick = btnAnaliticClick
     ShowFocus = False
   end
+  object btnCreateItems: TsBitBtn
+    AlignWithMargins = True
+    Left = 3
+    Top = 96
+    Width = 215
+    Height = 25
+    Align = alTop
+    Caption = #1057#1090#1074#1086#1088#1077#1085#1085#1103' '#1089#1087#1080#1089#1082#1110#1074
+    ModalResult = 1
+    TabOrder = 3
+    OnClick = btnCreateItemsClick
+    ShowFocus = False
+    ExplicitLeft = 6
+    ExplicitTop = 73
+  end
   object sFrameAdapter1: TsFrameAdapter
     Left = 160
     Top = 40

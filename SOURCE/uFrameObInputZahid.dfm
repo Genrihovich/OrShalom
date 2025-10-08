@@ -1,7 +1,6 @@
 inherited frmObInputZahid: TfrmObInputZahid
   Width = 795
   Height = 490
-  Font.Color = clWindowText
   ParentFont = False
   ExplicitWidth = 795
   ExplicitHeight = 490

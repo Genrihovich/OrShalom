@@ -40,7 +40,6 @@ type
     lbInfo: TLabel;
     procedure FormShow(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure TimerBlinkTimer(Sender: TObject);
     procedure sFrameBar1Items0Click(Sender: TObject);
@@ -87,6 +86,7 @@ var
   // кол-во исполнителей для отчета в ексель
   DotCount: Integer = 0; // для таймера с точками
   EventID: Integer; // id редактируемого евента
+  isCreateSpisok: boolean = false; // списки чи нові заходи?
 implementation
 
 {$R *.dfm}
@@ -119,12 +119,6 @@ begin
   fAutorize.Show;
 end;
 
-procedure TmyForm.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  if Assigned(fAutorize) then
-    fAutorize.Close;
-end;
-
 procedure TmyForm.FormCreate(Sender: TObject);
 begin
   // перед созданием сделаем авторизацию
@@ -141,6 +135,14 @@ begin
   // не показувати фрейм під кнопкою
   sFrameBar1.Items[0].Frame := nil;
 
+
+    // 🔹 Створюємо форму авторизації
+  fAutorize := TfAutorize.Create(nil);
+  try
+    fAutorize.Show;
+  finally
+    fAutorize.Free;
+  end;
 end;
 
 

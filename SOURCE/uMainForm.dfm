@@ -12,7 +12,6 @@ object myForm: TmyForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
@@ -18958,6 +18957,7 @@ object myForm: TmyForm
   object JvFormStorage1: TJvFormStorage
     AppStorage = JvAppIniFileStorage1
     AppStoragePath = '%FORM_NAME%\'
+    Options = [fpSize]
     StoredProps.Strings = (
       'sSkinSelector1.Text'
       'sSkinManager1.SkinName'

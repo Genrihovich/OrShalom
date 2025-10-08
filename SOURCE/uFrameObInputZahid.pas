@@ -114,6 +114,7 @@ end;
 procedure TfrmObInputZahid.Button1Click(Sender: TObject);
 begin
   inherited;
+  isCreateSpisok := false;// не список а новій захід
   myForm.CreateNewFrame(TfrmObNewZahid, Sender);
   myForm.TimerBlink.Enabled := true;
 end;

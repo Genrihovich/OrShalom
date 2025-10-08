@@ -12,7 +12,7 @@ uses
   sToolEdit, DBCtrlsEh, DBLookupEh, System.Actions, Vcl.ActnList, Data.DB, Uni,
   sGroupBox, sLabel, sButton, sSplitter, JvAppStorage, JvAppIniStorage,
   JvComponentBase, JvFormPlacement, sStoreUtils, Vcl.ComCtrls, acProgressBar,
-  sCheckBox;
+  sCheckBox, System.Generics.Collections;
 
 type
   TfrmObNewZahid = class(TCustomInfoFrame)
@@ -49,6 +49,8 @@ type
     chbUpdateClients: TsCheckBox;
     btnClear: TsBitBtn;
     acClear: TAction;
+    btnInputFile: TsButton;
+    acOpenFile: TAction;
     procedure btnProvestyClick(Sender: TObject);
     procedure edFindClientChange(Sender: TObject);
     procedure DBGridEh1MouseDown(Sender: TObject; Button: TMouseButton;
@@ -67,7 +69,9 @@ type
     procedure sSplitter1CanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure acClearUpdate(Sender: TObject);
-    procedure btnClearClick(Sender: TObject); // >>> ДОДАНО
+    procedure btnClearClick(Sender: TObject);
+    procedure acOpenFileUpdate(Sender: TObject);
+    procedure btnInputFileClick(Sender: TObject); // >>> ДОДАНО
   private
     { Private declarations }
     FExportProgress: TProgressBar;
@@ -98,7 +102,7 @@ implementation
 
 {$R *.dfm}
 
-uses uDM, uFrameObInputZahid, uMainForm, uMyExcel, uAutorize;
+uses uDM, uFrameObInputZahid, uMainForm, uMyExcel, uAutorize, myBDUtils;
 
 // ----------------------------------------------------------------------------
 // Action
@@ -119,6 +123,15 @@ begin
     bbtnDel.Enabled := true
   else
     bbtnDel.Enabled := false;
+end;
+
+procedure TfrmObNewZahid.acOpenFileUpdate(Sender: TObject);
+begin
+  inherited;
+  if (lbClients.Items.Count > 0) then
+    btnInputFile.Enabled := false
+  else
+    btnInputFile.Enabled := true;
 end;
 
 procedure TfrmObNewZahid.acProvestyUpdate(Sender: TObject);
@@ -168,6 +181,14 @@ begin
   S := sStoreUtils.ReadIniString('panLeft', 'Width', IniName);
   if S <> '' then
     panLeft.Width := S.ToInteger;
+
+  // якщо створення списків то ховаємо непотрібне
+  if isCreateSpisok then
+  begin
+    btnProvesty.Visible := false;
+    panRight.Visible := false;
+    btnInputFile.Visible := false;
+  end;
 end;
 
 procedure TfrmObNewZahid.BeforeDestruct;
@@ -185,9 +206,9 @@ begin
     FreeAndNil(FExportProgress);
 end;
 
-//-----------------------------------------------------------------------------
-//                  Пошук клієнта по полю
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Пошук клієнта по полю
+// -----------------------------------------------------------------------------
 procedure TfrmObNewZahid.edFindClientChange(Sender: TObject);
 var
   searchValue: String;
@@ -212,8 +233,10 @@ begin
       SQL.Add('AND `Куратор` = :KurName');
 
     case sRadioGroup1.ItemIndex of
-      0: ; // ВСІ
-      1: SQL.Add('AND `Тип клиента (для поиска)` LIKE ''%Клиент Хеседа%''');
+      0:
+        ; // ВСІ
+      1:
+        SQL.Add('AND `Тип клиента (для поиска)` LIKE ''%Клиент Хеседа%''');
       2:
         begin
           SQL.Clear;
@@ -237,7 +260,6 @@ begin
     labCount.Caption := IntToStr(RecordCount);
   end;
 end;
-
 
 procedure TfrmObNewZahid.ExportHideTimerTimer(Sender: TObject);
 begin
@@ -316,9 +338,9 @@ begin
       qClubs.Close;
       qClubs.SQL.Clear;
       qClubs.SQL.Add('SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;');
-    //  qClubs.SQL.Add('  AND `id_Editor` = :IdEditor'); // додали умову
+      // qClubs.SQL.Add('  AND `id_Editor` = :IdEditor'); // додали умову
       qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
-    //  qClubs.ParamByName('IdEditor').AsString := CurrentUserID; // твій знайдений редактор
+      // qClubs.ParamByName('IdEditor').AsString := CurrentUserID; // твій знайдений редактор
       qClubs.Open;
     end
     else if (UserRole <> 0) and (UserRole <> 4) then
@@ -344,9 +366,9 @@ begin
       qClubs.Close;
       qClubs.SQL.Clear;
       qClubs.SQL.Add('SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;');
-    //  qClubs.SQL.Add('  AND `id_Editor` = :IdEditor'); // додали умову
+      // qClubs.SQL.Add('  AND `id_Editor` = :IdEditor'); // додали умову
       qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
-    //  qClubs.ParamByName('IdEditor').AsString := CurrentUserID; // твій знайдений редактор
+      // qClubs.ParamByName('IdEditor').AsString := CurrentUserID; // твій знайдений редактор
       qClubs.Open;
 
     end
@@ -462,7 +484,6 @@ begin
   end;
 end;
 
-
 procedure TfrmObNewZahid.lbClientsDragDrop(Sender, Source: TObject;
   X, Y: Integer);
 // Ця процедура викликається, коли об’єкт "скидається" у lbClients
@@ -475,7 +496,6 @@ var
 begin
   if Source = DBGridEh1 then
   begin
-
 
     // Отримуємо дані з активного рядка
     fio := DBGridEh1.DataSource.DataSet.FieldByName('ФИО').AsString;
@@ -503,25 +523,20 @@ begin
     lbClients.Items.AddObject(fio, TObject(Pointer(StrNew(PChar(jdcID)))));
     edFindClient.Text := '';
 
-
-  if not chbUpdateClients.Checked then
-  begin
-   // Повторно завантажуємо клієнтів (з урахуванням ролі)
+    if not chbUpdateClients.Checked then
+    begin
+      // Повторно завантажуємо клієнтів (з урахуванням ролі)
       ReloadClientList;
-    sRadioGroup1Change(Sender);
-  end;
-
+      sRadioGroup1Change(Sender);
+    end;
 
     // Оновлення нумерації
     UpdateListBoxDisplay;
-
-
 
     // Повертаємо фокус на поле пошуку
     edFindClient.SetFocus;
   end;
 end;
-
 
 procedure TfrmObNewZahid.UpdateListBoxDisplay;
 begin
@@ -567,7 +582,7 @@ begin
             queryBase.Add('AND `Куратор` = :KurName');
         end;
     end;
-     queryBase.Add('ORDER BY `ФИО`');
+    queryBase.Add('ORDER BY `ФИО`');
 
     with DM.qFindClients do
     begin
@@ -658,7 +673,89 @@ end;
 procedure TfrmObNewZahid.btnClearClick(Sender: TObject);
 begin
   inherited;
-lbClients.Clear;
+  lbClients.Clear;
+end;
+
+// ----------------------------------------------------------------------------
+// Завантажити збережений список
+// ----------------------------------------------------------------------------
+procedure TfrmObNewZahid.btnInputFileClick(Sender: TObject);
+var
+  z, col, m, n: Integer;
+  CollectionNameTable: TDictionary<string, Integer>;
+  pib, jdcID: String;
+  test: string;
+begin
+  inherited;
+  try
+    begin
+      if uMyExcel.RunExcel(false, false) = true then
+        // проверка на инсталл и запуск Excel
+        DM.OpenDialog.Filter := 'Файлы MS Excel|*.xls;*.xlsx|';
+      DM.OpenDialog.InitialDir := ExtractFilePath(ParamStr(0)) + 'Община\' +
+        MyName + '\Списки\';
+
+      if not DM.OpenDialog.Execute then
+        Exit;
+      // открываем книгу Excel
+      if uMyExcel.OpenWorkBook(DM.OpenDialog.FileName, false) then
+      begin
+        MyExcel.ActiveWorkBook.Sheets[1];
+
+        // последняя заполненная колонка
+        col := MyExcel.ActiveCell.SpecialCells($000000B).Column;
+
+        // ------------ пробежимся расставим индексы названий столбцов -------------
+
+        CollectionNameTable := TDictionary<string, Integer>.Create();
+        for z := 1 to col do
+        begin
+          if not CollectionNameTable.ContainsKey(MyExcel.Cells[1, z].value) then
+            CollectionNameTable.Add(MyExcel.Cells[1, z].value, z)
+          else
+            CollectionNameTable.Add(MyExcel.Cells[1, z].value + z.ToString, z);
+        end;
+
+        m := 2; // начинаем считывание со 2-й строки, оставляя заголовок колонки
+        n := MyExcel.ActiveCell.SpecialCells($000000B).Row;
+        // последняя заполненная строка
+        n := n + 1;
+        while m <> n do // цикл внешний по записям EXCEL
+        begin
+          jdcID := MyExcel.Cells
+            [m, StrToInt(CollectionNameTable.Items['JDC ID'].ToString)].value;
+          pib := MyExcel.Cells
+            [m, StrToInt(CollectionNameTable.Items['ПІБ'].ToString)].value;
+
+          // Перевірити чи є такий в базі
+          // isAssetValue('admUch', 'JDC ID', jdcID)
+          test := PoleInSearchStr2('admUch', 'JDC ID', jdcID, 'ФИО');
+
+          if PoleInSearchStr2('admUch', 'JDC ID', jdcID, 'ФИО') = pib then
+            lbClients.Items.AddObject(pib,
+              TObject(Pointer(StrNew(PChar(jdcID)))))
+          else
+          begin
+           ShowMessage('Не вірні дані для ' + jdcID + ' = ' + pib + ' - Пропускаємо');
+          end;
+
+          Inc(m);
+        end;
+
+      end;
+    end;
+    CollectionNameTable.Free;
+    MyExcel.Application.DisplayAlerts := false;
+    StopExcel;
+  except
+    on E: Exception do
+    begin
+      CollectionNameTable.Free;
+      ShowMessage('Не вірний формат файлу, нема необхідних полів');
+      StopExcel;
+
+    end;
+  end;
 end;
 
 procedure TfrmObNewZahid.btnProvestyClick(Sender: TObject);

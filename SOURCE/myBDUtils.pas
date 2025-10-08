@@ -24,6 +24,8 @@ function isAssetValues(table, pdate, pMentor, pCount, pOrg, pOrganiz,
   pNote: String): Boolean;
 // вынуть значение из таблицы по данному полю
 function PoleInSearchStr(table, pole, val, PoleSearch: string): String;
+
+function PoleInSearchStr2(const table, pole, val, PoleSearch: string): string;
 // добавить запись в таблицу
 procedure InsertNewRecords(table, pole, val: String);
 // Очистить таблицу от записей
@@ -106,6 +108,8 @@ end;
   PoleSearch - столбец в котором находятся нужные данные
 }
 function PoleInSearchStr(table, pole, val, PoleSearch: string): String;
+var
+s: string;
 begin
   // вынуть значение из таблицы по данному полю
   with DM.qInsert do
@@ -114,6 +118,7 @@ begin
     SQL.Clear;
     SQL.Text := 'SELECT * FROM ' + table + ' WHERE ' + pole + ' = ''' +
       val + '''';
+      s := SQL.Text;
     Active := true;
     if RecordCount > 0 then
       Result := FieldByName(PoleSearch).AsString
@@ -121,6 +126,33 @@ begin
       Result := null;
   end;
 end;
+
+function PoleInSearchStr2(const table, pole, val, PoleSearch: string): string;
+var
+s:string;
+begin
+  Result := '';
+  with DM.qInsert do
+  begin
+    Close;
+    SQL.Clear;
+       SQL.Text := Format('SELECT `%s` FROM `%s` WHERE `%s` = :val LIMIT 1',
+      [PoleSearch, table, pole]);
+    ParamByName('val').AsString := val;
+    s:= SQL.Text;
+    Open;
+
+    if not IsEmpty then
+      Result := FieldByName(PoleSearch).AsString
+    else
+      Result := ''; // або Null, якщо хочеш Variant
+
+    Close; // закриваємо після використання
+  end;
+end;
+
+
+
 
 { ============ Добавить запись в таблицу ===============
   table - в какую таблицу,

@@ -1,7 +1,6 @@
 inherited frmObNewZahid: TfrmObNewZahid
   Width = 1069
   Height = 497
-  Font.Color = clWindowText
   ParentFont = False
   ExplicitWidth = 1069
   ExplicitHeight = 497
@@ -12,7 +11,6 @@ inherited frmObNewZahid: TfrmObNewZahid
     Height = 415
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 946
     object sSplitter1: TsSplitter
       Left = 313
       Top = 1
@@ -68,7 +66,6 @@ inherited frmObNewZahid: TfrmObNewZahid
       Height = 413
       Align = alClient
       TabOrder = 1
-      ExplicitWidth = 623
       object panRight: TsPanel
         Left = 397
         Top = 1
@@ -76,7 +73,6 @@ inherited frmObNewZahid: TfrmObNewZahid
         Height = 411
         Align = alRight
         TabOrder = 0
-        ExplicitLeft = 274
         object Label1: TLabel
           Left = 125
           Top = 0
@@ -229,7 +225,6 @@ inherited frmObNewZahid: TfrmObNewZahid
         Height = 411
         Align = alClient
         TabOrder = 1
-        ExplicitWidth = 273
         object lbClients: TsListBox
           AlignWithMargins = True
           Left = 11
@@ -255,7 +250,6 @@ inherited frmObNewZahid: TfrmObNewZahid
           BoundLabel.Font.Height = -16
           BoundLabel.Font.Name = 'Tahoma'
           BoundLabel.Font.Style = []
-          ExplicitWidth = 258
         end
       end
     end
@@ -267,7 +261,6 @@ inherited frmObNewZahid: TfrmObNewZahid
     Height = 41
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 946
     object edFindClient: TsEdit
       Left = 13
       Top = 8
@@ -379,7 +372,6 @@ inherited frmObNewZahid: TfrmObNewZahid
     Height = 41
     Align = alBottom
     TabOrder = 2
-    ExplicitWidth = 946
     DesignSize = (
       1069
       41)
@@ -414,12 +406,11 @@ inherited frmObNewZahid: TfrmObNewZahid
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      ExplicitLeft = 784
     end
     object btnSaveExcel: TsButton
       Left = 325
       Top = 6
-      Width = 436
+      Width = 251
       Height = 25
       Action = acSaveExcel
       Font.Charset = DEFAULT_CHARSET
@@ -429,6 +420,20 @@ inherited frmObNewZahid: TfrmObNewZahid
       Font.Style = []
       ParentFont = False
       TabOrder = 1
+    end
+    object btnInputFile: TsButton
+      Left = 592
+      Top = 6
+      Width = 273
+      Height = 25
+      Action = acOpenFile
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 2
     end
   end
   inherited sFrameAdapter1: TsFrameAdapter
@@ -458,6 +463,12 @@ inherited frmObNewZahid: TfrmObNewZahid
       Caption = #1054#1095#1080#1089#1090#1080#1090#1080' '#1089#1087#1080#1089#1086#1082
       OnExecute = btnClearClick
       OnUpdate = acClearUpdate
+    end
+    object acOpenFile: TAction
+      AutoCheck = True
+      Caption = #1047#1072#1074#1072#1085#1090#1072#1078#1080#1090#1080' '#1079#1073#1077#1088#1077#1078#1077#1085#1080#1081' '#1089#1087#1080#1089#1086#1082
+      OnExecute = btnInputFileClick
+      OnUpdate = acOpenFileUpdate
     end
   end
   object SaveDialog1: TSaveDialog
