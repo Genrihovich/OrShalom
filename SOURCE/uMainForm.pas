@@ -91,7 +91,7 @@ implementation
 
 {$R *.dfm}
 
-uses uMenu, uDM, uAutorize, uObchinaMenu, uOptions, uAdminMenu;
+uses uMenu, uDM, uAutorize, uObchinaMenu, uOptions, uAdminMenu, myBDUtils;
 
 { TForm2 }
 
@@ -271,6 +271,8 @@ begin   // Община
  // Інші налаштування
   EsImage1.Visible := false;
   sSkinManager1.UpdateScale(Frame);
+  // Кешируємо таблицю admUch - якщо ще не завантажено — завантажуємо
+ // if DM.mtClientsKesh.IsEmpty then LoadClientsToCache;
 end;
 
 procedure TmyForm.sFrameBar1Items3CreateFrame(Sender: TObject;

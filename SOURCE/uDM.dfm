@@ -8,7 +8,6 @@ object DM: TDM
     Database = 'hesed_travma'
     Username = 'hesed_travma'
     Server = 'hesed.mysql.ukraine.com.ua'
-    Connected = True
     Left = 32
     Top = 16
     EncryptedPassword = 'BEFF86FF8BFFD9FF99FFAFFFC9FFCCFFCDFFDCFF'
@@ -54,7 +53,6 @@ object DM: TDM
     Connection = UniConnection
     SQL.Strings = (
       'SELECT * FROM User WHERE id_region = '#39'1'#39)
-    Active = True
     Left = 16
     Top = 120
   end
@@ -74,7 +72,6 @@ object DM: TDM
   object tZvitSnow: TUniTable
     TableName = 'ZvitSnow'
     Connection = UniConnection
-    Active = True
     Left = 112
     Top = 72
     object tZvitSnowNumber: TStringField
@@ -200,7 +197,6 @@ object DM: TDM
       'where YearDate = 2023 and Sostoyalsya = '#39#1057#1086#1089#1090#1086#1103#1083#1089#1103#39
       'Group By monthDate, Ispolnitel'
       'Order By monthDate')
-    Active = True
     Left = 160
     Top = 120
   end
@@ -247,7 +243,6 @@ object DM: TDM
     SQL.Strings = (
       'SELECT * FROM `admUch` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39
       'ORDER BY `'#1060#1048#1054'`;')
-    Active = True
     Left = 24
     Top = 344
   end
@@ -274,7 +269,6 @@ object DM: TDM
       'LEFT JOIN `Region` R ON E.`id_region` = R.`id_region`'
       '/*WHERE E.`id_region` = :RegionID*/'
       'ORDER BY E.`'#1044#1072#1090#1072'` DESC;')
-    Active = True
     AfterScroll = qEventsAfterScroll
     Left = 80
     Top = 344
@@ -288,7 +282,6 @@ object DM: TDM
     Connection = UniConnection
     SQL.Strings = (
       'SELECT * FROM `admUch` WHERE `'#1058#1080#1087' '#1082#1083#1080#1077#1085#1090#1072' ('#1076#1083#1103' '#1087#1086#1080#1089#1082#1072')`<> '#39#39';')
-    Active = True
     Left = 136
     Top = 344
   end
@@ -301,7 +294,6 @@ object DM: TDM
     Connection = UniConnection
     SQL.Strings = (
       'select * from `admUch`')
-    Active = True
     Left = 200
     Top = 344
   end
@@ -314,7 +306,6 @@ object DM: TDM
     Connection = UniConnection
     SQL.Strings = (
       'select * from `Clubs`')
-    Active = True
     Left = 256
     Top = 344
   end
@@ -327,7 +318,6 @@ object DM: TDM
     Connection = UniConnection
     SQL.Strings = (
       'select * from Region')
-    Active = True
     Left = 16
     Top = 456
   end
@@ -349,7 +339,6 @@ object DM: TDM
       '  C1.`'#1050#1091#1088#1072#1090#1086#1088'`, C2.`JDC ID`'
       'ORDER BY '
       '  C1.`'#1050#1091#1088#1072#1090#1086#1088'`;')
-    Active = True
     Left = 80
     Top = 456
   end
@@ -367,7 +356,6 @@ object DM: TDM
     Connection = UniConnection
     SQL.Strings = (
       'select * from User')
-    Active = True
     Left = 152
     Top = 456
   end
@@ -404,7 +392,6 @@ object DM: TDM
       'WHERE E.`'#1044#1072#1090#1072'` BETWEEN :ot AND :do'
       ''
       'ORDER BY E.`'#1044#1072#1090#1072'` DESC, C.`'#1060#1048#1054'`;')
-    Active = True
     Left = 224
     Top = 456
     ParamData = <
@@ -456,7 +443,6 @@ object DM: TDM
       '  AND E.`'#1044#1072#1090#1072'` BETWEEN :ot AND :do'
       'GROUP BY R.nameRegion'
       'ORDER BY R.nameRegion;')
-    Active = True
     Left = 320
     Top = 456
     ParamData = <
@@ -484,7 +470,6 @@ object DM: TDM
       '  FROM EventClients EC '
       '  LEFT JOIN admUch CL ON EC.ClientID = CL.`JDC ID` '
       '  WHERE EC.EventID = :EventID')
-    Active = True
     Left = 320
     Top = 344
     ParamData = <
@@ -498,5 +483,15 @@ object DM: TDM
     DataSet = QEventClients
     Left = 320
     Top = 400
+  end
+  object mtClientsKesh: TMemTableEh
+    Params = <>
+    Left = 344
+    Top = 16
+  end
+  object dsClientsKesh: TDataSource
+    DataSet = mtClientsKesh
+    Left = 344
+    Top = 72
   end
 end

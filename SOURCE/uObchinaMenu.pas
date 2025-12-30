@@ -10,17 +10,16 @@ uses
 type
   TfrmObchiaMenu = class(TFrame)
     sFrameAdapter1: TsFrameAdapter;
-    btnExportData: TsBitBtn;
     btnObchinaEvents: TsBitBtn;
     btnAnalitic: TsBitBtn;
     btnCreateItems: TsBitBtn;
-    procedure btnExportDataClick(Sender: TObject);
     procedure btnObchinaEventsClick(Sender: TObject);
     procedure btnAnaliticClick(Sender: TObject);
     procedure btnCreateItemsClick(Sender: TObject);
 
   private
     { Private declarations }
+
   public
     { Public declarations }
     procedure ApplyPermissions;
@@ -34,9 +33,7 @@ implementation
 
 {$R *.dfm}
 
-uses uFrameObExport, uMainForm, uFrameObInputZahid, uFrameObAnalitics,
-  uFrameObNewZahid;
-
+uses uMainForm, uFrameObInputZahid, uFrameObAnalitics, uFrameObNewZahid;
 
 
 
@@ -49,7 +46,6 @@ begin
     RoleInt := VarAsType(UserRole, varInteger);
     if (RoleInt = 2) or (RoleInt = 4) then
     begin
-      btnExportData.Visible := False;
       btnAnalitic.Visible := False;
     end;
   end;
@@ -64,11 +60,6 @@ procedure TfrmObchiaMenu.btnCreateItemsClick(Sender: TObject);
 begin  //Створення списків
 isCreateSpisok := true;
  myForm.CreateNewFrame(TfrmObNewZahid, Sender);
-end;
-
-procedure TfrmObchiaMenu.btnExportDataClick(Sender: TObject);
-begin
-myForm.CreateNewFrame(TfrmObExportData, Sender);
 end;
 
 procedure TfrmObchiaMenu.btnObchinaEventsClick(Sender: TObject);

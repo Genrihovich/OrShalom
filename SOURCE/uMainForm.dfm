@@ -18957,7 +18957,7 @@ object myForm: TmyForm
   object JvFormStorage1: TJvFormStorage
     AppStorage = JvAppIniFileStorage1
     AppStoragePath = '%FORM_NAME%\'
-    Options = [fpSize]
+    Options = [fpState, fpSize, fpLocation, fpActiveControl]
     StoredProps.Strings = (
       'sSkinSelector1.Text'
       'sSkinManager1.SkinName'

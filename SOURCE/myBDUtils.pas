@@ -9,7 +9,8 @@ uses
   System.Variants
   // , Winapi.Windows
   // , Winapi.Messages
-    , System.SysUtils, System.Classes;
+    , System.SysUtils, System.Classes,
+    Data.DB, Uni, MemTableDataEh, MemTableEh;
 
 type
   TMyResult = record
@@ -17,7 +18,10 @@ type
     people: Integer;
   end;
 
-  // есть ли запрашиваемые данные в таблице
+  // кешируємо admUch
+procedure LoadClientsToCache;
+
+// есть ли запрашиваемые данные в таблице
 function isAssetValue(table, pole, val: String): Boolean;
 // ecть ли такая строка - полное совпадение - в таблице
 function isAssetValues(table, pdate, pMentor, pCount, pOrg, pOrganiz,
@@ -48,6 +52,59 @@ function PodschetZapros(table, pdate, pMentor, pTypeOrg, pCount: String)
 implementation
 
 uses uDM, uMainForm;
+
+// ------------------------
+// кешируємо admUch
+// ------------------------
+procedure LoadClientsToCache;
+begin
+  with DM do
+  begin
+    mtClientsKesh.Close;
+    mtClientsKesh.FieldDefs.Clear;
+
+    // визначаємо структуру таблиці
+    mtClientsKesh.FieldDefs.Add('JDC ID', ftString, 50);
+    mtClientsKesh.FieldDefs.Add('ФИО', ftString, 150);
+    mtClientsKesh.FieldDefs.Add('Тип клиента (для поиска)', ftString, 100);
+    mtClientsKesh.FieldDefs.Add('Куратор', ftString, 150);
+    mtClientsKesh.FieldDefs.Add('Возраст', ftString, 10);
+    mtClientsKesh.CreateDataSet;
+
+    // зчитуємо дані з бази лише один раз
+    with TUniQuery.Create(nil) do
+      try
+        Connection := DM.UniConnection;
+        SQL.Text :=
+          'SELECT `JDC ID`, `ФИО`, `Тип клиента (для поиска)`, `Куратор`, `Возраст` '
+          + 'FROM admUch WHERE `JDC ID` IS NOT NULL '
+          + ' ORDER BY `ФИО`';
+        Open;
+        while not Eof do
+        begin
+          mtClientsKesh.Append;
+          mtClientsKesh.FieldByName('JDC ID').AsString :=
+            FieldByName('JDC ID').AsString;
+          mtClientsKesh.FieldByName('ФИО').AsString :=
+            FieldByName('ФИО').AsString;
+          mtClientsKesh.FieldByName('Тип клиента (для поиска)').AsString :=
+            FieldByName('Тип клиента (для поиска)').AsString;
+          mtClientsKesh.FieldByName('Куратор').AsString :=
+            FieldByName('Куратор').AsString;
+          mtClientsKesh.FieldByName('Возраст').AsString :=
+            FieldByName('Возраст').AsString;
+
+          mtClientsKesh.Post;
+          Next;
+        end;
+
+      finally
+        Free;
+      //  myForm.sLabelFX1.Caption := mtClientsKesh.RecordCount.ToString;
+      end;
+
+  end;
+end;
 
 { ======= есть ли запрашиваемые данные в таблице ========
   table - в какой таблице искать,
@@ -109,7 +166,7 @@ end;
 }
 function PoleInSearchStr(table, pole, val, PoleSearch: string): String;
 var
-s: string;
+  s: string;
 begin
   // вынуть значение из таблицы по данному полю
   with DM.qInsert do
@@ -118,7 +175,7 @@ begin
     SQL.Clear;
     SQL.Text := 'SELECT * FROM ' + table + ' WHERE ' + pole + ' = ''' +
       val + '''';
-      s := SQL.Text;
+    s := SQL.Text;
     Active := true;
     if RecordCount > 0 then
       Result := FieldByName(PoleSearch).AsString
@@ -129,17 +186,17 @@ end;
 
 function PoleInSearchStr2(const table, pole, val, PoleSearch: string): string;
 var
-s:string;
+  s: string;
 begin
   Result := '';
   with DM.qInsert do
   begin
     Close;
     SQL.Clear;
-       SQL.Text := Format('SELECT `%s` FROM `%s` WHERE `%s` = :val LIMIT 1',
+    SQL.Text := Format('SELECT `%s` FROM `%s` WHERE `%s` = :val LIMIT 1',
       [PoleSearch, table, pole]);
     ParamByName('val').AsString := val;
-    s:= SQL.Text;
+    s := SQL.Text;
     Open;
 
     if not IsEmpty then
@@ -150,9 +207,6 @@ begin
     Close; // закриваємо після використання
   end;
 end;
-
-
-
 
 { ============ Добавить запись в таблицу ===============
   table - в какую таблицу,
@@ -247,10 +301,10 @@ begin
     s := SQL.Text;
     ExecSQL;
 
-//    r := RecordCount;
+    // r := RecordCount;
     if RecordCount > 0 then
     begin
-      spisok := TStringList.create;
+      spisok := TStringList.Create;
       First;
       for i := 0 to RecordCount - 1 do
       begin
@@ -258,11 +312,11 @@ begin
         if s <> '' then
           spisok.Add(FieldByName(pole).AsString);
 
-        next;
+        Next;
       end;
 
       Result := spisok.DelimitedText;
-      spisok.free;
+      spisok.Free;
     end
     else
       Result := null;
@@ -292,10 +346,10 @@ begin
     s := SQL.Text;
     ExecSQL;
 
-//    r := RecordCount;
+    // r := RecordCount;
     if RecordCount > 0 then
     begin
-      spisok := TStringList.create;
+      spisok := TStringList.Create;
       First;
       for i := 0 to RecordCount - 1 do
       begin
@@ -303,11 +357,11 @@ begin
         if s <> '' then
           spisok.Add(FieldByName(pole).AsString);
 
-        next;
+        Next;
       end;
 
       Result := spisok.DelimitedText;
-      spisok.free;
+      spisok.Free;
     end
     else
       Result := null;
@@ -377,7 +431,7 @@ begin
     for i := 0 to RecordCount - 1 do
     begin
       Result.people := Result.people + FieldByName(pCount).AsInteger;
-      next;
+      Next;
     end;
 
   end;

@@ -12,7 +12,7 @@ uses
   sToolEdit, DBCtrlsEh, DBLookupEh, System.Actions, Vcl.ActnList, Data.DB, Uni,
   sGroupBox, sLabel, sButton, sSplitter, JvAppStorage, JvAppIniStorage,
   JvComponentBase, JvFormPlacement, sStoreUtils, Vcl.ComCtrls, acProgressBar,
-  sCheckBox, System.Generics.Collections;
+  sCheckBox, System.Generics.Collections, MemTableDataEh, MemTableEh;
 
 type
   TfrmObNewZahid = class(TCustomInfoFrame)
@@ -157,7 +157,7 @@ end;
 
 procedure TfrmObNewZahid.AfterCreation;
 var
-  S: String;
+  S, DirectoryNow: String;
 begin
   inherited;
   // frmObNewZahid.JvFormStorage1.RestoreFormPlacement; // завантаження
@@ -189,6 +189,11 @@ begin
     panRight.Visible := false;
     btnInputFile.Visible := false;
   end;
+
+      DirectoryNow := ExtractFilePath(ParamStr(0)) + 'Община\' + MyName +
+      '\';
+    if not DirectoryExists('DirectoryNow') then
+      ForceDirectories(DirectoryNow);
 end;
 
 procedure TfrmObNewZahid.BeforeDestruct;
@@ -209,6 +214,7 @@ end;
 // -----------------------------------------------------------------------------
 // Пошук клієнта по полю
 // -----------------------------------------------------------------------------
+
 procedure TfrmObNewZahid.edFindClientChange(Sender: TObject);
 var
   searchValue: String;
@@ -260,6 +266,7 @@ begin
     labCount.Caption := IntToStr(RecordCount);
   end;
 end;
+
 
 procedure TfrmObNewZahid.ExportHideTimerTimer(Sender: TObject);
 begin
@@ -315,6 +322,9 @@ begin
   end;
 end;
 
+// ============================================================================
+//  Ініціалізація даних регіону (як було раніше, без SQL — просто налаштування UI)
+// ============================================================================
 procedure TfrmObNewZahid.InicialRegionalData;
 begin
   with DM do
@@ -396,6 +406,80 @@ begin
   end;
 end;
 
+
+{
+procedure TfrmObNewZahid.InicialRegionalData;
+begin
+  with DM do
+  begin
+    if not mtClientsKesh.Active then
+    begin
+      ShowMessage('Кеш клієнтів не завантажено. Спочатку виконайте LoadClientsToCache.');
+      Exit;
+    end;
+
+    // --- Волонтер ---
+    if UserRole = 4 then
+    begin
+      mtClientsKesh.Filtered := False;
+      mtClientsKesh.Filter := '[Тип клиента (для поиска)] <> ''''';
+      mtClientsKesh.Filtered := True;
+
+      dsFindClients.DataSet := mtClientsKesh;
+      dsClients.DataSet := mtClientsKesh;
+      labCount.Caption := IntToStr(mtClientsKesh.RecordCount);
+
+      // Клуби залишаємо як було
+      qClubs.Close;
+      qClubs.SQL.Text := 'SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;';
+      qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
+      qClubs.Open;
+    end
+
+    // --- Куратор ---
+    else if (UserRole <> 0) and (UserRole <> 4) then
+    begin
+      mtClientsKesh.Filtered := False;
+      mtClientsKesh.Filter :=
+        Format('[Тип клиента (для поиска)] <> '''' AND [Куратор] = ''%s''', [Kurator]);
+      mtClientsKesh.Filtered := True;
+
+      dsFindClients.DataSet := mtClientsKesh;
+      dsClients.DataSet := mtClientsKesh;
+      labCount.Caption := IntToStr(mtClientsKesh.RecordCount);
+
+      qClubs.Close;
+      qClubs.SQL.Text := 'SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;';
+      qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
+      qClubs.Open;
+    end
+
+    // --- Адмін ---
+    else
+    begin
+      mtClientsKesh.Filtered := False;
+      mtClientsKesh.Filter := '[Тип клиента (для поиска)] <> ''''';
+      mtClientsKesh.Filtered := True;
+
+      dsFindClients.DataSet := mtClientsKesh;
+      dsClients.DataSet := mtClientsKesh;
+      labCount.Caption := IntToStr(mtClientsKesh.RecordCount);
+
+      qClubs.Close;
+      qClubs.SQL.Text := 'SELECT * FROM `Clubs`;';
+      qClubs.Open;
+    end;
+  end;
+end;}
+
+
+
+
+
+
+// ----------------------------------------------------------------------------
+//  Внести в базу дані нового заходу (з перевіркою на дублікати)
+// ----------------------------------------------------------------------------
 procedure TfrmObNewZahid.InsertNewEvent(const EventName, DateStr,
   WhoConducted: string; ClubID, GuestsCount: Integer; lbClients: TsListBox);
 var
@@ -403,15 +487,41 @@ var
   EventID: Integer;
   i: Integer;
   ClientID: string;
+  ExistingCount: Integer;
 begin
   Q := TUniQuery.Create(nil);
   try
     Q.Connection := DM.UniConnection;
 
-    // Крок 1 — вставка нової події
-    Q.SQL.Text := 'INSERT INTO Events ' +
-      '(`Назва_заходу`, `Дата`, `Хто_проводив`, `ClubID`, `Кількість_сторонніх`, `id_region`, `id_Editor`) '
-      + 'VALUES (:name, :date, :who, :club, :guests, :region, :editor)';
+    // 🔹 Крок 0 — перевірка, чи такий захід уже є
+    Q.SQL.Text :=
+      'SELECT COUNT(*) AS Cnt FROM Events ' +
+      'WHERE `Назва_заходу` = :name ' +
+      '  AND `Дата` = :date ' +
+      '  AND `ClubID` = :club';
+    Q.ParamByName('name').AsString := EventName;
+    Q.ParamByName('date').AsDate := StrToDate(DateStr);
+    Q.ParamByName('club').AsInteger := ClubID;
+    Q.Open;
+
+    ExistingCount := Q.FieldByName('Cnt').AsInteger;
+    Q.Close;
+
+    if ExistingCount > 0 then
+    begin
+      MessageDlg(
+        'Захід "' + EventName + '" для цього клубу вже існує на дату ' +
+        DateStr + sLineBreak + 'Додавання скасовано.',
+        mtWarning, [mbOK], 0
+      );
+      Exit; // ⛔ Вихід — не вставляємо дубль
+    end;
+
+    // 🔹 Крок 1 — вставка нової події
+    Q.SQL.Text :=
+      'INSERT INTO Events ' +
+      '(`Назва_заходу`, `Дата`, `Хто_проводив`, `ClubID`, `Кількість_сторонніх`, `id_region`, `id_Editor`) ' +
+      'VALUES (:name, :date, :who, :club, :guests, :region, :editor)';
     Q.ParamByName('name').AsString := EventName;
     Q.ParamByName('date').AsDate := StrToDate(DateStr);
     Q.ParamByName('who').AsString := WhoConducted;
@@ -421,16 +531,15 @@ begin
     Q.ParamByName('editor').AsString := CurrentUserID;
     Q.ExecSQL;
 
-    // Крок 2 — отримуємо ID нової події
+    // 🔹 Крок 2 — отримуємо ID нової події
     Q.SQL.Text := 'SELECT LAST_INSERT_ID()';
     Q.Open;
     EventID := Q.Fields[0].AsInteger;
     Q.Close;
 
-    // Крок 3 — додаємо клієнтів до EventClients
+    // 🔹 Крок 3 — додаємо клієнтів до EventClients
     for i := 0 to lbClients.Items.Count - 1 do
     begin
-      // ClientID := Trim(lbClients.Items[i]);
       ClientID := string(lbClients.Items.Objects[i]);
       if ClientID = '' then
         Continue;
@@ -448,10 +557,14 @@ begin
       end;
     end;
 
+    ShowMessage('✅ Захід успішно додано!');
+
   finally
     Q.Free;
   end;
 end;
+
+
 
 procedure TfrmObNewZahid.DBGridEh1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -697,6 +810,8 @@ begin
 
       if not DM.OpenDialog.Execute then
         Exit;
+
+        MyExcel.Application.DisplayAlerts := false;
       // открываем книгу Excel
       if uMyExcel.OpenWorkBook(DM.OpenDialog.FileName, false) then
       begin
@@ -860,6 +975,7 @@ begin
       DateTimeToStr(Konec) + '_' + FormatDateTime('dd.mm.yyyy hh_mm_ss', Now)
       + '.xlsx';
 
+    MyExcel.Application.DisplayAlerts := false;
     if uMyExcel.SaveWorkBook(FileNameS, 1) = true then
       ShowMessage('Експорт завершено успішно!');
 

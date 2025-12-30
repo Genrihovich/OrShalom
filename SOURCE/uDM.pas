@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, Data.DB, DBAccess, Uni, UniProvider,
-  MySQLUniProvider, MemDS, Vcl.Dialogs;
+  MySQLUniProvider, MemDS, Vcl.Dialogs, MemTableDataEh, MemTableEh;
 
 type
   TDM = class(TDataModule)
@@ -63,6 +63,8 @@ type
     dsCountAnalitics: TUniDataSource;
     QEventClients: TUniQuery;
     dsEventClients: TUniDataSource;
+    mtClientsKesh: TMemTableEh;
+    dsClientsKesh: TDataSource;
     procedure qEventsAfterScroll(DataSet: TDataSet);
   private
     { Private declarations }

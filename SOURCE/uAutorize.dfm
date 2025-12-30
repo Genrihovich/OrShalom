@@ -85,6 +85,7 @@ object fAutorize: TfAutorize
       Height = 21
       DynProps = <>
       DataField = ''
+      DropDownBox.Rows = 10
       EditButtons = <>
       KeyField = 'Id'
       ListField = 'fullName'
