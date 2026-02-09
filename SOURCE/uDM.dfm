@@ -1,7 +1,7 @@
 object DM: TDM
   OldCreateOrder = False
-  Height = 577
-  Width = 406
+  Height = 582
+  Width = 543
   object UniConnection: TUniConnection
     ProviderName = 'MySQL'
     Port = 3306

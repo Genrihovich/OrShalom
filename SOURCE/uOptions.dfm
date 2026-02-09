@@ -15,27 +15,29 @@ inherited frmOption: TfrmOption
       Left = 1
       Top = 1
       Width = 702
-      Height = 21
+      Height = 17
       Align = alTop
       Alignment = taCenter
       Caption = #1055#1077#1088#1077#1084#1110#1089#1090#1080#1090#1080' '#1087#1088#1110#1079#1074#1080#1097#1077' '#1082#1091#1088#1072#1090#1086#1088#1072' '#1085#1072' '#1088#1077#1075#1110#1086#1085
       Angle = 0
-      Shadow.OffsetKeeper.LeftTop = -3
-      Shadow.OffsetKeeper.RightBottom = 5
-      ExplicitWidth = 219
+      Shadow.OffsetKeeper.LeftTop = -1
+      Shadow.OffsetKeeper.RightBottom = 3
+      ExplicitLeft = 3
+      ExplicitTop = 3
+      ExplicitWidth = 215
     end
     object sPanel3: TsPanel
       Left = 1
-      Top = 22
+      Top = 18
       Width = 702
-      Height = 226
+      Height = 230
       Align = alClient
       TabOrder = 0
       object dbGridKurators: TDBGridEh
         Left = 372
         Top = 1
         Width = 329
-        Height = 224
+        Height = 228
         Align = alRight
         DataSource = DM.dsKurators
         DragMode = dmAutomatic
@@ -67,7 +69,7 @@ inherited frmOption: TfrmOption
         Left = 4
         Top = 4
         Width = 348
-        Height = 218
+        Height = 222
         Margins.Right = 20
         Align = alClient
         DataSource = DM.dsRegions
@@ -139,20 +141,22 @@ inherited frmOption: TfrmOption
       Left = 1
       Top = 1
       Width = 702
-      Height = 21
+      Height = 17
       Align = alTop
       Alignment = taCenter
       Caption = #1055#1077#1088#1077#1084#1110#1089#1090#1080#1090#1080' '#1087#1086#1079#1080#1094#1110#1102' '#1088#1086#1083#1110' '#1085#1072' '#1087#1088#1110#1079#1074#1080#1097#1077' '#1082#1086#1088#1080#1089#1090#1091#1074#1072#1095#1072
       Angle = 0
-      Shadow.OffsetKeeper.LeftTop = -3
-      Shadow.OffsetKeeper.RightBottom = 5
-      ExplicitWidth = 268
+      Shadow.OffsetKeeper.LeftTop = -1
+      Shadow.OffsetKeeper.RightBottom = 3
+      ExplicitLeft = 3
+      ExplicitTop = 3
+      ExplicitWidth = 264
     end
     object sPanel2: TsPanel
       Left = 1
-      Top = 22
+      Top = 18
       Width = 702
-      Height = 182
+      Height = 186
       Align = alClient
       TabOrder = 0
       object dbGridUsers: TDBGridEh
@@ -160,7 +164,7 @@ inherited frmOption: TfrmOption
         Left = 4
         Top = 4
         Width = 516
-        Height = 174
+        Height = 178
         Margins.Right = 20
         Align = alClient
         DataSource = DM.dsUser_option
@@ -224,7 +228,7 @@ inherited frmOption: TfrmOption
         Left = 540
         Top = 1
         Width = 161
-        Height = 180
+        Height = 184
         Align = alRight
         Items.Strings = (
           '0 - '#1040#1076#1084#1110#1085#1110#1089#1090#1088#1072#1090#1086#1088

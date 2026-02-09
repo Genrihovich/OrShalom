@@ -61,6 +61,8 @@ begin
   begin
     qUser_option.Close;
     qUser_option.Open;
+    qRegions.Active := true;
+    qKurators.Active := True;
   end;
 end;
 
