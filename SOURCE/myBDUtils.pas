@@ -66,7 +66,7 @@ begin
     // визначаємо структуру таблиці
     mtClientsKesh.FieldDefs.Add('JDC ID', ftString, 50);
     mtClientsKesh.FieldDefs.Add('ФИО', ftString, 150);
-    mtClientsKesh.FieldDefs.Add('Тип клиента (для поиска)', ftString, 100);
+    mtClientsKesh.FieldDefs.Add('Тип участника', ftString, 100);
     mtClientsKesh.FieldDefs.Add('Куратор', ftString, 150);
     mtClientsKesh.FieldDefs.Add('Возраст', ftString, 10);
     mtClientsKesh.CreateDataSet;
@@ -76,7 +76,7 @@ begin
       try
         Connection := DM.UniConnection;
         SQL.Text :=
-          'SELECT `JDC ID`, `ФИО`, `Тип клиента (для поиска)`, `Куратор`, `Возраст` '
+          'SELECT `JDC ID`, `ФИО`, `Тип участника`, `Куратор`, `Возраст` '
           + 'FROM admUch WHERE `JDC ID` IS NOT NULL '
           + ' ORDER BY `ФИО`';
         Open;
@@ -87,8 +87,8 @@ begin
             FieldByName('JDC ID').AsString;
           mtClientsKesh.FieldByName('ФИО').AsString :=
             FieldByName('ФИО').AsString;
-          mtClientsKesh.FieldByName('Тип клиента (для поиска)').AsString :=
-            FieldByName('Тип клиента (для поиска)').AsString;
+          mtClientsKesh.FieldByName('Тип участника').AsString :=
+            FieldByName('Тип участника').AsString;
           mtClientsKesh.FieldByName('Куратор').AsString :=
             FieldByName('Куратор').AsString;
           mtClientsKesh.FieldByName('Возраст').AsString :=

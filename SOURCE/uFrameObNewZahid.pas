@@ -233,7 +233,7 @@ begin
     SQL.Clear;
     SQL.Add('SELECT `ФИО`, `JDC ID` FROM `admUch`');
     SQL.Add('WHERE `ФИО` LIKE :name');
-    SQL.Add(' AND `Тип клиента (для поиска)`<> '''' ');
+    SQL.Add(' AND `Тип участника`<> '''' ');
 
     if not(IsAdmin or IsVolonter) then
       SQL.Add('AND `Куратор` = :KurName');
@@ -242,14 +242,14 @@ begin
       0:
         ; // ВСІ
       1:
-        SQL.Add('AND `Тип клиента (для поиска)` LIKE ''%Клиент Хеседа%''');
+        SQL.Add('AND `Тип участника` LIKE ''%Клиент Хеседа%''');
       2:
         begin
           SQL.Clear;
           SQL.Add('SELECT * FROM `admUch`');
           SQL.Add('WHERE `ФИО` LIKE :name');
           SQL.Add('AND `Возраст` BETWEEN 0 AND 17');
-          SQL.Add('AND `Тип клиента (для поиска)` <> ''''');
+          SQL.Add('AND `Тип участника` <> ''''');
 
           if not(IsAdmin or IsVolonter) then
             SQL.Add('AND `Куратор` = :KurName');
@@ -334,7 +334,7 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
+        ('SELECT * FROM `admUch` WHERE `Тип участника`<> '''' ORDER BY `ФИО`;');
 
       qFindClients.Open;
       labCount.Caption := IntToStr(qFindClients.RecordCount);
@@ -342,7 +342,7 @@ begin
 
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
+        ('SELECT * FROM `admUch` WHERE `Тип участника`<> '''' ORDER BY `ФИО`;');
       qClients.Open;
 
       qClubs.Close;
@@ -358,7 +358,7 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' and `Куратор` = :KurName ORDER BY `ФИО`;');
+        ('SELECT * FROM `admUch` WHERE `Тип участника`<> '''' and `Куратор` = :KurName ORDER BY `ФИО`;');
       qFindClients.ParamByName('KurName').AsString := Kurator;
 
       qFindClients.Open;
@@ -367,7 +367,7 @@ begin
       qClients.Close;
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
+        ('SELECT * FROM `admUch` WHERE `Тип участника`<> '''' ORDER BY `ФИО`;');
       // and `Куратор` = :KurName;');
       // qClients.ParamByName('KurName').AsString := Kurator;
 
@@ -387,14 +387,14 @@ begin
       qFindClients.Close;
       qFindClients.SQL.Clear;
       qFindClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
+        ('SELECT * FROM `admUch` WHERE `Тип участника`<> '''' ORDER BY `ФИО`;');
       qFindClients.Open;
       labCount.Caption := IntToStr(qFindClients.RecordCount);
 
       qClients.Close;
       qClients.SQL.Clear;
       qClients.SQL.Add
-        ('SELECT * FROM `admUch` WHERE `Тип клиента (для поиска)`<> '''' ORDER BY `ФИО`;');
+        ('SELECT * FROM `admUch` WHERE `Тип участника`<> '''' ORDER BY `ФИО`;');
       qClients.Open;
 
       qClubs.Close;
@@ -677,7 +677,7 @@ begin
   queryBase := TStringList.Create;
   try
     queryBase.Add('SELECT * FROM `admUch`');
-    queryBase.Add('WHERE `Тип клиента (для поиска)` <> ''''');
+    queryBase.Add('WHERE `Тип участника` <> ''''');
 
     if not(IsAdmin or IsVolonter) then
       queryBase.Add('AND `Куратор` = :KurName');
@@ -685,7 +685,7 @@ begin
     case sRadioGroup1.ItemIndex of
       1:
         queryBase.Add
-          ('AND `Тип клиента (для поиска)` LIKE ''%Клиент Хеседа%''');
+          ('AND `Тип участника` LIKE ''%Клиент Хеседа%''');
       2:
         begin
           queryBase.Clear;
@@ -719,7 +719,7 @@ begin
     Close;
     SQL.Clear;
     SQL.Add('SELECT `ФИО`, `JDC ID` FROM `admUch`');
-    SQL.Add('WHERE `Тип клиента (для поиска)` <> ''''');
+    SQL.Add('WHERE `Тип участника` <> ''''');
 
     // Якщо користувач не адміністратор — обмежити по куратору
     if not(IsAdmin or IsVolonter) then
@@ -744,7 +744,7 @@ begin
 
     // Базовий запит
     SQL.Add('SELECT * FROM `admUch`');
-    SQL.Add('WHERE `Тип клиента (для поиска)` <> ''''');
+    SQL.Add('WHERE `Тип участника` <> ''''');
 
     // if not (IsAdmin = true) or (IsVolonter = True) then
     if not(IsAdmin or IsVolonter) then
@@ -754,13 +754,13 @@ begin
       0:
         ; // ВСІ
       1:
-        SQL.Add('AND `Тип клиента (для поиска)` LIKE ''%Клиент Хеседа%''');
+        SQL.Add('AND `Тип участника` LIKE ''%Клиент Хеседа%''');
       2:
         begin
           SQL.Clear;
           SQL.Add('SELECT * FROM `admUch`');
           SQL.Add('WHERE `Возраст` BETWEEN 0 AND 17');
-          SQL.Add('AND `Тип клиента (для поиска)` <> ''''');
+          SQL.Add('AND `Тип участника` <> ''''');
           if not(IsAdmin or IsVolonter) then
             SQL.Add('AND `Куратор` = :KurName');
         end;
@@ -971,9 +971,7 @@ begin
     if not DirectoryExists('DirectoryNow') then
       ForceDirectories(DirectoryNow);
 
-    FileNameS := DirectoryNow + 'Община_' + DateTimeToStr(Nachalo) + '-' +
-      DateTimeToStr(Konec) + '_' + FormatDateTime('dd.mm.yyyy hh_mm_ss', Now)
-      + '.xlsx';
+    FileNameS := DirectoryNow + 'Община_' + FormatDateTime('dd.mm.yyyy hh-mm-ss', Now) + '.xlsx';
 
     MyExcel.Application.DisplayAlerts := false;
     if uMyExcel.SaveWorkBook(FileNameS, 1) = true then
