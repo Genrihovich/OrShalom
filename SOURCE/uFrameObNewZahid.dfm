@@ -115,7 +115,7 @@ inherited frmObNewZahid: TfrmObNewZahid
         end
         object dblbBoss: TDBLookupComboboxEh
           Left = 16
-          Top = 24
+          Top = 25
           Width = 329
           Height = 27
           DynProps = <>
@@ -244,6 +244,7 @@ inherited frmObNewZahid: TfrmObNewZahid
           TabOrder = 0
           OnDragDrop = lbClientsDragDrop
           OnDragOver = lbClientsDragOver
+          OnKeyDown = lbClientsKeyDown
           BoundLabel.ParentFont = False
           BoundLabel.Font.Charset = DEFAULT_CHARSET
           BoundLabel.Font.Color = clWindowText
@@ -281,6 +282,7 @@ inherited frmObNewZahid: TfrmObNewZahid
       Top = 10
       Width = 25
       Height = 25
+      Hint = 'Del'
       Action = acDeleteItem
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100

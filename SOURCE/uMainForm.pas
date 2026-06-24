@@ -87,6 +87,7 @@ var
   DotCount: Integer = 0; // для таймера с точками
   EventID: Integer; // id редактируемого евента
   isCreateSpisok: boolean = false; // списки чи нові заходи?
+  isEditEvent: boolean = false; // чи редагувати евент(захід) чи ні
 implementation
 
 {$R *.dfm}

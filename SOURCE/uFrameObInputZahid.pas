@@ -8,7 +8,8 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, uFrameCustom, Vcl.ExtCtrls, sPanel,
   sFrameAdapter, DBGridEhGrouping, ToolCtrlsEh, DBGridEhToolCtrls, DynVarsEh,
   Vcl.StdCtrls, EhLibVCL, GridsEh, DBAxisGridsEh, DBGridEh, Vcl.Buttons,
-  sBitBtn, System.UITypes, Data.DB, sSplitter, sCheckBox, sStoreUtils;
+  sBitBtn, System.UITypes, Data.DB, sSplitter, sCheckBox, sStoreUtils,
+  System.Actions, Vcl.ActnList;
 
 type
   TfrmObInputZahid = class(TCustomInfoFrame)
@@ -19,14 +20,19 @@ type
     DBGridEh2: TDBGridEh;
     sSplitter1: TsSplitter;
     chbMyRecords: TsCheckBox;
+    btnEditEven: TsBitBtn;
     procedure Button1Click(Sender: TObject);
     procedure btnDeleteEvenClick(Sender: TObject);
     procedure chbMyRecordsClick(Sender: TObject);
+    procedure btnEditEvenClick(Sender: TObject);
+    procedure DBGridEh1CellClick(Column: TColumnEh);
   private
     { Private declarations }
     function SearchID(name: string):String;
     procedure InitDBGridUh; // виборка по параметрах для гріда
 
+    var
+    FEventSelected: Boolean; //чи клікнув юзер по гріду для кнопки редагування евента
   public
     { Public declarations }
     procedure AfterCreation; override;
@@ -44,6 +50,8 @@ uses uMainForm, uDM, uFrameObNewZahid, uAutorize;
 
 { TfrmObInputZahid }
 
+
+
 procedure TfrmObInputZahid.AfterCreation;
 var
   s: String;
@@ -55,6 +63,7 @@ begin
     chbMyRecords.Checked := s.ToBoolean;
 
   CurrentUserID := SearchID(MyName);
+  FEventSelected := False;
   InitDBGridUh;
 end;
 
@@ -111,9 +120,32 @@ begin
   DM.qEvents.Open;
 end;
 
+
+// Редагування або просмотр захода
+procedure TfrmObInputZahid.btnEditEvenClick(Sender: TObject);
+begin
+  inherited;
+  if not FEventSelected then
+  begin
+    ShowMessage('Спочатку виберіть захід у списку');
+    Exit;
+  end;
+
+ // EditEventID := DM.qEvents.FieldByName('ID').AsInteger;
+     EventID := DBGridEh1.DataSource.DataSet.FieldByName('ID').AsInteger;
+
+ isCreateSpisok := false;// не список а  захід
+ isEditEvent := true;
+   // відкриваємо форму редагування
+  myForm.CreateNewFrame(TfrmObNewZahid, Sender);
+  myForm.TimerBlink.Enabled := true;
+
+end;
+
 procedure TfrmObInputZahid.Button1Click(Sender: TObject);
 begin
   inherited;
+  EventID := 0;
   isCreateSpisok := false;// не список а новій захід
   myForm.CreateNewFrame(TfrmObNewZahid, Sender);
   myForm.TimerBlink.Enabled := true;
@@ -127,6 +159,14 @@ begin
   //зберігаєм наш вибір
   sStoreUtils.WriteIniStr('chbMyRecords', 'Checked',
     chbMyRecords.Checked.ToString, IniName);
+end;
+
+
+
+procedure TfrmObInputZahid.DBGridEh1CellClick(Column: TColumnEh);
+begin
+  inherited;
+    FEventSelected := True; //юзер клікнув по гріду - значить евент вибраний для редагування
 end;
 
 procedure TfrmObInputZahid.InitDBGridUh;
@@ -173,15 +213,6 @@ begin
       DM.QEventClients.Active := false;
   end;
 
-
-
-
-
-
-
-
-
-
 end;
 
 function TfrmObInputZahid.SearchID(name: string): String;
@@ -205,5 +236,6 @@ begin
     Q.Free;
   end;
 end;
+
 
 end.

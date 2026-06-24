@@ -71,7 +71,9 @@ type
     procedure acClearUpdate(Sender: TObject);
     procedure btnClearClick(Sender: TObject);
     procedure acOpenFileUpdate(Sender: TObject);
-    procedure btnInputFileClick(Sender: TObject); // >>> ДОДАНО
+    procedure btnInputFileClick(Sender: TObject);
+    procedure lbClientsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState); // >>> ДОДАНО
   private
     { Private declarations }
     FExportProgress: TProgressBar;
@@ -83,10 +85,15 @@ type
     // Внести людей, які були на заході і сам захід в БД
     procedure InsertNewEvent(const EventName, DateStr, WhoConducted: string;
       ClubID, GuestsCount: Integer; lbClients: TsListBox);
+    // редагувати
+    procedure UpdateEvent;
+
     procedure InicialRegionalData;
     procedure LoadClients; // загрузка клієнтів згідно ролі і регіона
     procedure ReloadClientList;
     procedure ExportHideTimerTimer(Sender: TObject);
+    procedure ExportEditDataToComponent;
+
 
   public
     { Public declarations }
@@ -170,11 +177,16 @@ begin
     myForm.lbInfo.Caption := 'Перетягни ПІБ у список';
     InicialRegionalData; // віставляєм згідно регіону список людей
     sRadioGroup1.ItemIndex := 0;
+    btnProvesty.Caption := 'Провести захід!';
 
   end
   else
   begin
-    myForm.lbInfo.Caption := 'редагування';
+    myForm.lbInfo.Caption := 'Редагування - ID = ' + EventID.ToString;
+    btnProvesty.Caption := 'Оновити';
+        InicialRegionalData; // віставляєм згідно регіону список людей
+    sRadioGroup1.ItemIndex := 0;
+    ExportEditDataToComponent;
   end;
 
   // положення сплітера
@@ -265,6 +277,150 @@ begin
     Open;
     labCount.Caption := IntToStr(RecordCount);
   end;
+end;
+
+// Експортувати данні з БД для редагування потрібного Заходу
+procedure TfrmObNewZahid.ExportEditDataToComponent;
+var
+  QEvent: TUniQuery;
+  i: Integer;
+begin
+
+QEvent := TUniQuery.Create(nil);
+  try
+    QEvent.Connection := DM.UniConnection;
+
+    QEvent.SQL.Text := 'SELECT E.*, C.Назва as ClubName ' +
+                       'FROM Events E ' +
+                       'LEFT JOIN Clubs C ON C.ID = E.ClubID ' +
+                       'WHERE E.ID=:ID';
+
+    QEvent.ParamByName('ID').AsInteger := EventID;
+    QEvent.Open;
+
+    if QEvent.IsEmpty then
+      Exit;
+
+    dblbBoss.KeyValue :=
+      QEvent.FieldByName('Хто_проводив').AsString;
+    deZahid.Date :=
+      QEvent.FieldByName('Дата').AsDateTime;
+    edZahid.Text :=
+      QEvent.FieldByName('Назва_заходу').AsString;
+    dblbClubs.KeyValue :=
+      QEvent.FieldByName('ClubName').AsString;
+    edNoName.Text :=
+      QEvent.FieldByName('Кількість_сторонніх').AsString;
+
+  finally
+    QEvent.Free;
+  end;
+
+  for i := 0 to lbClients.Items.Count - 1 do
+    if Assigned(lbClients.Items.Objects[i]) then
+      StrDispose(PChar(lbClients.Items.Objects[i]));
+
+  lbClients.Items.Clear;
+
+  DM.QEventClients.Close;
+  DM.QEventClients.ParamByName('EventID').AsInteger := EventID;
+  DM.QEventClients.Open;
+
+  while not DM.QEventClients.Eof do
+  begin
+//    lbClients.Items.Add(DM.QEventClients.FieldByName('ФИО').AsString);
+
+    lbClients.Items.AddObject(
+      DM.QEventClients.FieldByName('ФИО').AsString,
+      TObject(
+        Pointer(
+          StrNew(
+            PChar(
+              DM.QEventClients.FieldByName('ClientID').AsString
+            )
+          )
+        )
+      )
+    );
+    DM.QEventClients.Next;
+  end;
+
+
+
+ { ShowMessage('1');
+
+  QEvent := TUniQuery.Create(nil);
+
+  ShowMessage('2');
+
+  try
+    QEvent.Connection := DM.UniConnection;
+
+    ShowMessage('3');
+
+    QEvent.SQL.Text :=
+      'SELECT * FROM Events WHERE ID=:ID';
+
+    QEvent.ParamByName('ID').AsInteger := EventID;
+
+    QEvent.Open;
+
+    ShowMessage('4');
+
+    dblbBoss.KeyValue :=
+      QEvent.FieldByName('Хто_проводив').AsString;
+
+    ShowMessage('5');
+
+    dblbClubs.KeyValue :=
+      QEvent.FieldByName('ClubID').AsInteger;
+
+    ShowMessage('6');
+
+    deZahid.Date :=
+      QEvent.FieldByName('Дата').AsDateTime;
+
+    ShowMessage('7');
+
+  finally
+    QEvent.Free;
+  end;
+
+  ShowMessage('8');
+
+  lbClients.Items.Clear;
+
+  ShowMessage('9');
+
+  ShowMessage('10');
+
+DM.QEventClients.Close;
+
+ShowMessage('11');
+
+DM.QEventClients.ParamByName('EventID').AsInteger := EventID;
+
+ShowMessage('12');
+
+DM.QEventClients.Open;
+
+ShowMessage('13');
+
+while not DM.QEventClients.Eof do
+begin
+  ShowMessage('14');
+
+  lbClients.Items.Add(
+    DM.QEventClients.FieldByName('ФИО').AsString
+  );
+
+  ShowMessage('15');
+
+  DM.QEventClients.Next;
+end;
+
+ShowMessage('16');  }
+
 end;
 
 
@@ -407,76 +563,6 @@ begin
 end;
 
 
-{
-procedure TfrmObNewZahid.InicialRegionalData;
-begin
-  with DM do
-  begin
-    if not mtClientsKesh.Active then
-    begin
-      ShowMessage('Кеш клієнтів не завантажено. Спочатку виконайте LoadClientsToCache.');
-      Exit;
-    end;
-
-    // --- Волонтер ---
-    if UserRole = 4 then
-    begin
-      mtClientsKesh.Filtered := False;
-      mtClientsKesh.Filter := '[Тип клиента (для поиска)] <> ''''';
-      mtClientsKesh.Filtered := True;
-
-      dsFindClients.DataSet := mtClientsKesh;
-      dsClients.DataSet := mtClientsKesh;
-      labCount.Caption := IntToStr(mtClientsKesh.RecordCount);
-
-      // Клуби залишаємо як було
-      qClubs.Close;
-      qClubs.SQL.Text := 'SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;';
-      qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
-      qClubs.Open;
-    end
-
-    // --- Куратор ---
-    else if (UserRole <> 0) and (UserRole <> 4) then
-    begin
-      mtClientsKesh.Filtered := False;
-      mtClientsKesh.Filter :=
-        Format('[Тип клиента (для поиска)] <> '''' AND [Куратор] = ''%s''', [Kurator]);
-      mtClientsKesh.Filtered := True;
-
-      dsFindClients.DataSet := mtClientsKesh;
-      dsClients.DataSet := mtClientsKesh;
-      labCount.Caption := IntToStr(mtClientsKesh.RecordCount);
-
-      qClubs.Close;
-      qClubs.SQL.Text := 'SELECT * FROM `Clubs` WHERE `id_region` = :IdRegion;';
-      qClubs.ParamByName('IdRegion').AsInteger := NumRegion;
-      qClubs.Open;
-    end
-
-    // --- Адмін ---
-    else
-    begin
-      mtClientsKesh.Filtered := False;
-      mtClientsKesh.Filter := '[Тип клиента (для поиска)] <> ''''';
-      mtClientsKesh.Filtered := True;
-
-      dsFindClients.DataSet := mtClientsKesh;
-      dsClients.DataSet := mtClientsKesh;
-      labCount.Caption := IntToStr(mtClientsKesh.RecordCount);
-
-      qClubs.Close;
-      qClubs.SQL.Text := 'SELECT * FROM `Clubs`;';
-      qClubs.Open;
-    end;
-  end;
-end;}
-
-
-
-
-
-
 // ----------------------------------------------------------------------------
 //  Внести в базу дані нового заходу (з перевіркою на дублікати)
 // ----------------------------------------------------------------------------
@@ -565,6 +651,69 @@ begin
 end;
 
 
+procedure TfrmObNewZahid.UpdateEvent;
+var
+  Q: TUniQuery;
+  i: Integer;
+  ClientID: string;
+begin
+  Q := TUniQuery.Create(nil);
+  try
+    Q.Connection := DM.UniConnection;
+
+    // Оновлюємо сам захід
+
+    Q.SQL.Text :=
+      'UPDATE Events SET ' +
+      'Назва_заходу=:Name, ' +
+      'Дата=:DateZ, ' +
+      'Хто_проводив=:Boss, ' +
+      'ClubID=:ClubID, ' +
+      'Кількість_сторонніх=:Guests ' +
+      'WHERE ID=:ID';
+
+    Q.ParamByName('ID').AsInteger := EventID;
+    Q.ParamByName('Name').AsString := edZahid.Text;
+    Q.ParamByName('DateZ').AsDate := deZahid.Date;
+    Q.ParamByName('Boss').AsString := VarToStr(dblbBoss.KeyValue);
+    Q.ParamByName('ClubID').AsInteger := GetOrCreateClubID(dblbClubs.Text);
+    Q.ParamByName('Guests').AsInteger := StrToIntDef(edNoName.Text, 0);
+
+    Q.ExecSQL;
+
+    // Видаляємо старий список людей
+
+    Q.SQL.Text :=
+      'DELETE FROM EventClients WHERE EventID=:ID';
+
+    Q.ParamByName('ID').AsInteger := EventID;
+
+    Q.ExecSQL;
+
+    // Записуємо новий
+
+    for i := 0 to lbClients.Items.Count - 1 do
+    begin
+      ClientID := string(PChar(lbClients.Items.Objects[i]));
+
+      Q.SQL.Text :=
+        'INSERT INTO EventClients(EventID, ClientID) ' +
+        'VALUES(:EventID,:ClientID)';
+
+      Q.ParamByName('EventID').AsInteger := EventID;
+      Q.ParamByName('ClientID').AsString := ClientID;
+
+      Q.ExecSQL;
+    end;
+
+  finally
+    Q.Free;
+  end;
+
+  ShowMessage('Захід оновлено');
+end;
+
+
 
 procedure TfrmObNewZahid.DBGridEh1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -588,14 +737,21 @@ end;
 procedure TfrmObNewZahid.bbtnDelClick(Sender: TObject);
 var
   idx: Integer;
+
 begin
   idx := lbClients.ItemIndex;
-  if (idx >= 0) and (idx < lbClients.Items.Count) then
-  begin
-    lbClients.Items.Delete(idx);
-    UpdateListBoxDisplay; // >>> ДОДАНО оновлення нумерації
-  end;
+
+  if idx < 0 then
+    Exit;
+
+  if Assigned(lbClients.Items.Objects[idx]) then
+    StrDispose(PChar(lbClients.Items.Objects[idx]));
+
+  lbClients.Items.Delete(idx);
+
+  UpdateListBoxDisplay;  // оновлення нумерації
 end;
+
 
 procedure TfrmObNewZahid.lbClientsDragDrop(Sender, Source: TObject;
   X, Y: Integer);
@@ -651,6 +807,8 @@ begin
   end;
 end;
 
+
+
 procedure TfrmObNewZahid.UpdateListBoxDisplay;
 begin
   lbClients.Invalidate; // >>> ДОДАНО примусове перемалювання для нумерації
@@ -669,6 +827,25 @@ begin
     TextOut(Rect.Left + 4, Rect.Top + 1, S);
   end;
 end;
+
+procedure TfrmObNewZahid.lbClientsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key <> VK_DELETE then
+    Exit;
+
+  if lbClients.Items.Count = 0 then
+    Exit;
+
+  if lbClients.ItemIndex = -1 then
+  begin
+    ShowMessage('Оберіть учасника для видалення');
+    Exit;
+  end;
+
+  bbtnDelClick(Sender);
+end;
+
 
 procedure TfrmObNewZahid.LoadClients;
 var
@@ -784,10 +961,19 @@ begin
 end;
 
 procedure TfrmObNewZahid.btnClearClick(Sender: TObject);
+
+var
+  i: Integer;
 begin
   inherited;
+
+  for i := 0 to lbClients.Items.Count - 1 do
+    if Assigned(lbClients.Items.Objects[i]) then
+      StrDispose(PChar(lbClients.Items.Objects[i]));
+
   lbClients.Clear;
 end;
+
 
 // ----------------------------------------------------------------------------
 // Завантажити збережений список
@@ -877,9 +1063,13 @@ procedure TfrmObNewZahid.btnProvestyClick(Sender: TObject);
 begin
   inherited; // Внести захід
   // Внести членов заходу
+if EventID = 0 then
   InsertNewEvent(edZahid.Text, DateToStr(deZahid.Date), dblbBoss.KeyValue,
     GetOrCreateClubID(dblbClubs.Text), StrToIntDef(edNoName.Text, 0),
-    lbClients);
+    lbClients)
+else
+  UpdateEvent;
+
   with DM do
   begin
     qEvents.Active := false;
