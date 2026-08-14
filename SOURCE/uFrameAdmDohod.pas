@@ -9,7 +9,8 @@ uses
   Vcl.ComCtrls, sListView, acShellCtrls, Vcl.ExtCtrls, sPanel, sFrameAdapter,
   sStoreUtils, System.Actions, Vcl.ActnList, Vcl.Buttons, sBitBtn, sEdit, sMemo,
   Vcl.Grids, JvExGrids, JvStringGrid, ShellCtrls, sComboBox, System.JSON,
-  System.IOUtils, Uni, ComObj, sCheckBox, Winapi.ShellAPI;
+  System.IOUtils, Uni, ComObj, sCheckBox, Winapi.ShellAPI, DateUtils, Data.DB,
+  Vcl.DBGrids, acDBGrid, sLabel;
 
 type
   TfrmAdmDohod = class(TCustomInfoFrame)
@@ -40,6 +41,12 @@ type
     acExportExcel: TAction;
     btnRefresh: TsBitBtn;
     chbAuto: TsCheckBox;
+    sdeStart: TsDateEdit;
+    btnExportDebtors: TBitBtn;
+    lblTotalAll: TsLabel;
+    lblTotalDone: TsLabel;
+    lblTotalLeft: TsLabel;
+    sDBGrid1: TsDBGrid;
     procedure sDirEditChange(Sender: TObject);
     procedure sFnEditChange(Sender: TObject);
     procedure acBtnStartUpdate(Sender: TObject);
@@ -55,6 +62,8 @@ type
     procedure btnExportExcelClick(Sender: TObject);
     procedure bnRefreshClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
+    procedure sdeStartChange(Sender: TObject);
+    procedure btnExportDebtorsClick(Sender: TObject);
   private
     { Private declarations }
     FCurrentFileIndex: Integer; // Поточний індекс файла у списку
@@ -68,6 +77,7 @@ type
     procedure ArchiveProcessedFile(const ASourceFilePath, AFIO: string);
     procedure RecheckFIO(const AFIO: string);
     procedure CheckAutoClickOk;
+    procedure UpdateAnalytics;
   public
     { Public declarations }
     procedure AfterCreation; override;
@@ -78,7 +88,7 @@ implementation
 
 {$R *.dfm}
 
-uses uAutorize, myUtils, uDM;
+uses uAutorize, myUtils, uDM, uMainForm;
 
 { TfrmAdmDohod }
 
@@ -102,7 +112,16 @@ begin
     ssLvFiles.Root := sDirEdit.Text;
   end;
 
+  // spJSON
+  s := sStoreUtils.ReadIniString('Dohod', 'DataInputDohod', IniName);
+  if s <> '' then
+    sdeStart.Text := s;
+
   InitGridDohod;
+  UpdateAnalytics;
+
+lblTotalLeft.UseSkinColor := False; // Вимикаємо колір скину
+lblTotalLeft.Font.Color := clBlue;
 end;
 
 procedure TfrmAdmDohod.BeforeDestruct;
@@ -234,61 +253,6 @@ begin
 end;
 
 { Виклик Python-скрипта та перехоплення JSON }
-{ function TfrmAdmDohod.RunPythonScript(const AScriptPath, AInputFilePath: string): string;
-  var
-  SA: TSecurityAttributes;
-  SI: TStartupInfo;
-  PI: TProcessInformation;
-  StdOutRead, StdOutWrite: THandle;
-  CommandLine: string;
-  Buffer: array[0..4095] of AnsiChar;
-  BytesRead: DWORD;
-  StringStream: TStringStream;
-  begin
-  Result := '';
-
-  SA.nLength := SizeOf(TSecurityAttributes);
-  SA.bInheritHandle := True;
-  SA.lpSecurityDescriptor := nil;
-
-  if not CreatePipe(StdOutRead, StdOutWrite, @SA, 0) then Exit;
-  try
-  SetHandleInformation(StdOutRead, HANDLE_FLAG_INHERIT, 0);
-
-  FillChar(SI, SizeOf(TStartupInfo), 0);
-  SI.cb := SizeOf(TStartupInfo);
-  SI.dwFlags := STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
-  SI.wShowWindow := SW_HIDE;
-  SI.hStdOutput := StdOutWrite;
-  SI.hStdError := StdOutWrite;
-
-  CommandLine := Format('python "%s" "%s"', [AScriptPath, AInputFilePath]);
-
-  if CreateProcess(nil, PChar(CommandLine), nil, nil, True,
-  CREATE_NO_WINDOW, nil, nil, SI, PI) then
-  begin
-  CloseHandle(StdOutWrite); // Закриваємо дублюючий хендл запису
-
-  StringStream := TStringStream.Create('', TEncoding.UTF8);
-  try
-  while ReadFile(StdOutRead, Buffer, SizeOf(Buffer) - 1, BytesRead, nil) and (BytesRead > 0) do
-  begin
-  Buffer[BytesRead] := #0;
-  StringStream.WriteBuffer(Buffer[0], BytesRead);
-  end;
-  Result := StringStream.DataString;
-  finally
-  StringStream.Free;
-  end;
-
-  CloseHandle(PI.hProcess);
-  CloseHandle(PI.hThread);
-  end;
-  finally
-  CloseHandle(StdOutRead);
-  end;
-  end; }
-
 function TfrmAdmDohod.RunPythonScript(const AScriptPath, AInputFilePath
   : string): string;
 var
@@ -739,28 +703,167 @@ begin
 
 end;
 
+// ------------------- Боржники довідок ---------------------
+procedure TfrmAdmDohod.btnExportDebtorsClick(Sender: TObject);
+var
+  q: TUniQuery;
+  ExcelApp, Workbook, Sheet: OleVariant;
+  NextYear, Row, AddedCount, TotalRecords: Integer;
+  TargetFolder, CurrentDateTimeStr, SavePath: string;
+begin
+  // 1. Визначаємо наступний рік від поточного (наприклад, 2027)
+  NextYear := YearOf(Date) + 1;
+
+  // 2. Створюємо та налаштовуємо TUniQuery
+  q := TUniQuery.Create(nil);
+  try
+    q.Connection := DM.UniConnection;
+
+    // SQL-запит із доданими полями "Город проживания" та "Адрес без города"
+    q.SQL.Text := 'SELECT ' + '  u.`JDC ID`, ' + '  u.`ФИО`, ' +
+      '  u.`Куратор`, ' + '  u.`Тип участника`, ' +
+    // Поле розкоментовано та додано до SELECT
+      '  u.`Город проживания`, ' + '  u.`Адрес без города` ' + 'FROM admUch u '
+      + 'LEFT JOIN Dohods d ' + '  ON u.`JDC ID` = d.`JDC ID` ' +
+      ' AND d.`Рік заповнення` = :NextYear ' +
+      'WHERE u.`Тип участника` LIKE ''%Клиент Хеседа%'' ' +
+      '  AND u.`Основная организация` = ''Хесед Бешт - Хмельницкий'' ' +
+      '  AND d.`JDC ID` IS NULL ' + // Означає, що в Dohods запису немає
+      'ORDER BY u.`Куратор`, u.`ФИО`;';
+
+    q.ParamByName('NextYear').AsInteger := NextYear;
+    q.Open;
+
+    if q.IsEmpty then
+    begin
+      ShowMessage(Format('Боржників довідок на %d рік не знайдено!',
+        [NextYear]));
+      Exit;
+    end;
+
+    // 3. Формуємо папку та назву файлу
+    TargetFolder := ExtractFilePath(ParamStr(0)) + 'Доход\';
+    if not DirectoryExists(TargetFolder) then
+      ForceDirectories(TargetFolder);
+
+    CurrentDateTimeStr := FormatDateTime('dd.mm.yyyy_hh-nn-ss', Now);
+    SavePath := TargetFolder + Format('Боржники довідок на %s.xlsx',
+      [CurrentDateTimeStr]);
+
+    // 4. Налаштування та активація ProgressBar
+    TotalRecords := q.RecordCount;
+    myForm.ProgressBar.Min := 0;
+    myForm.ProgressBar.Max := TotalRecords;
+    myForm.ProgressBar.Position := 0;
+    myForm.ProgressBar.Visible := true;
+    Application.ProcessMessages; // Оновлюємо інтерфейс
+
+    // 5. Запускаємо Excel
+    try
+      ExcelApp := CreateOleObject('Excel.Application');
+      ExcelApp.Visible := false;
+      ExcelApp.DisplayAlerts := false;
+    except
+      on E: Exception do
+      begin
+        myForm.ProgressBar.Visible := false; // Ховаємо ProgressBar при помилці
+        ShowMessage('Помилка запуску MS Excel: ' + E.Message);
+        Exit;
+      end;
+    end;
+
+    try
+      Workbook := ExcelApp.Workbooks.Add;
+      Sheet := Workbook.Worksheets[1];
+
+      // Форматування колонки JDC ID як текстової, щоб зберегти провідні нулі
+      Sheet.Columns[1].NumberFormat := '@';
+
+      // Формуємо шапку таблиці
+      Sheet.Cells[1, 1].Value := 'JDC ID';
+      Sheet.Cells[1, 2].Value := 'ФИО';
+      Sheet.Cells[1, 3].Value := 'Куратор';
+
+      // Sheet.Cells[1, 4].Value := 'Дата рождения';
+      // Sheet.Cells[1, 5].Value := 'Основная организация';
+      Sheet.Cells[1, 4].Value := 'Тип участника';
+      Sheet.Cells[1, 5].Value := 'Город проживания';
+      Sheet.Cells[1, 6].Value := 'Адрес без города';
+
+      // Стилізуємо шапку (жирний шрифт)
+      Sheet.Range['A1', 'G1'].Font.Bold := true;
+
+      Row := 2;
+      AddedCount := 0;
+
+      while not q.Eof do
+      begin
+        Sheet.Cells[Row, 1].NumberFormat := '@';
+        Sheet.Cells[Row, 1].Value := q.FieldByName('JDC ID').AsString;
+        Sheet.Cells[Row, 2].Value := q.FieldByName('ФИО').AsString;
+        Sheet.Cells[Row, 3].Value := q.FieldByName('Куратор').AsString;
+
+        // if not q.FieldByName('Дата рождения').IsNull then
+        // Sheet.Cells[Row, 4].Value := q.FieldByName('Дата рождения').AsDateTime;
+
+        Sheet.Cells[Row, 4].Value := q.FieldByName('Тип участника').AsString;
+        Sheet.Cells[Row, 5].Value := q.FieldByName('Город проживания').AsString;
+        Sheet.Cells[Row, 6].Value := q.FieldByName('Адрес без города').AsString;
+
+        Inc(Row);
+        Inc(AddedCount);
+
+        // Оновлюємо ProgressBar
+        myForm.ProgressBar.Position := AddedCount;
+        Application.ProcessMessages;
+
+        q.Next;
+      end;
+
+      // Автопідбір ширини колонок
+      Sheet.Columns.AutoFit;
+
+      // Зберігаємо Excel-файл
+      Workbook.SaveAs(SavePath);
+      Workbook.Close;
+      ExcelApp.Quit;
+
+      ShowMessage(Format('Формування завершено!' + sLineBreak +
+        'Знайдено боржників: %d' + sLineBreak + 'Файл збережено: %s',
+        [AddedCount, SavePath]));
+
+      // Відкриваємо папку з результатом
+      ShellExecute(Handle, 'open', PWideChar(TargetFolder), nil, nil,
+        SW_SHOWNORMAL);
+
+    finally
+      // Ховаємо ProgressBar та вивільняємо об'єкти Excel
+      myForm.ProgressBar.Visible := false;
+      Sheet := Unassigned;
+      Workbook := Unassigned;
+      ExcelApp := Unassigned;
+    end;
+
+  finally
+    q.Free;
+  end;
+end;
+
 // -------------- Експорт в Ексель -------------------------
 procedure TfrmAdmDohod.btnExportExcelClick(Sender: TObject);
 var
   ExcelApp, Workbook, Sheet: OleVariant;
   TargetFolder, TemplatePath, SavePath, CurrentDateTimeStr: string;
-  GridRow, ExcelRow, Col: Integer;
+  GridRow, ExcelRow, Col, AddedCount: Integer;
   HasData: Boolean;
   ValueStr: string;
+  NextYear: Integer;
+  SumValue: Double;
+  StrSum: string;
+  FS: TFormatSettings;
+  q: TUniQuery;
 begin
-  // 1. Формуємо шлях до папки "Доходы"
-  TargetFolder := ExtractFilePath(ParamStr(0)) + 'Доходы\';
-  if not DirectoryExists(TargetFolder) then
-    ForceDirectories(TargetFolder);
-
-  TemplatePath := ExtractFilePath(ParamStr(0)) + 'Доходы - шаблон.xlsx';
-  if not FileExists(TemplatePath) then
-  begin
-    ShowMessage('Не знайдено файл шаблону Excel: ' + TemplatePath);
-    Exit;
-  end;
-
-  // 2. Перевіряємо наявність даних
+  // 1. Перевіряємо наявність даних у таблиці
   HasData := false;
   for GridRow := 1 to StrGrDohod.RowCount - 1 do
   begin
@@ -773,13 +876,36 @@ begin
 
   if not HasData then
   begin
-    ShowMessage('Немає даних для експорту в Excel!');
+    ShowMessage('Немає даних для експорту!');
+    Exit;
+  end;
+
+  // 2. Перевіряємо заповнення дати початку дії
+  if sdeStart.Date = 0 then
+  begin
+    ShowMessage('Вкажіть дату початку дії (sdeStart)!');
+    sdeStart.SetFocus;
+    Exit;
+  end;
+
+  // 3. Формуємо шлях до папки "Доходы"
+  TargetFolder := ExtractFilePath(ParamStr(0)) + 'Доходы\';
+  if not DirectoryExists(TargetFolder) then
+    ForceDirectories(TargetFolder);
+
+  TemplatePath := ExtractFilePath(ParamStr(0)) + 'Доходы - шаблон.xlsx';
+  if not FileExists(TemplatePath) then
+  begin
+    ShowMessage('Не знайдено файл шаблону Excel: ' + TemplatePath);
     Exit;
   end;
 
   CurrentDateTimeStr := FormatDateTime('dd.mm.yyyy_hh-nn-ss', Now);
   SavePath := TargetFolder + Format('Доходы_%s.xlsx', [CurrentDateTimeStr]);
 
+  // =========================================================================
+  // ЕТАП 1: ФОРМУВАННЯ ТА ЗБЕРЕЖЕННЯ EXCEL (Без змін)
+  // =========================================================================
   try
     ExcelApp := CreateOleObject('Excel.Application');
     ExcelApp.Visible := false;
@@ -796,8 +922,7 @@ begin
     Workbook := ExcelApp.Workbooks.Open(TemplatePath);
     Sheet := Workbook.Worksheets[1];
 
-    // 🟢 Встановлюємо текстовий формат (@) для першої колонки (JDC ID),
-    // щоб Excel не видаляв нулі на початку
+    // Встановлюємо текстовий формат (@) для першої колонки (JDC ID)
     Sheet.Columns[1].NumberFormat := '@';
 
     ExcelRow := 2; // Починаємо з 2-го рядка
@@ -811,7 +936,6 @@ begin
       begin
         ValueStr := Trim(StrGrDohod.Cells[Col, GridRow]);
 
-        // Для першої колонки (Col = 0) примусово задаємо текстовий тип
         if Col = 0 then
         begin
           Sheet.Cells[ExcelRow, Col + 1].NumberFormat := '@';
@@ -828,14 +952,90 @@ begin
     Workbook.Close;
     ExcelApp.Quit;
 
-    ShowMessage('Дані успішно експортовано у файл:' + sLineBreak + SavePath);
-    ShellExecute(Handle, 'open', PWideChar(DirectoryExists(TargetFolder)), nil,
-      nil, SW_SHOWNORMAL);
-
   finally
     Sheet := Unassigned;
     Workbook := Unassigned;
     ExcelApp := Unassigned;
+  end;
+
+  // =========================================================================
+  // ЕТАП 2: ЗАПИС У MYSQL ЧЕРЕЗ DM.UniConnection ТА TUniQuery
+  // =========================================================================
+  NextYear := YearOf(Date) + 1; // Обчислюємо наступний рік від поточного
+  AddedCount := 0;
+
+  GetLocaleFormatSettings(0, FS);
+  FS.DecimalSeparator := '.';
+
+  q := TUniQuery.Create(nil);
+  try
+    q.Connection := DM.UniConnection;
+
+    // Відкриваємо транзакцію для прискорення масової вставки
+    if not DM.UniConnection.InTransaction then
+      DM.UniConnection.StartTransaction;
+
+    try
+      q.SQL.Text := 'INSERT INTO Dohods (' +
+        '  `JDC ID`, `ФИО`, `Тип дохода`, `Сумма`, ' +
+        '  `Дата начала действия`, `Документы проверены`, ' +
+        '  `Источник данных`, `Примечание`, `Рік заповнення`' + ') VALUES (' +
+        '  :JDC_ID, :FIO, :TypeDohod, :Summa, ' + '  :StartDate, :DocsChecked, '
+        + '  :Source, :Note, :FillYear' + ')';
+
+      for GridRow := 1 to StrGrDohod.RowCount - 1 do
+      begin
+        if Trim(StrGrDohod.Cells[0, GridRow]) = '' then
+          Continue;
+
+        // Очищаємо суму від пробілів та некоректних роздільників
+        StrSum := Trim(StrGrDohod.Cells[3, GridRow]);
+        StrSum := StringReplace(StrSum, ' ', '', [rfReplaceAll]);
+        StrSum := StringReplace(StrSum, ',', '.', [rfReplaceAll]);
+        SumValue := StrToFloatDef(StrSum, 0.0, FS);
+
+        // Передаємо параметри у TUniQuery
+        q.ParamByName('JDC_ID').AsString := Trim(StrGrDohod.Cells[0, GridRow]);
+        q.ParamByName('FIO').AsString := Trim(StrGrDohod.Cells[1, GridRow]);
+        q.ParamByName('TypeDohod').AsString :=
+          Trim(StrGrDohod.Cells[2, GridRow]);
+        q.ParamByName('Summa').AsFloat := SumValue;
+        q.ParamByName('StartDate').AsDate := sdeStart.Date;
+        q.ParamByName('DocsChecked').AsInteger := 1;
+        q.ParamByName('Source').AsString := 'Документ';
+        q.ParamByName('Note').AsString := 'из импорта';
+        q.ParamByName('FillYear').AsInteger := NextYear;
+
+        q.ExecSQL;
+        Inc(AddedCount);
+      end;
+
+      // Фіксуємо транзакцію після додавання всіх рядків
+      if DM.UniConnection.InTransaction then
+        DM.UniConnection.Commit;
+
+      // Фінальний звіт
+      ShowMessage('Дані успішно опрацьовано!' + sLineBreak +
+        '1. Збережено в Excel: ' + SavePath + sLineBreak +
+        Format('2. Додано в базу MySQL: %d записів (Рік: %d)',
+        [AddedCount, NextYear]));
+
+      ShellExecute(Handle, 'open', PWideChar(TargetFolder), nil, nil,
+        SW_SHOWNORMAL);
+
+    except
+      on E: Exception do
+      begin
+        if DM.UniConnection.InTransaction then
+          DM.UniConnection.Rollback;
+        ShowMessage('Excel створено, але виникла помилка запису в MySQL: ' +
+          E.Message);
+      end;
+    end;
+
+  finally
+    q.Free; // Гарантовано звільняємо пам'ять
+    UpdateAnalytics;
   end;
 end;
 
@@ -874,6 +1074,12 @@ begin
     ssLvFiles.ItemIndex := 0; // Встановлюємо фокус на перший елемент
 end;
 
+procedure TfrmAdmDohod.sdeStartChange(Sender: TObject);
+begin
+  inherited;
+  sStoreUtils.WriteIniStr('Dohod', 'DataInputDohod', sdeStart.Text, IniName);
+end;
+
 procedure TfrmAdmDohod.sDirEditChange(Sender: TObject);
 begin
   inherited;
@@ -885,6 +1091,51 @@ procedure TfrmAdmDohod.sFnEditChange(Sender: TObject);
 begin
   inherited;
   sStoreUtils.WriteIniStr('Dohod', 'PathScript', sFnEdit.Text, IniName);
+end;
+
+procedure TfrmAdmDohod.UpdateAnalytics;
+var
+  NextYear: Integer;
+  TotalAll, TotalDone, TotalLeft: Integer;
+begin
+  NextYear := YearOf(Date) + 1;
+  with DM do
+  begin
+    qStat.Close;
+    qStat.SQL.Text := 'SELECT ' + '  u.`Куратор`, ' +
+      '  COUNT(u.`JDC ID`) AS `Всього`, ' + '  COUNT(d.`JDC ID`) AS `Подали`, '
+      + '  (COUNT(u.`JDC ID`) - COUNT(d.`JDC ID`)) AS `Боржники`, ' +
+      '  ROUND((COUNT(d.`JDC ID`) / COUNT(u.`JDC ID`)) * 100, 1) AS `Відсоток` '
+      + 'FROM admUch u ' + 'LEFT JOIN Dohods d ' +
+      '  ON u.`JDC ID` = d.`JDC ID` ' + ' AND d.`Рік заповнення` = :NextYear ' +
+      'WHERE u.`Тип участника` LIKE ''%Клиент Хеседа%'' ' +
+      '  AND u.`Основная организация` = ''Хесед Бешт - Хмельницкий'' ' +
+      'GROUP BY u.`Куратор` ' + 'ORDER BY u.`Куратор`;';
+
+    qStat.ParamByName('NextYear').AsInteger := NextYear;
+    qStat.Open;
+    // Формат відображення: 0.0 означає один знак після коми + знак %
+  TNumericField(qStat.FieldByName('Відсоток')).DisplayFormat := '0.0"%"';
+
+    // Підраховуємо підсумки по всьому Хеседу
+    TotalAll := 0;
+    TotalDone := 0;
+
+    qStat.First;
+    while not qStat.Eof do
+    begin
+      Inc(TotalAll, qStat.FieldByName('Всього').AsInteger);
+      Inc(TotalDone, qStat.FieldByName('Подали').AsInteger);
+      qStat.Next;
+    end;
+
+    TotalLeft := TotalAll - TotalDone;
+
+    // Виводимо підсумкові значення на TLabel
+    lblTotalAll.Caption := Format('Всього підопічних: %d', [TotalAll]);
+    lblTotalDone.Caption := Format('Подали довідки: %d', [TotalDone]);
+    lblTotalLeft.Caption := Format('Залишилось боржників: %d', [TotalLeft]);
+  end;
 end;
 
 procedure TfrmAdmDohod.ArchiveProcessedFile(const ASourceFilePath,

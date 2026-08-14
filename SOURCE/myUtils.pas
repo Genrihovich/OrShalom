@@ -57,6 +57,8 @@ procedure ExportToCSV(const FileName: string;
   ProgressCallback: TProc<Integer> = nil);
 procedure SplitString(const S: string; Delim: Char; out Parts: TArray<string>);
 
+// перетворює повне ПІБ на формат з ініціалами
+function MakeShortFIO(const AFullFIO: string): string;
 
 implementation
 
@@ -496,5 +498,35 @@ begin
   end;
 end;
 
+// ---------- перетворює повне ПІБ на формат з ініціалами ---------
+function MakeShortFIO(const AFullFIO: string): string;
+var
+  SL: TStringList;
+  CleanStr: string;
+begin
+  Result := Trim(AFullFIO);
+  if Result = '' then Exit;
+
+  SL := TStringList.Create;
+  try
+    // Розбиваємо ПІБ на окремі слова за пробілами
+    SL.Delimiter := ' ';
+    SL.StrictDelimiter := False;
+    SL.DelimitedText := Result;
+
+    // Якщо маємо 3 слова (Прізвище, Ім'я, По батькові)
+    if SL.Count >= 3 then
+    begin
+      Result := Format('%s %s.%s.', [SL[0], Copy(SL[1], 1, 1), Copy(SL[2], 1, 1)]);
+    end
+    // Якщо маємо 2 слова (лише Прізвище та Ім'я)
+    else if SL.Count = 2 then
+    begin
+      Result := Format('%s %s.', [SL[0], Copy(SL[1], 1, 1)]);
+    end;
+  finally
+    SL.Free;
+  end;
+end;
 
 end.

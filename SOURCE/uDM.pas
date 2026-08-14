@@ -65,6 +65,8 @@ type
     dsEventClients: TUniDataSource;
     mtClientsKesh: TMemTableEh;
     dsClientsKesh: TDataSource;
+    qStat: TUniQuery;
+    dsStat: TDataSource;
     procedure qEventsAfterScroll(DataSet: TDataSet);
   private
     { Private declarations }

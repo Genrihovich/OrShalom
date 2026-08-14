@@ -1,21 +1,22 @@
 inherited frmAdmDohod: TfrmAdmDohod
-  Width = 1007
-  Height = 539
-  ExplicitWidth = 1007
-  ExplicitHeight = 539
+  Width = 1119
+  Height = 540
+  ExplicitWidth = 1119
+  ExplicitHeight = 540
   object sPanel1: TsPanel [0]
     Left = 0
     Top = 41
     Width = 265
-    Height = 498
+    Height = 499
     Align = alLeft
     TabOrder = 0
+    ExplicitHeight = 498
     object ssLvFiles: TsShellListView
       AlignWithMargins = True
       Left = 4
       Top = 4
       Width = 257
-      Height = 442
+      Height = 443
       Align = alClient
       ReadOnly = False
       GridLines = True
@@ -26,29 +27,30 @@ inherited frmAdmDohod: TfrmAdmDohod
       ObjectTypes = [otNonFolders]
       Root = 'rfMyComputer'
       ShowExt = seSystem
+      ExplicitHeight = 442
     end
     object btnStart: TsBitBtn
       Left = 1
-      Top = 449
+      Top = 450
       Width = 263
       Height = 48
       Action = acBtnStart
       Align = alBottom
       Caption = #1057#1090#1072#1088#1090
       TabOrder = 1
+      ExplicitTop = 449
     end
   end
   object spTop: TsPanel [1]
     Left = 0
     Top = 0
-    Width = 1007
+    Width = 1119
     Height = 41
     Align = alTop
     TabOrder = 1
-    ExplicitLeft = 1
-    ExplicitTop = -2
+    ExplicitWidth = 1007
     DesignSize = (
-      1007
+      1119
       41)
     object sDirEdit: TsDirectoryEdit
       Left = 4
@@ -80,9 +82,9 @@ inherited frmAdmDohod: TfrmAdmDohod
       BoundLabel.Layout = sclBottomCenter
     end
     object btnParse: TsBitBtn
-      Left = 687
+      Left = 660
       Top = 10
-      Width = 75
+      Width = 77
       Height = 25
       Action = acReParse
       Caption = #1055#1077#1088#1077#1087#1072#1088#1089#1080#1090#1080
@@ -98,9 +100,9 @@ inherited frmAdmDohod: TfrmAdmDohod
       TabOrder = 3
     end
     object btnExportExcel: TsBitBtn
-      Left = 888
+      Left = 975
       Top = 10
-      Width = 107
+      Width = 113
       Height = 25
       Action = acExportExcel
       Anchors = [akTop, akRight]
@@ -151,7 +153,7 @@ inherited frmAdmDohod: TfrmAdmDohod
       OnClick = btnRefreshClick
     end
     object chbAuto: TsCheckBox
-      Left = 784
+      Left = 747
       Top = 16
       Width = 94
       Height = 15
@@ -161,26 +163,80 @@ inherited frmAdmDohod: TfrmAdmDohod
       ShowHint = True
       TabOrder = 6
     end
+    object sdeStart: TsDateEdit
+      Left = 862
+      Top = 14
+      Width = 96
+      Height = 21
+      Anchors = [akTop, akRight]
+      EditMask = '!99/99/9999;1; '
+      MaxLength = 10
+      TabOrder = 7
+      Text = '19.10.2026'
+      OnChange = sdeStartChange
+      BoundLabel.Active = True
+      BoundLabel.Caption = #1044#1072#1090#1072' '#1079#1072#1085#1077#1089#1077#1085#1085#1103' '#1076#1086#1093#1086#1076#1110#1074
+      BoundLabel.Layout = sclTopCenter
+      Date = 46314.000000000000000000
+    end
   end
   object spAll: TsPanel [2]
     Left = 552
     Top = 41
-    Width = 455
-    Height = 498
+    Width = 567
+    Height = 499
     Align = alClient
     TabOrder = 2
-    ExplicitLeft = 489
-    ExplicitTop = 47
-    ExplicitWidth = 660
+    ExplicitWidth = 455
+    ExplicitHeight = 498
+    DesignSize = (
+      567
+      499)
     object spJSON: TsPanel
       Left = 1
       Top = 1
-      Width = 453
+      Width = 565
       Height = 232
       Align = alTop
       TabOrder = 0
       ExplicitLeft = 6
       ExplicitTop = 0
+      ExplicitWidth = 453
+      DesignSize = (
+        565
+        232)
+      object lblTotalAll: TsLabel
+        Left = 215
+        Top = 182
+        Width = 45
+        Height = 13
+        Anchors = [akTop, akRight]
+        Caption = 'lblTotalAll'
+      end
+      object lblTotalDone: TsLabel
+        Left = 399
+        Top = 182
+        Width = 59
+        Height = 13
+        Anchors = [akTop, akRight]
+        Caption = 'lblTotalDone'
+      end
+      object lblTotalLeft: TsLabel
+        Left = 231
+        Top = 205
+        Width = 53
+        Height = 13
+        Anchors = [akTop, akRight]
+        Caption = 'lblTotalLeft'
+        Color = clRed
+        ParentColor = False
+        ParentFont = False
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clRed
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+      end
       object btnOk: TsBitBtn
         Left = 10
         Top = 194
@@ -252,16 +308,27 @@ inherited frmAdmDohod: TfrmAdmDohod
         ItemIndex = -1
         TabOrder = 5
       end
+      object btnExportDebtors: TBitBtn
+        Left = 428
+        Top = 201
+        Width = 131
+        Height = 25
+        Anchors = [akTop, akRight]
+        Caption = #1061#1090#1086' '#1085#1077' '#1087#1088#1077#1085#1110#1089' '#1089#1087#1088#1072#1074#1082#1080
+        TabOrder = 6
+        OnClick = btnExportDebtorsClick
+      end
     end
     object StrGrDohod: TJvStringGrid
       Left = 1
       Top = 233
-      Width = 453
-      Height = 264
+      Width = 565
+      Height = 265
       Align = alClient
       ColCount = 4
       FixedCols = 0
       RowCount = 2
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
       TabOrder = 1
       Alignment = taLeftJustify
       FixedFont.Charset = DEFAULT_CHARSET
@@ -269,23 +336,75 @@ inherited frmAdmDohod: TfrmAdmDohod
       FixedFont.Height = -11
       FixedFont.Name = 'Tahoma'
       FixedFont.Style = []
-      ExplicitLeft = 24
-      ExplicitTop = 256
-      ExplicitWidth = 467
-      ExplicitHeight = 177
+      ExplicitWidth = 453
+      ExplicitHeight = 264
+    end
+    object sDBGrid1: TsDBGrid
+      Left = 224
+      Top = 6
+      Width = 337
+      Height = 171
+      Anchors = [akTop, akRight]
+      Color = 15921906
+      DataSource = DM.dsStat
+      DrawingStyle = gdsGradient
+      GradientEndColor = 13353918
+      GradientStartColor = 14539223
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      ReadOnly = True
+      TabOrder = 2
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -11
+      TitleFont.Name = 'Tahoma'
+      TitleFont.Style = []
+      Columns = <
+        item
+          Expanded = False
+          FieldName = #1050#1091#1088#1072#1090#1086#1088
+          Width = 140
+          Visible = True
+        end
+        item
+          Expanded = False
+          FieldName = #1042#1089#1100#1086#1075#1086
+          Width = 40
+          Visible = True
+        end
+        item
+          Expanded = False
+          FieldName = #1055#1086#1076#1072#1083#1080
+          Width = 40
+          Visible = True
+        end
+        item
+          Expanded = False
+          FieldName = #1041#1086#1088#1078#1085#1080#1082#1080
+          Width = 40
+          Visible = True
+        end
+        item
+          Expanded = False
+          FieldName = #1042#1110#1076#1089#1086#1090#1086#1082
+          Width = 40
+          Visible = True
+        end>
     end
   end
   object memJSON: TsMemo [3]
     Left = 265
     Top = 41
     Width = 287
-    Height = 498
+    Height = 499
     Align = alLeft
     ScrollBars = ssVertical
     TabOrder = 3
-    ExplicitLeft = 1
-    ExplicitTop = 1
-    ExplicitHeight = 230
+    ExplicitHeight = 498
   end
   inherited sFrameAdapter1: TsFrameAdapter
     Left = 976

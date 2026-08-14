@@ -8,6 +8,7 @@ object DM: TDM
     Database = 'hesed_travma'
     Username = 'hesed_travma'
     Server = 'hesed.mysql.ukraine.com.ua'
+    Connected = True
     Left = 32
     Top = 16
     EncryptedPassword = 'BEFF86FF8BFFD9FF99FFAFFFC9FFCCFFCDFFDCFF'
@@ -493,5 +494,38 @@ object DM: TDM
     DataSet = mtClientsKesh
     Left = 344
     Top = 72
+  end
+  object qStat: TUniQuery
+    Connection = UniConnection
+    SQL.Strings = (
+      'SELECT '
+      '  u.`'#1050#1091#1088#1072#1090#1086#1088'`,'
+      '  COUNT(u.`JDC ID`) AS `'#1042#1089#1100#1086#1075#1086'`,'
+      '  COUNT(d.`JDC ID`) AS `'#1055#1086#1076#1072#1083#1080'`,'
+      '  (COUNT(u.`JDC ID`) - COUNT(d.`JDC ID`)) AS `'#1041#1086#1088#1078#1085#1080#1082#1080'`,'
+      
+        '  ROUND((COUNT(d.`JDC ID`) / COUNT(u.`JDC ID`)) * 100, 1) AS `'#1042#1110 +
+        #1076#1089#1086#1090#1086#1082'`'
+      'FROM admUch u'
+      'LEFT JOIN Dohods d '
+      '  ON u.`JDC ID` = d.`JDC ID` '
+      ' AND d.`'#1056#1110#1082' '#1079#1072#1087#1086#1074#1085#1077#1085#1085#1103'` = :NextYear'
+      'WHERE u.`'#1058#1080#1087' '#1091#1095#1072#1089#1090#1085#1080#1082#1072'` LIKE '#39'%'#1050#1083#1080#1077#1085#1090' '#1061#1077#1089#1077#1076#1072'%'#39
+      '  AND u.`'#1054#1089#1085#1086#1074#1085#1072#1103' '#1086#1088#1075#1072#1085#1080#1079#1072#1094#1080#1103'` = '#39#1061#1077#1089#1077#1076' '#1041#1077#1096#1090' - '#1061#1084#1077#1083#1100#1085#1080#1094#1082#1080#1081#39
+      'GROUP BY u.`'#1050#1091#1088#1072#1090#1086#1088'`'
+      'ORDER BY u.`'#1050#1091#1088#1072#1090#1086#1088'`;')
+    Left = 424
+    Top = 376
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'NextYear'
+        Value = nil
+      end>
+  end
+  object dsStat: TDataSource
+    DataSet = qStat
+    Left = 424
+    Top = 424
   end
 end
